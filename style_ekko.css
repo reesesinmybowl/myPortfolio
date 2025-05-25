@@ -86,17 +86,23 @@ body {
   width: 100%;
   display: flex;
   justify-content: flex-end;
-  margin: 24px 0 20px; /* updated top margin to match hero-padded */
+  margin: 24px 0 20px; /* ✅ top margin 24px, bottom margin matches .stacked */
   box-sizing: border-box;
 }
 
-.hero video {
-  width: 90%;
+
+.hero-inner {
+  width: 100%;
   max-width: 1080px;
+  padding-right: 120px; /* push it away from the left */
+  box-sizing: border-box;
+}
+
+.hero-inner video {
+  width: 100%;
   height: auto;
-  object-fit: cover;
+  object-fit: contain; /* ← changed from cover to contain */
   display: block;
-  margin-right: 0; /* or a safe %, like margin: 0 auto */
 }
 
 

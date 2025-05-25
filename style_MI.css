@@ -93,3 +93,17 @@ body {
   object-fit: contain;
   display: block;
 }
+
+.hero {
+  width: 100%;
+  padding: 0 20px;
+  margin-top: 24px;
+  box-sizing: border-box;
+}
+
+.hero video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
