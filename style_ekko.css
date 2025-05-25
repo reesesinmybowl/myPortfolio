@@ -1,6 +1,6 @@
 /* RESET & BASE */
-html {
-  overflow-y: scroll;
+html, body {
+  overflow-x: hidden;
 }
 
 body {
@@ -96,7 +96,7 @@ body {
   height: auto;
   object-fit: cover;
   display: block;
-  margin-right: 120px;
+  margin-right: 0; /* or a safe %, like margin: 0 auto */
 }
 
 
