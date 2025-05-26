@@ -20,7 +20,7 @@ body {
   top: 0;
   z-index: 999;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   background: #f0f0f0;
   border-bottom: none;
@@ -86,7 +86,7 @@ body {
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   width: 90%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 30px auto;
 }
 
