@@ -7,12 +7,8 @@ body {
   margin: 0;
   background: #f0f0f0;
   font-family: 'Inter', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block;
 }
-
-
 
 /* STICKY NAVBAR */
 .menu-bar {
@@ -31,7 +27,6 @@ body {
   box-sizing: border-box;
 }
 
-/* LEFT: Info button */
 .info-button {
   justify-self: start;
   font-size: 1rem;
@@ -49,7 +44,6 @@ body {
   background: #444;
 }
 
-/* CENTER: Title */
 .site-title {
   justify-self: center;
   text-align: center;
@@ -59,7 +53,6 @@ body {
   letter-spacing: -0.04em;
 }
 
-/* RIGHT: Filters */
 .filters {
   justify-self: end;
   display: flex;
@@ -80,15 +73,45 @@ body {
   background: #444;
 }
 
+/* PAGE LAYOUT: left + grid aligned */
+.page {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between; /* space between .left and .grid */
+  padding: 24px;
+  gap: 60px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* LEFT TEXT COLUMN */
+.left {
+  position: fixed;
+  top: 40px;         /* How far from the top of the screen */
+  left: 40px;         /* How far from the left edge */
+  width: 200px;
+  line-height: 1.4;
+  z-index: 1000;
+  background: #f0f0f0; /* optional: ensures it's visible if overlapping */
+}
+
+.left p {
+  margin: 0 0 24px 0;
+  text-align: left;
+}
+
 /* GRID */
 .grid {
+  margin-left: 300px; /* keep this so it clears the .left sidebar */
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
-  width: 90%;
-  max-width: 1400px;
-  margin: 30px auto;
+  max-width: none; /* 💥 removes the artificial 1400px limit */
+  width: calc(100vw - 320px); /* full screen minus left margin + spacing */
+  justify-content: end; /* 💥 aligns cards to the right inside the grid */
+  box-sizing: border-box;
 }
+
 
 /* CARD STYLE */
 .card {
@@ -96,6 +119,7 @@ body {
   aspect-ratio: 16 / 9;
   overflow: hidden;
   display: block;
+  background: #ccc; /* temporary: helps debug if image fails */
 }
 
 .card img,
@@ -120,4 +144,20 @@ body {
 .card.motel:hover video {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* TEXT UTILITIES */
+h2 {
+  margin: 40px 0 0 0;
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+h2 + p {
+  margin-top: 0;
+}
+
+.container p {
+  margin: 0 0 16px 0;
+  line-height: 1.3;
 }
