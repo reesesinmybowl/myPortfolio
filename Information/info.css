@@ -63,3 +63,14 @@ h2 + p {
 .unstyled-link:hover {
   text-decoration: underline;
 }
+
+.bottom {
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+  width: 200px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: black;
+  background: #f0f0f0;
+}
