@@ -1,0 +1,137 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #fbfbfb;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #111;
+}
+
+.left {
+  position: fixed;
+  top: 40px;
+  left: 40px;
+  width: 200px;
+  line-height: 1.4;
+  z-index: 1000;
+  background: #fbfbfb;
+}
+
+.left p {
+  margin: 0 0 24px 0;
+}
+
+.unstyled-link {
+  all: unset;
+  cursor: pointer;
+}
+
+.unstyled-link:hover {
+  text-decoration: underline;
+}
+
+.experimental-grid {
+  margin-left: 300px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* TEMPORARY: Disable all project links */
+.experimental-grid .card {
+  pointer-events: none;
+}
+
+.card {
+  break-inside: avoid;
+  display: block;
+  position: relative;
+  width: 100%;
+  background: none;
+}
+
+.card img,
+.card video {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border: none;
+}
+
+.card.video {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Span two columns */
+.card.wide {
+  grid-column: span 2;
+}
+
+/* Aspect ratios */
+.card.aspect-16-9 video,
+.card.aspect-16-9 img {
+  aspect-ratio: 16 / 9;
+}
+
+.card.aspect-9-16 video,
+.card.aspect-9-16 img {
+  aspect-ratio: 9 / 16;
+}
+
+.card.aspect-1-1 video,
+.card.aspect-1-1 img {
+  aspect-ratio: 1 / 1;
+}
+
+.card.aspect-4-5 video,
+.card.aspect-4-5 img {
+  aspect-ratio: 4 / 5;
+}
+
+/* Responsive tweaks */
+@media (max-width: 1024px) {
+  .experimental-grid {
+    grid-template-columns: repeat(2, 1fr);
+    margin-left: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .left {
+    position: static;
+    width: auto;
+    padding: 20px;
+  }
+
+  .experimental-grid {
+    margin-left: 0;
+    padding: 20px;
+    grid-template-columns: 1fr;
+  }
+}
+
+.bottom {
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+  width: 200px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: black;
+  background: #fbfbfb;
+}
+
+.unstyled-link {
+  all: unset;
+  cursor: pointer;
+}
+
+.unstyled-link:hover {
+  text-decoration: underline;
+}

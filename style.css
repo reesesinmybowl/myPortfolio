@@ -5,7 +5,7 @@ html {
 
 body {
   margin: 0;
-  background: #f0f0f0;
+  background: #fbfbfb;
   font-size: 15px;
 
   font-family: 'Inter', sans-serif;
@@ -31,7 +31,7 @@ body {
   width: 200px;
   line-height: 1.4;
   z-index: 1000;
-  background: #f0f0f0;
+  background: #fbfbfb;
 }
 
 .left p {
@@ -99,6 +99,26 @@ h2 {
 
 h2 + p {
   margin-top: 0;
+}
+
+.unstyled-link:hover {
+  text-decoration: underline;
+}
+
+.bottom {
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+  width: 200px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: black;
+  background: #fbfbfb;
+}
+
+.unstyled-link {
+  all: unset;
+  cursor: pointer;
 }
 
 .unstyled-link:hover {

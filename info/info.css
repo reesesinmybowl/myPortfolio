@@ -5,7 +5,7 @@ html {
 
 body {
   margin: 0;
-  background: #f0f0f0;
+  background: #fbfbfb;
   font-family: 'Inter', sans-serif;
   font-size: 15px;
   line-height: 1.4;
@@ -29,7 +29,7 @@ body {
   left: 40px;
   width: 200px;
   z-index: 1000;
-  background: #f0f0f0;
+  background: #fbfbfb;
 }
 
 .left p {
@@ -72,5 +72,5 @@ h2 + p {
   font-size: 0.9rem;
   line-height: 1.4;
   color: black;
-  background: #f0f0f0;
+  background: #fbfbfb;
 }
