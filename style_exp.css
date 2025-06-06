@@ -49,6 +49,7 @@ body {
   background: none;
 }
 
+/* Disable interaction with media */
 .card img,
 .card video {
   width: 100%;
@@ -56,6 +57,7 @@ body {
   display: block;
   object-fit: cover;
   border: none;
+  pointer-events: none;
 }
 
 .card.wide {
@@ -111,7 +113,6 @@ body {
 .corner-text.light {
   color: white;
 }
-
 
 /* Responsive tweaks */
 @media (max-width: 1024px) {
