@@ -46,13 +46,21 @@ body {
 /* RIGHT COLUMN */
 .right {
   margin-left: 300px;
-  max-width: 600px;
+  max-width: 1200px;
+}
+
+.right p{
+  padding-top: 0;
+  font-size: 45px;
+  line-height: 1.2;
+  margin-top: 8px;
+  letter-spacing: -2px
 }
 
 /* HEADINGS */
 h2 {
-  font-size: 15px;
-  margin: 40px 0 0 0;
+  font-size: 45px;
+  margin: 120px 0 0 0;
   font-weight: normal;
 }
 

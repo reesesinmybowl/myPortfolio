@@ -41,11 +41,6 @@ body {
   gap: 15px;
 }
 
-/* TEMPORARY: Disable all project links */
-.experimental-grid .card {
-  pointer-events: none;
-}
-
 .card {
   break-inside: avoid;
   display: block;
@@ -63,12 +58,6 @@ body {
   border: none;
 }
 
-.card.video {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Span two columns */
 .card.wide {
   grid-column: span 2;
 }
@@ -93,6 +82,36 @@ body {
 .card.aspect-4-5 img {
   aspect-ratio: 4 / 5;
 }
+
+/* Wrapper for positioning corner text */
+.media-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Corner label */
+.corner-text {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #111;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.card:hover .corner-text {
+  opacity: 1;
+}
+
+/* White text for dark backgrounds */
+.corner-text.light {
+  color: white;
+}
+
 
 /* Responsive tweaks */
 @media (max-width: 1024px) {
@@ -125,13 +144,4 @@ body {
   line-height: 1.4;
   color: black;
   background: #fbfbfb;
-}
-
-.unstyled-link {
-  all: unset;
-  cursor: pointer;
-}
-
-.unstyled-link:hover {
-  text-decoration: underline;
 }
