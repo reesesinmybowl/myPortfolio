@@ -59,15 +59,15 @@ body {
   max-width: 1400px;
   width: calc(100vw - 360px);
   position: relative;
-  padding-top: 24px;
+  padding-top: 250px;
   padding-right: 24px;
   padding-left: 24px;
   padding-bottom: 80px; /* room for bottom nav */
 }
 
 .right p {
-  font-size: 45px;
-  line-height: 1.15;
+  font-size: 60px;
+  line-height: 1;
   margin-top: 4px;
   letter-spacing: -2px;
   position: relative;
