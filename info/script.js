@@ -1,13 +1,7 @@
-// === BLOB CURSOR SETUP ===
-const blob = document.createElement('div');
-blob.classList.add('blob-cursor');
-document.body.appendChild(blob);
-
-// === TARGET TEXT ===
 const right = document.querySelector('.right');
 const paragraphs = document.querySelectorAll('.right p');
 
-// Wrap each word and each letter inside <span>
+// Wrap each word and each letter inside it
 paragraphs.forEach(p => {
   const wrapped = p.innerText.split(' ').map(word => {
     const letters = [...word].map(letter => `<span class="char">${letter}</span>`).join('');
@@ -18,7 +12,7 @@ paragraphs.forEach(p => {
 
 const letters = document.querySelectorAll('.char');
 
-// === INTERACTION LOGIC ===
+// Hover effect on mousemove
 document.addEventListener('mousemove', (e) => {
   const rect = right.getBoundingClientRect();
   const withinRight =
@@ -28,10 +22,6 @@ document.addEventListener('mousemove', (e) => {
     e.clientY <= rect.bottom;
 
   if (withinRight) {
-    blob.style.opacity = 1;
-    blob.style.top = `${e.clientY}px`;
-    blob.style.left = `${e.clientX}px`;
-
     letters.forEach(letter => {
       const r = letter.getBoundingClientRect();
       const dx = r.left + r.width / 2 - e.clientX;
@@ -41,14 +31,13 @@ document.addEventListener('mousemove', (e) => {
       const maxDist = 150;
       const proximity = Math.max(0, (maxDist - dist) / maxDist);
 
-      const scale = 1 + proximity * 1.0;
-      const blur = proximity * 2.0;
+      const scale = 1 + proximity * 0.2;
+      const blur = proximity * 1.5;
 
       letter.style.transform = `scale(${scale})`;
       letter.style.filter = `blur(${blur}px)`;
     });
   } else {
-    blob.style.opacity = 0;
     letters.forEach(letter => {
       letter.style.transform = 'scale(1)';
       letter.style.filter = 'blur(0)';
