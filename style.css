@@ -7,18 +7,17 @@ body {
   margin: 0;
   background: #fbfbfb;
   font-size: 15px;
-
   font-family: 'Inter', sans-serif;
   display: block;
 }
 
-/* PAGE LAYOUT: left + grid aligned */
+/* PAGE LAYOUT */
 .page {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 24px;
-  gap: 60px;
+  padding: 0;
+  gap: 0;
   width: 100%;
   box-sizing: border-box;
 }
@@ -31,7 +30,9 @@ body {
   width: 200px;
   line-height: 1.4;
   z-index: 1000;
-  background: #fbfbfb;
+  background: transparent;
+  mix-blend-mode: difference;
+  color: white;
 }
 
 .left p {
@@ -39,53 +40,60 @@ body {
   text-align: left;
 }
 
-/* Unstyled link used in menu */
+.name {
+  font-weight: 900;
+  font-size: 1.1em; /* optional: makes it pop */
+  letter-spacing: -0.02em; /* optional: tightens it up */
+}
+
+.left p{
+  font-weight: 0;
+}
+
 .unstyled-link {
   all: unset;
   cursor: pointer;
+  font-weight: 400; /* default weight */
+  transition: font-weight 0.2s ease;
+}
+
+.unstyled-link:hover {
+  font-weight: 700; /* or 800/900 for extra thickness */
 }
 
 /* GRID */
 .grid {
-  margin-left: 300px;
+  margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  max-width: none;
-  width: calc(100vw - 320px);
-  justify-content: end;
+  grid-template-columns: 1fr;
+  gap: 0;
+  width: 100vw;
+  background: transparent;
   box-sizing: border-box;
 }
 
-/* CARD STYLE */
+/* CARD STYLE – full bleed */
 .card {
   position: relative;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
+  width: 100vw;
+  height: auto;
   display: block;
   background: #ccc;
+  aspect-ratio: unset;
 }
 
 .card img,
 .card video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100vw;
+  height: auto;
   display: block;
+  object-fit: cover;
+  position: relative;
 }
 
-/* HOVER VIDEO */
+/* Videos are always visible */
 .card video {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.card.ekko:hover video,
-.card.motel:hover video {
   opacity: 1;
   pointer-events: auto;
 }
@@ -101,10 +109,6 @@ h2 + p {
   margin-top: 0;
 }
 
-.unstyled-link:hover {
-  text-decoration: underline;
-}
-
 .bottom {
   position: fixed;
   bottom: 40px;
@@ -112,15 +116,7 @@ h2 + p {
   width: 200px;
   font-size: 0.9rem;
   line-height: 1.4;
-  color: black;
-  background: #fbfbfb;
-}
-
-.unstyled-link {
-  all: unset;
-  cursor: pointer;
-}
-
-.unstyled-link:hover {
-  text-decoration: underline;
+  color: white;
+  background: transparent;
+  mix-blend-mode: difference;
 }

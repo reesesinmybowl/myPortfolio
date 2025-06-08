@@ -10,6 +10,7 @@ body {
   color: #111;
 }
 
+/* LEFT SIDEBAR - MATCHES HOMEPAGE */
 .left {
   position: fixed;
   top: 40px;
@@ -17,22 +18,30 @@ body {
   width: 200px;
   line-height: 1.4;
   z-index: 1000;
-  background: #fbfbfb;
+  background: transparent;
+  mix-blend-mode: difference;
+  color: white;
 }
 
 .left p {
   margin: 0 0 24px 0;
+  text-align: left;
+  font-weight: 0;
 }
 
+/* UNSTYLED LINK */
 .unstyled-link {
   all: unset;
   cursor: pointer;
+  font-variation-settings: 'wght' 400;
+  transition: font-variation-settings 0.25s ease;
 }
 
 .unstyled-link:hover {
-  text-decoration: underline;
+  font-variation-settings: 'wght' 700;
 }
 
+/* GRID */
 .experimental-grid {
   margin-left: 300px;
   padding: 24px;
@@ -85,14 +94,13 @@ body {
   aspect-ratio: 4 / 5;
 }
 
-/* Wrapper for positioning corner text */
+/* Corner label */
 .media-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-/* Corner label */
 .corner-text {
   position: absolute;
   top: 8px;
@@ -109,7 +117,6 @@ body {
   opacity: 1;
 }
 
-/* White text for dark backgrounds */
 .corner-text.light {
   color: white;
 }
@@ -127,6 +134,8 @@ body {
     position: static;
     width: auto;
     padding: 20px;
+    color: black;
+    mix-blend-mode: normal;
   }
 
   .experimental-grid {
@@ -143,6 +152,7 @@ body {
   width: 200px;
   font-size: 0.9rem;
   line-height: 1.4;
-  color: black;
-  background: #fbfbfb;
+  color: white;
+  background: transparent;
+  mix-blend-mode: difference;
 }

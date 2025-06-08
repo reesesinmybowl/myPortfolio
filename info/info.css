@@ -17,8 +17,8 @@ body {
 .page {
   display: flex;
   align-items: flex-start;
-  padding: 24px;
-  gap: 60px;
+  padding: 0;
+  gap: 0;
   box-sizing: border-box;
 }
 
@@ -28,50 +28,83 @@ body {
   top: 40px;
   left: 40px;
   width: 200px;
+  line-height: 1.4;
   z-index: 1000;
-  background: #fbfbfb;
+  background: transparent;
+  mix-blend-mode: difference;
+  color: white;
 }
 
 .left p {
   margin: 0 0 24px 0;
   text-align: left;
+  font-weight: 0;
 }
 
 /* UNSTYLED LINK */
 .unstyled-link {
   all: unset;
   cursor: pointer;
-}
-
-/* RIGHT COLUMN */
-.right {
-  margin-left: 300px;
-  max-width: 1200px;
-}
-
-.right p{
-  padding-top: 0;
-  font-size: 45px;
-  line-height: 1.2;
-  margin-top: 8px;
-  letter-spacing: -2px
-}
-
-/* HEADINGS */
-h2 {
-  font-size: 45px;
-  margin: 120px 0 0 0;
-  font-weight: normal;
-}
-
-h2 + p {
-  margin-top: 0;
+  font-variation-settings: 'wght' 400;
+  transition: font-variation-settings 0.25s ease;
 }
 
 .unstyled-link:hover {
-  text-decoration: underline;
+  font-variation-settings: 'wght' 700;
 }
 
+/* RIGHT SECTION */
+.right {
+  margin-left: 300px;
+  max-width: 1400px;
+  width: calc(100vw - 360px);
+  position: relative;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-left: 24px;
+  padding-bottom: 80px; /* room for bottom nav */
+}
+
+.right p {
+  font-size: 45px;
+  line-height: 1.15;
+  margin-top: 4px;
+  letter-spacing: -2px;
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  word-break: normal;
+}
+
+/* WORD + CHARACTER SPANS */
+.word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.char {
+  display: inline-block;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  will-change: transform, filter;
+  transform-origin: center;
+}
+
+/* BLOB CURSOR */
+.blob-cursor {
+  position: fixed;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: white;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* BOTTOM INFO */
 .bottom {
   position: fixed;
   bottom: 40px;
@@ -79,6 +112,7 @@ h2 + p {
   width: 200px;
   font-size: 0.9rem;
   line-height: 1.4;
-  color: black;
-  background: #fbfbfb;
+  color: white;
+  background: transparent;
+  mix-blend-mode: difference;
 }
