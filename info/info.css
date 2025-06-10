@@ -88,7 +88,7 @@ body {
     content: '|'; 
     display: inline-block;
     color: white; 
-    margin-left: 0; 
+    margin-left: -1.5px; 
     margin-right: 0px; /* Adjusted to reduce space */
     animation: blink-caret 0.75s step-end infinite; 
     vertical-align: top;
@@ -165,7 +165,7 @@ h2 + p {
 
 .right p {
   font-size: 60px;
-  line-height: 1;
+  line-height: 1.05;
   margin-top: 4px;
   letter-spacing: -2px;
   position: relative;
@@ -196,7 +196,7 @@ h2 + p {
   left: 40px;
   width: 200px;
   font-size: 0.9rem;
-  line-height: 1.4;
+  line-height: 1.35;
   color: white;
   background: transparent;
   mix-blend-mode: difference;

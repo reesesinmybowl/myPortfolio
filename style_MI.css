@@ -1,109 +1,92 @@
 /* === RESET & BASE === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 html {
   overflow-y: scroll;
 }
 
 body {
+  background: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: white;
+  display: block; /* <- remove flexbox centering */
+}
+
+/* === HERO VIDEO FULL BLEED === */
+.hero-padded {
+  width: 100vw;
   margin: 0;
   padding: 0;
-  background: #fbfbfb;
-  font-family: 'Inter', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* === UNIFIED HEADER === */
-.menu-bar {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: transparent;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  padding: 20px 30px;
-  box-sizing: border-box;
-}
-
-/* === HEADER TITLE === */
-.site-title {
-  justify-self: center;
-  text-align: center;
-  font-size: 2rem;
-  font-weight: bold;
-  line-height: 1.1;
-  letter-spacing: -0.04em;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
-
-.site-title:hover {
-  text-decoration: none;
-}
-
-/* === HERO VIDEO WITH PADDING (full-width look) === */
-.hero-padded {
-  width: 100%;
-  padding: 0 20px;
-  margin-top: 24px; /* Add this line */
-  box-sizing: border-box;
 }
 
 .hero-padded video {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+  width: 100vw;
+  height: auto;
   display: block;
+  object-fit: cover;
 }
 
-/* === 2-COLUMN VIDEO GRID (full-width with gutter) === */
-.grid-2col-full {
-  width: 100%;
-  padding: 20px;
+.intro-text {
+  max-width: 800px;
+  margin: 20px 0;              /* top & bottom spacing */
+  padding-left: 10px;          /* left-aligned with some breathing room */
+  color: black;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  font-weight: 400;
+  font-family: 'Inter', sans-serif;
+  text-align: left;
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+}
+
+/* === SINGLE VIDEO FULL BLEED === */
+.project-container {
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+.grid-2col-full {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .grid-2col-full video {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  display: block;
-}
-
-/* === STACKED SECTION (optional for later reuse) === */
-.stacked {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 60px;
-}
-
-.stacked img {
-  width: 90%;
-  max-width: 1080px;
-  margin-left: 20px;
-  margin-bottom: 30px;
   height: auto;
-  object-fit: contain;
   display: block;
+  object-fit: cover;
 }
 
-.hero {
-  width: 100%;
-  padding: 0 20px;
-  margin-top: 24px;
-  box-sizing: border-box;
+.video-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
-.hero video {
+.video-bg {
+  position: absolute;
   width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.video-wrapper video {
+  position: relative;
+  width: 60%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  display: block;
+  z-index: 2;
 }

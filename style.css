@@ -1,21 +1,28 @@
-/* RESET & BASE */
-html, body {
-  height: 100%; /* Make html and body take up 100% of the viewport height */
-  margin: 0; /* Ensures no default browser margins */
-  padding: 0; /* Ensures no default browser padding */
+/* UNIVERSAL RESET */
+* {
+  box-sizing: border-box;
+}
+
+/* RESET & BASE (for index.html and info/index.html) */
+html {
+  height: 100%;
+  overflow-y: scroll;
 }
 
 body {
-  display: flex; /* Make the body a flex container */
-  flex-direction: column; /* Stack its direct children vertically */
-  background: #fbfbfb; /* This background will show in any empty space */
-  font-size: 15px; 
+  margin: 0;
+  background: #fbfbfb;
   font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  color: black;
+  display: flex;
+  flex-direction: column;
 }
 
-/* PAGE LAYOUT */
-.page {
-  display: flex; /* Keep this for your internal layout of left and grid */
+/* PAGE LAYOUT - General structure for pages like index.html and info/index.html */
+.page { 
+  display: flex;
   align-items: flex-start;
   justify-content: space-between;
   padding: 0;
@@ -25,34 +32,32 @@ body {
   flex-grow: 1; /* Allows .page to take up all available vertical space */
 }
 
-/* LEFT TEXT COLUMN */
+/* LEFT SIDEBAR - Applies to index.html and info/index.html */
 .left {
   position: fixed;
   top: 40px;
   left: 40px;
-  width: 200px;
-  line-height: 1.4; 
+  width: 200px; /* Kept at 200px as it works for your homepage layout */
+  line-height: 1.4;
   z-index: 1000;
   background: transparent;
-  mix-blend-mode: difference;
-  color: white; 
+  mix-blend-mode: difference; /* REVERTED: Changed back to difference blend mode */
+  color: white; /* REVERTED: Changed back to white color */
 }
 
 .left p {
   margin: 0 0 24px 0;
   text-align: left;
+  font-weight: 400;
 }
 
 .name {
-  font-weight: 900;
+  font-weight: 900; /* Ensures 'Niklas Tsalkos' is always bold */
   font-size: 1.1em;
   letter-spacing: -0.02em;
 }
 
-.left p {
-  font-weight: 400; 
-}
-
+/* UNSTYLED LINK - Global (for index.html and info/index.html) */
 .unstyled-link {
   all: unset;
   cursor: pointer;
@@ -71,6 +76,7 @@ body {
   vertical-align: top; 
   white-space: nowrap; 
   transition: none; 
+  margin-right: -4px;
 }
 
 .animated-word-inner {
@@ -82,27 +88,28 @@ body {
 .animated-word-inner::after {
     content: '|'; 
     display: inline-block;
-    color: white; 
-    margin-left: 0; 
-    margin-right: 5px; 
-    animation: blink-caret 0.75s step-end infinite; 
+    color: white; /* REVERTED: Changed back to white color for blending */
+    margin-left: -1.5px; 
+    margin-right: 0px; 
     vertical-align: top;
+    opacity: 1; /* Explicitly set default opacity to 1 for visibility */
+    animation: blink-caret 0.75s step-end infinite; /* Animation will now start visible and then blink */
 }
 
-/* Hide the cursor while deleting or when no text is present */
+/* Hide cursor when deleting or empty */
 .animated-text.is-deleting .animated-word-inner::after,
 .animated-text.is-empty .animated-word-inner::after {
     opacity: 0;
 }
 
 @keyframes blink-caret {
-  from, to { opacity: 0; }
-  50% { opacity: 1; }
+  from { opacity: 1; } /* Start visible */
+  50% { opacity: 0; }  /* Go to hidden */
+  to { opacity: 1; }   /* Come back to visible */
 }
 /* --- END ANIMATED TEXT STYLES --- */
 
-
-/* GRID */
+/* GRID - Homepage Specific (index.html) */
 .grid {
   margin: 0;
   padding: 0;
@@ -112,10 +119,9 @@ body {
   width: 100vw;
   background: transparent;
   box-sizing: border-box;
-  /* Removed padding-bottom previously added */
 }
 
-/* CARD STYLE – full bleed */
+/* CARD STYLE – full bleed (for homepage) */
 .card {
   position: relative;
   width: 100vw;
@@ -124,7 +130,6 @@ body {
   background: #ccc;
   aspect-ratio: unset;
 }
-
 .card img,
 .card video {
   width: 100vw;
@@ -132,25 +137,65 @@ body {
   display: block;
   object-fit: cover;
   position: relative;
+  /* Applying fade transition to both images and videos here for consistency with experimental page */
+  opacity: 1; /* Default state: fully opaque. JS will adjust opacity for animating elements. */
+  transition: opacity 0.5s ease-out; /* Only transition opacity for the fade effect */
 }
-
-/* Videos are always visible */
+/* Video specific styles for animation on homepage, assuming it's controlled by JS */
 .card video {
-  opacity: 1;
   pointer-events: auto;
 }
 
-/* TEXT UTILITIES */
+/* TEXT UTILITIES (for homepage, h2, p) */
 h2 {
   margin: 40px 0 0 0;
   font-size: 1rem;
   font-weight: normal;
 }
-
 h2 + p {
   margin-top: 0;
 }
 
+
+/* RIGHT SECTION - Specific to info/index.html */
+.right {
+  margin-left: 300px;
+  max-width: 1400px;
+  width: calc(100vw - 360px);
+  position: relative;
+  padding-top: 250px;
+  padding-right: 24px;
+  padding-left: 24px;
+  padding-bottom: 80px;
+}
+
+.right p {
+  font-size: 60px;
+  line-height: 1;
+  margin-top: 4px;
+  letter-spacing: -2px;
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  word-break: normal;
+}
+
+/* WORD + CHARACTER SPANS - Specific to info/index.html */
+.word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.char {
+  display: inline-block;
+  /* REVERTED: Transition for transform and filter only */
+  transition: transform 0.2s ease, filter 0.2s ease;
+  will-change: transform, filter;
+  transform-origin: center;
+}
+
+
+/* BOTTOM FIXED ELEMENT - Global */
 .bottom {
   position: fixed;
   bottom: 40px;
@@ -160,5 +205,48 @@ h2 + p {
   line-height: 1.4;
   color: white;
   background: transparent;
-  mix-blend-mode: difference; /* Left this as it was after diagnostic */
+  mix-blend-mode: difference;
+}
+
+/* IMPORTANT: Styles for the gap between bottom p elements */
+.bottom p {
+  margin: 0; /* Removes default browser top/bottom margins from all p tags in .bottom */
+}
+
+.bottom p + p { /* Targets any <p> element that immediately follows another <p> element within .bottom */
+  margin-top: 30px; /* Adjust this value (e.g., 5px for smaller, 20px for larger) */
+}
+
+/* Responsive tweaks for index.html & info/index.html */
+@media (max-width: 1024px) {
+  /* Right section (info page) */
+  .right {
+    margin-left: 220px;
+    padding-top: 150px;
+  }
+  .right p {
+    font-size: 45px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Left sidebar on mobile */
+  .left {
+    position: static;
+    width: auto;
+    padding: 20px;
+    color: black;
+    mix-blend-mode: normal;
+  }
+
+  /* Right section (info page) on mobile */
+  .right {
+    margin-left: 0;
+    padding: 15px;
+    padding-top: 80px;
+  }
+  .right p {
+    font-size: 30px;
+    letter-spacing: -1px;
+  }
 }

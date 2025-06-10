@@ -24,12 +24,12 @@ body {
   position: fixed;
   top: 40px;
   left: 40px;
-  width: 200px;
+  width: 280px; /* FURTHER INCREASED WIDTH to ensure text and cursor fit on one line */
   line-height: 1.4;
   z-index: 1000;
   background: transparent;
-  mix-blend-mode: difference;
-  color: white;
+  mix-blend-mode: normal; /* MODIFIED: Set to normal to ensure visibility on light background */
+  color: #111; /* MODIFIED: Set to a dark color for visibility on light background */
 }
 
 .left p {
@@ -39,21 +39,22 @@ body {
 }
 
 .name {
-  font-weight: 900;
+  font-weight: 900; /* Ensures 'Niklas Tsalkos' is always bold */
   font-size: 1.1em;
   letter-spacing: -0.02em;
+  /* Removed font-variation-settings here to avoid conflict with unstyled-link */
 }
 
-/* UNSTYLED LINK (for experimental.html) - Using font-variation-settings as per your "original" */
+/* UNSTYLED LINK (for experimental.html) - NOW USING font-weight to match homepage */
 .unstyled-link {
   all: unset;
   cursor: pointer;
-  font-variation-settings: 'wght' 400;
-  transition: font-variation-settings 0.25s ease;
+  font-weight: 400; /* MODIFIED: Using font-weight instead of font-variation-settings */
+  transition: font-weight 0.25s ease; /* MODIFIED: Transitioning font-weight */
 }
 
 .unstyled-link:hover {
-  font-variation-settings: 'wght' 700;
+  font-weight: 700; /* MODIFIED: Using font-weight instead of font-variation-settings */
 }
 
 /* --- ANIMATED TEXT STYLES (JavaScript Controlled Typewriter) --- */
@@ -65,6 +66,8 @@ body {
   transition: width 0.1s ease-out; /* Smooth width transition */
   min-width: 5px; /* Ensures it doesn't collapse entirely */
   min-height: 1em; /* Ensures it doesn't collapse entirely */
+  white-space: nowrap; /* Prevents text from wrapping within this element */
+  margin-right: -4px;
 }
 
 .animated-word-inner {
@@ -74,13 +77,14 @@ body {
 
 /* Typing Cursor */
 .animated-word-inner::after {
-    content: '|'; 
+    content: '|';
     display: inline-block;
-    color: white; /* Changed to white for consistent blending */
-    margin-left: 0; 
-    margin-right: 0px; 
-    animation: blink-caret 0.75s step-end infinite; 
+    color: #111; /* Set to dark color for visibility on light background */
+    margin-left: -1.5px; 
+    margin-right: 0px; /* MODIFIED: Set to 0px to match homepage spacing */
     vertical-align: top;
+    opacity: 1; /* Explicitly set default opacity to 1 for visibility */
+    animation: blink-caret 0.75s step-end infinite;
 }
 
 /* Hide cursor when deleting or empty */
@@ -90,8 +94,9 @@ body {
 }
 
 @keyframes blink-caret {
-  from, to { opacity: 0; }
-  50% { opacity: 1; }
+  from { opacity: 1; } /* Start visible */
+  50% { opacity: 0; }  /* Go to hidden */
+  to { opacity: 1; }   /* Come back to visible */
 }
 /* --- END ANIMATED TEXT STYLES --- */
 
@@ -119,7 +124,7 @@ body {
   grid-column: span 1;
 }
 
-/* Disable interaction with media */
+/* Apply transitions and default opacity to both images and videos within cards */
 .card img,
 .card video {
   width: 100%;
@@ -128,7 +133,10 @@ body {
   object-fit: cover;
   border: none;
   pointer-events: none;
+  opacity: 1; /* Default state: fully opaque. JS will adjust opacity for animating elements. */
+  transition: opacity 0.5s ease-out; /* Only transition opacity for the fade effect */
 }
+
 
 /* Aspect ratios */
 .card.aspect-16-9 video,
