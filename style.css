@@ -1,25 +1,28 @@
 /* RESET & BASE */
-html {
-  overflow-y: scroll;
+html, body {
+  height: 100%; /* Make html and body take up 100% of the viewport height */
+  margin: 0; /* Ensures no default browser margins */
+  padding: 0; /* Ensures no default browser padding */
 }
 
 body {
-  margin: 0;
-  background: #fbfbfb;
-  font-size: 15px;
+  display: flex; /* Make the body a flex container */
+  flex-direction: column; /* Stack its direct children vertically */
+  background: #fbfbfb; /* This background will show in any empty space */
+  font-size: 15px; 
   font-family: 'Inter', sans-serif;
-  display: block;
 }
 
 /* PAGE LAYOUT */
 .page {
-  display: flex;
+  display: flex; /* Keep this for your internal layout of left and grid */
   align-items: flex-start;
   justify-content: space-between;
   padding: 0;
   gap: 0;
   width: 100%;
   box-sizing: border-box;
+  flex-grow: 1; /* Allows .page to take up all available vertical space */
 }
 
 /* LEFT TEXT COLUMN */
@@ -28,11 +31,11 @@ body {
   top: 40px;
   left: 40px;
   width: 200px;
-  line-height: 1.4;
+  line-height: 1.4; 
   z-index: 1000;
   background: transparent;
   mix-blend-mode: difference;
-  color: white;
+  color: white; 
 }
 
 .left p {
@@ -42,24 +45,62 @@ body {
 
 .name {
   font-weight: 900;
-  font-size: 1.1em; /* optional: makes it pop */
-  letter-spacing: -0.02em; /* optional: tightens it up */
+  font-size: 1.1em;
+  letter-spacing: -0.02em;
 }
 
-.left p{
-  font-weight: 0;
+.left p {
+  font-weight: 400; 
 }
 
 .unstyled-link {
   all: unset;
   cursor: pointer;
-  font-weight: 400; /* default weight */
+  font-weight: 400;
   transition: font-weight 0.2s ease;
 }
 
 .unstyled-link:hover {
-  font-weight: 700; /* or 800/900 for extra thickness */
+  font-weight: 700;
 }
+
+/* --- ANIMATED TEXT STYLES (JavaScript Controlled Typewriter) --- */
+.animated-text {
+  position: relative; 
+  display: inline-block; 
+  vertical-align: top; 
+  white-space: nowrap; 
+  transition: none; 
+}
+
+.animated-word-inner {
+  display: inline-block; 
+  transition: none; 
+}
+
+/* Typing Cursor - Positioned after the typed word */
+.animated-word-inner::after {
+    content: '|'; 
+    display: inline-block;
+    color: white; 
+    margin-left: 0; 
+    margin-right: 5px; 
+    animation: blink-caret 0.75s step-end infinite; 
+    vertical-align: top;
+}
+
+/* Hide the cursor while deleting or when no text is present */
+.animated-text.is-deleting .animated-word-inner::after,
+.animated-text.is-empty .animated-word-inner::after {
+    opacity: 0;
+}
+
+@keyframes blink-caret {
+  from, to { opacity: 0; }
+  50% { opacity: 1; }
+}
+/* --- END ANIMATED TEXT STYLES --- */
+
 
 /* GRID */
 .grid {
@@ -71,6 +112,7 @@ body {
   width: 100vw;
   background: transparent;
   box-sizing: border-box;
+  /* Removed padding-bottom previously added */
 }
 
 /* CARD STYLE – full bleed */
@@ -118,5 +160,5 @@ h2 + p {
   line-height: 1.4;
   color: white;
   background: transparent;
-  mix-blend-mode: difference;
+  mix-blend-mode: difference; /* Left this as it was after diagnostic */
 }

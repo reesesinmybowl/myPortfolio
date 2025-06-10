@@ -1,5 +1,12 @@
+/* UNIVERSAL RESET */
 * {
   box-sizing: border-box;
+}
+
+/* BASE STYLES for experimental.html */
+html {
+  height: 100%; /* Ensures body can flex vertically */
+  overflow-y: scroll;
 }
 
 body {
@@ -8,9 +15,11 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 15px;
   color: #111;
+  display: flex; /* Crucial for vertical layout/no white gap */
+  flex-direction: column; /* Crucial for vertical layout/no white gap */
 }
 
-/* LEFT SIDEBAR - MATCHES HOMEPAGE */
+/* LEFT SIDEBAR - MATCHES HOMEPAGE (for experimental.html) */
 .left {
   position: fixed;
   top: 40px;
@@ -26,10 +35,16 @@ body {
 .left p {
   margin: 0 0 24px 0;
   text-align: left;
-  font-weight: 0;
+  font-weight: 400;
 }
 
-/* UNSTYLED LINK */
+.name {
+  font-weight: 900;
+  font-size: 1.1em;
+  letter-spacing: -0.02em;
+}
+
+/* UNSTYLED LINK (for experimental.html) - Using font-variation-settings as per your "original" */
 .unstyled-link {
   all: unset;
   cursor: pointer;
@@ -41,13 +56,54 @@ body {
   font-variation-settings: 'wght' 700;
 }
 
-/* GRID */
+/* --- ANIMATED TEXT STYLES (JavaScript Controlled Typewriter) --- */
+.animated-text {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  overflow: hidden; /* Crucial for controlling text visibility */
+  transition: width 0.1s ease-out; /* Smooth width transition */
+  min-width: 5px; /* Ensures it doesn't collapse entirely */
+  min-height: 1em; /* Ensures it doesn't collapse entirely */
+}
+
+.animated-word-inner {
+  display: inline-block;
+  transition: none; /* No transition on inner content */
+}
+
+/* Typing Cursor */
+.animated-word-inner::after {
+    content: '|'; 
+    display: inline-block;
+    color: white; /* Changed to white for consistent blending */
+    margin-left: 0; 
+    margin-right: 0px; 
+    animation: blink-caret 0.75s step-end infinite; 
+    vertical-align: top;
+}
+
+/* Hide cursor when deleting or empty */
+.animated-text.is-deleting .animated-word-inner::after,
+.animated-text.is-empty .animated-word-inner::after {
+    opacity: 0;
+}
+
+@keyframes blink-caret {
+  from, to { opacity: 0; }
+  50% { opacity: 1; }
+}
+/* --- END ANIMATED TEXT STYLES --- */
+
+
+/* EXPERIMENTAL GRID (for experimental.html) - Your original rules */
 .experimental-grid {
   margin-left: 300px;
   padding: 24px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 15px;
+  flex-grow: 1; /* Allows grid to take up available vertical space */
 }
 
 .card {
@@ -56,6 +112,11 @@ body {
   position: relative;
   width: 100%;
   background: none;
+  grid-column: span 2;
+}
+
+.card.aspect-1-1 {
+  grid-column: span 1;
 }
 
 /* Disable interaction with media */
@@ -67,10 +128,6 @@ body {
   object-fit: cover;
   border: none;
   pointer-events: none;
-}
-
-.card.wide {
-  grid-column: span 2;
 }
 
 /* Aspect ratios */
@@ -94,6 +151,10 @@ body {
   aspect-ratio: 4 / 5;
 }
 
+.card.aspect-1-1.large {
+  grid-column: span 2;
+}
+
 /* Corner label */
 .media-wrapper {
   position: relative;
@@ -109,23 +170,45 @@ body {
   font-weight: 500;
   color: #111;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.card:hover .corner-text {
-  opacity: 1;
+  opacity: 0; /* Keeps the text hidden permanently as per your original code */
 }
 
 .corner-text.light {
   color: white;
 }
 
-/* Responsive tweaks */
+/* BOTTOM FIXED ELEMENT (for experimental.html) */
+.bottom {
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+  width: 200px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: white;
+  background: transparent;
+  mix-blend-mode: difference;
+}
+
+/* IMPORTANT: Styles for the gap between bottom p elements */
+.bottom p {
+  margin: 0; /* Removes default browser top/bottom margins from all p tags in .bottom */
+}
+
+.bottom p + p { /* Targets any <p> element that immediately follows another <p> element within .bottom */
+  margin-top: 8px; /* Adjust this value (e.g., 5px for smaller, 20px for larger) */
+}
+
+
+/* Responsive tweaks (for experimental.html) */
 @media (max-width: 1024px) {
   .experimental-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     margin-left: 220px;
+  }
+
+  .card {
+    grid-column: span 1 !important;
   }
 }
 
@@ -143,16 +226,8 @@ body {
     padding: 15px;
     grid-template-columns: 1fr;
   }
-}
 
-.bottom {
-  position: fixed;
-  bottom: 40px;
-  left: 40px;
-  width: 200px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: white;
-  background: transparent;
-  mix-blend-mode: difference;
+  .card {
+    grid-column: span 1 !important;
+  }
 }

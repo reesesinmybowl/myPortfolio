@@ -115,14 +115,49 @@ body {
   
 }
 
+/* This rule applies to all images within .stacked that aren't more specifically styled */
 .stacked img {
-  width: 90%;
-  max-width: 1080px;
-  margin-left: 20px;
-  margin-bottom: 20px;  /* EXACTLY same as .hero bottom margin */
+  width: 90%; /* This was the original responsive width */
+  max-width: 1080px; /* This was the original max-width */
   height: auto;
   object-fit: contain;
   display: block;
+}
+
+/* New styles for mockup image and text alignment */
+.mockup-with-text {
+  display: flex; /* Use flexbox to align image and text side-by-side */
+  align-items: flex-start; /* Align items to the top */
+  width: 100%; /* Take full width of its parent */
+  max-width: 1080px; /* Limit the overall width of this section */
+  margin-left: 20px; /* Keep consistent left alignment */
+  margin-bottom: 20px; /* Add bottom margin to separate from the video below */
+  gap: 40px; /* Space between mockup image and text */
+}
+
+.mockup-with-text img {
+  /* THIS IS THE CRUCIAL PART: */
+  /* Remove any explicit width/max-width that would override its natural size or the .stacked img rule */
+  /* We rely on its inherent size or the .stacked img rule to determine its width. */
+  
+  flex-shrink: 0; /* Prevents the image from shrinking */
+  
+  /* Reset margins specific to this context to prevent conflicts */
+  margin-left: 0; 
+  margin-bottom: 0;
+}
+
+
+.mockup-description {
+  flex-grow: 1; /* Allow the text to grow and take up available space */
+  /* We still need a min-width on the text to prevent super narrow columns,
+     but it won't affect the image's size. */
+  min-width: 650px; /* Adjust this value as needed for comfortable line length */
+  
+  padding-right: 20px; /* Add some padding to the right for readability */
+  box-sizing: border-box;
+  font-size: 1.1em; /* Adjust font size */
+  line-height: 1.3; /* Improve readability */
 }
 
 .stacked video {

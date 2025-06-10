@@ -5,34 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>About – Niklas Tsalkos</title>
 
-  <!-- Redirect mobile users -->
   <script>
+    // This script should be placed inside the head tag as it's a redirect.
+    // Ensure 'wip.html' path is correct relative to this page (info/index.html)
     if (window.innerWidth <= 768) {
-      window.location.href = "../wip.html";
+      window.location.href = "../wip.html"; 
     }
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="info.css">
+  <link rel="stylesheet" href="info.css"> 
 </head>
 <body>
 
   <div class="page">
-    <div class="left">
-<p><span class="name">Niklas Tsalkos</span><br>Interactive Designer</p>
-      <a href="../experimental.html" class="unstyled-link">Experimental</a><br>
-      <p><a href="/" class="unstyled-link">Projects</a></p>
-
-    </div>
+  <div class="left">
+    <p>
+      <a href="/" class="unstyled-link"><span class="name">Niklas Tsalkos</span></a><br>
+      <span class="animated-text">
+        <span class="animated-word-inner"></span></span> Designer</p>
+    <p>
+      <a href="/" class="unstyled-link">Projects</a><br>
+      <a href="/info/" class="unstyled-link">About</a>
+    </p>
+  </div>
 
     <div class="right">
-      <div class="blob-cursor"></div>
-
-      <p>
+      <div class="blob-cursor"></div> <p>
         Hi there! My name is Niklas! I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, and motion design and I'm currently studying at DMJX. Previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
-      </p>
-
-      <p>
       </p>
     </div>
   </div>
@@ -42,9 +42,8 @@
       <a href="mailto:nikl2229us@gmail.com" class="unstyled-link">Contact</a><br>
       <a href="https://instagram.com/niklastsalkos" target="_blank" class="unstyled-link">Instagram</a><br>
       <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
-           <p>©2025</p>
     </p>
-  </div>
+    <p>©2025</p> </div>
 
   <script src="script.js"></script>
 </body>

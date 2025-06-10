@@ -1,5 +1,11 @@
-/* RESET & BASE */
+/* UNIVERSAL RESET */
+* {
+  box-sizing: border-box;
+}
+
+/* RESET & BASE (for index.html and info/index.html) */
 html {
+  height: 100%;
   overflow-y: scroll;
 }
 
@@ -10,19 +16,23 @@ body {
   font-size: 15px;
   line-height: 1.4;
   color: black;
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
-/* LAYOUT */
-.page {
+/* PAGE LAYOUT - General structure for pages like index.html and info/index.html */
+.page { 
   display: flex;
   align-items: flex-start;
+  justify-content: space-between;
   padding: 0;
   gap: 0;
+  width: 100%;
   box-sizing: border-box;
+  flex-grow: 1; /* Allows .page to take up all available vertical space */
 }
 
-/* LEFT SIDEBAR */
+/* LEFT SIDEBAR - Applies to index.html and info/index.html */
 .left {
   position: fixed;
   top: 40px;
@@ -32,12 +42,13 @@ body {
   z-index: 1000;
   background: transparent;
   mix-blend-mode: difference;
-  color: white;
+  color: white; 
 }
 
 .left p {
   margin: 0 0 24px 0;
   text-align: left;
+  font-weight: 400;
 }
 
 .name {
@@ -46,6 +57,7 @@ body {
   letter-spacing: -0.02em;
 }
 
+/* UNSTYLED LINK - Global (for index.html and info/index.html) */
 .unstyled-link {
   all: unset;
   cursor: pointer;
@@ -57,7 +69,89 @@ body {
   font-weight: 700;
 }
 
-/* RIGHT SECTION */
+/* --- ANIMATED TEXT STYLES (JavaScript Controlled Typewriter) --- */
+.animated-text {
+  position: relative; 
+  display: inline-block; 
+  vertical-align: top; 
+  white-space: nowrap; 
+  transition: none; 
+}
+
+.animated-word-inner {
+  display: inline-block; 
+  transition: none; 
+}
+
+/* Typing Cursor */
+.animated-word-inner::after {
+    content: '|'; 
+    display: inline-block;
+    color: white; 
+    margin-left: 0; 
+    margin-right: 0px; /* Adjusted to reduce space */
+    animation: blink-caret 0.75s step-end infinite; 
+    vertical-align: top;
+}
+
+/* Hide cursor when deleting or empty */
+.animated-text.is-deleting .animated-word-inner::after,
+.animated-text.is-empty .animated-word-inner::after {
+    opacity: 0;
+}
+
+@keyframes blink-caret {
+  from, to { opacity: 0; }
+  50% { opacity: 1; }
+}
+/* --- END ANIMATED TEXT STYLES --- */
+
+/* GRID - Homepage Specific (index.html) */
+.grid {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  width: 100vw;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+/* CARD STYLE – full bleed (for homepage) */
+.card {
+  position: relative;
+  width: 100vw;
+  height: auto;
+  display: block;
+  background: #ccc;
+  aspect-ratio: unset;
+}
+.card img,
+.card video {
+  width: 100vw;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  position: relative;
+}
+.card video {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* TEXT UTILITIES (for homepage, h2, p) */
+h2 {
+  margin: 40px 0 0 0;
+  font-size: 1rem;
+  font-weight: normal;
+}
+h2 + p {
+  margin-top: 0;
+}
+
+
+/* RIGHT SECTION - Specific to info/index.html */
 .right {
   margin-left: 300px;
   max-width: 1400px;
@@ -80,7 +174,7 @@ body {
   word-break: normal;
 }
 
-/* WORD + CHARACTER SPANS */
+/* WORD + CHARACTER SPANS - Specific to info/index.html */
 .word {
   display: inline-block;
   white-space: nowrap;
@@ -88,12 +182,14 @@ body {
 
 .char {
   display: inline-block;
+  /* REVERTED: Transition for transform and filter only */
   transition: transform 0.2s ease, filter 0.2s ease;
   will-change: transform, filter;
   transform-origin: center;
 }
 
-/* BOTTOM INFO */
+
+/* BOTTOM FIXED ELEMENT - Global */
 .bottom {
   position: fixed;
   bottom: 40px;
@@ -104,4 +200,47 @@ body {
   color: white;
   background: transparent;
   mix-blend-mode: difference;
+}
+
+/* IMPORTANT: Styles for the gap between bottom p elements */
+.bottom p {
+  margin: 0; /* Removes default browser top/bottom margins from all p tags in .bottom */
+}
+
+.bottom p + p { /* Targets any <p> element that immediately follows another <p> element within .bottom */
+  margin-top: 30px; /* Adjust this value (e.g., 5px for smaller, 20px for larger) */
+}
+
+/* Responsive tweaks for index.html & info/index.html */
+@media (max-width: 1024px) {
+  /* Right section (info page) */
+  .right {
+    margin-left: 220px;
+    padding-top: 150px;
+  }
+  .right p {
+    font-size: 45px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Left sidebar on mobile */
+  .left {
+    position: static;
+    width: auto;
+    padding: 20px;
+    color: black;
+    mix-blend-mode: normal;
+  }
+
+  /* Right section (info page) on mobile */
+  .right {
+    margin-left: 0;
+    padding: 15px;
+    padding-top: 80px;
+  }
+  .right p {
+    font-size: 30px;
+    letter-spacing: -1px;
+  }
 }
