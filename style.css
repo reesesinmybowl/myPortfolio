@@ -7,6 +7,7 @@
 html {
   height: 100%;
   overflow-y: scroll;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 body {
@@ -18,6 +19,7 @@ body {
   color: black;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* PAGE LAYOUT - General structure for pages like index.html and info/index.html */
@@ -29,7 +31,7 @@ body {
   gap: 0;
   width: 100%;
   box-sizing: border-box;
-  flex-grow: 1; /* Allows .page to take up all available vertical space */
+  flex-grow: 1;
 }
 
 /* LEFT SIDEBAR - Applies to index.html and info/index.html */
@@ -37,12 +39,12 @@ body {
   position: fixed;
   top: 40px;
   left: 40px;
-  width: 200px; /* Kept at 200px as it works for your homepage layout */
+  width: 200px;
   line-height: 1.4;
   z-index: 1000;
   background: transparent;
-  mix-blend-mode: difference; /* REVERTED: Changed back to difference blend mode */
-  color: white; /* REVERTED: Changed back to white color */
+  mix-blend-mode: difference;
+  color: white;
 }
 
 .left p {
@@ -52,7 +54,7 @@ body {
 }
 
 .name {
-  font-weight: 900; /* Ensures 'Niklas Tsalkos' is always bold */
+  font-weight: 900;
   font-size: 1.1em;
   letter-spacing: -0.02em;
 }
@@ -71,41 +73,39 @@ body {
 
 /* --- ANIMATED TEXT STYLES (JavaScript Controlled Typewriter) --- */
 .animated-text {
-  position: relative; 
-  display: inline-block; 
-  vertical-align: top; 
-  white-space: nowrap; 
-  transition: none; 
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  white-space: nowrap;
+  transition: none;
   margin-right: -4px;
 }
 
 .animated-word-inner {
-  display: inline-block; 
-  transition: none; 
+  display: inline-block;
+  transition: none;
 }
 
-/* Typing Cursor - Positioned after the typed word */
 .animated-word-inner::after {
-    content: '|'; 
-    display: inline-block;
-    color: white; /* REVERTED: Changed back to white color for blending */
-    margin-left: -1.5px; 
-    margin-right: 0px; 
-    vertical-align: top;
-    opacity: 1; /* Explicitly set default opacity to 1 for visibility */
-    animation: blink-caret 0.75s step-end infinite; /* Animation will now start visible and then blink */
+  content: '|';
+  display: inline-block;
+  color: white;
+  margin-left: -1.5px;
+  margin-right: 0px;
+  vertical-align: top;
+  opacity: 1;
+  animation: blink-caret 0.75s step-end infinite;
 }
 
-/* Hide cursor when deleting or empty */
 .animated-text.is-deleting .animated-word-inner::after,
 .animated-text.is-empty .animated-word-inner::after {
-    opacity: 0;
+  opacity: 0;
 }
 
 @keyframes blink-caret {
-  from { opacity: 1; } /* Start visible */
-  50% { opacity: 0; }  /* Go to hidden */
-  to { opacity: 1; }   /* Come back to visible */
+  from { opacity: 1; }
+  50% { opacity: 0; }
+  to { opacity: 1; }
 }
 /* --- END ANIMATED TEXT STYLES --- */
 
@@ -116,7 +116,7 @@ body {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
-  width: 100vw;
+  width: 100%;
   background: transparent;
   box-sizing: border-box;
 }
@@ -124,24 +124,24 @@ body {
 /* CARD STYLE – full bleed (for homepage) */
 .card {
   position: relative;
-  width: 100vw;
+  width: 100%;
   height: auto;
   display: block;
   background: #ccc;
   aspect-ratio: unset;
 }
+
 .card img,
 .card video {
-  width: 100vw;
+  width: 100%;
   height: auto;
   display: block;
   object-fit: cover;
   position: relative;
-  /* Applying fade transition to both images and videos here for consistency with experimental page */
-  opacity: 1; /* Default state: fully opaque. JS will adjust opacity for animating elements. */
-  transition: opacity 0.5s ease-out; /* Only transition opacity for the fade effect */
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
 }
-/* Video specific styles for animation on homepage, assuming it's controlled by JS */
+
 .card video {
   pointer-events: auto;
 }
@@ -152,16 +152,17 @@ h2 {
   font-size: 1rem;
   font-weight: normal;
 }
+
 h2 + p {
   margin-top: 0;
 }
 
-
 /* RIGHT SECTION - Specific to info/index.html */
 .right {
   margin-left: 300px;
-  max-width: 1400px;
+  max-width: 100%;
   width: calc(100vw - 360px);
+  box-sizing: border-box;
   position: relative;
   padding-top: 250px;
   padding-right: 24px;
@@ -188,12 +189,10 @@ h2 + p {
 
 .char {
   display: inline-block;
-  /* REVERTED: Transition for transform and filter only */
   transition: transform 0.2s ease, filter 0.2s ease;
   will-change: transform, filter;
   transform-origin: center;
 }
-
 
 /* BOTTOM FIXED ELEMENT - Global */
 .bottom {
@@ -208,29 +207,27 @@ h2 + p {
   mix-blend-mode: difference;
 }
 
-/* IMPORTANT: Styles for the gap between bottom p elements */
 .bottom p {
-  margin: 0; /* Removes default browser top/bottom margins from all p tags in .bottom */
+  margin: 0;
 }
 
-.bottom p + p { /* Targets any <p> element that immediately follows another <p> element within .bottom */
-  margin-top: 30px; /* Adjust this value (e.g., 5px for smaller, 20px for larger) */
+.bottom p + p {
+  margin-top: 30px;
 }
 
 /* Responsive tweaks for index.html & info/index.html */
 @media (max-width: 1024px) {
-  /* Right section (info page) */
   .right {
     margin-left: 220px;
     padding-top: 150px;
   }
+
   .right p {
     font-size: 45px;
   }
 }
 
 @media (max-width: 768px) {
-  /* Left sidebar on mobile */
   .left {
     position: static;
     width: auto;
@@ -239,12 +236,12 @@ h2 + p {
     mix-blend-mode: normal;
   }
 
-  /* Right section (info page) on mobile */
   .right {
     margin-left: 0;
     padding: 15px;
     padding-top: 80px;
   }
+
   .right p {
     font-size: 30px;
     letter-spacing: -1px;

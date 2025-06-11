@@ -7,6 +7,7 @@
 
 html {
   overflow-y: scroll;
+  overflow-x: hidden; /* prevent horizontal scroll */
 }
 
 body {
@@ -15,14 +16,26 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: white;
-  display: block; /* <- remove flexbox centering */
+  display: block;
+  overflow-x: hidden;
 }
 
 /* === HERO VIDEO FULL BLEED === */
 .hero-padded {
   width: 100vw;
+  position: relative;
+  left: calc(-50vw + 50%); /* horizontal centering trick for true full-bleed */
   margin: 0;
   padding: 0;
+}
+
+.hero-padded video{
+  position: relative;
+  width: 65%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  z-index: 2;
+  max-height: 100%;
 }
 
 .hero-padded video {
@@ -32,10 +45,11 @@ body {
   object-fit: cover;
 }
 
+/* === INTRO TEXT === */
 .intro-text {
   max-width: 800px;
-  margin: 20px 0;              /* top & bottom spacing */
-  padding-left: 10px;          /* left-aligned with some breathing room */
+  margin: 20px 0;
+  padding-left: 10px;
   color: black;
   font-size: 1.25rem;
   line-height: 1.2;
@@ -48,8 +62,11 @@ body {
 /* === SINGLE VIDEO FULL BLEED === */
 .project-container {
   width: 100vw;
+  position: relative;
+  left: calc(-50vw + 50%);
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 .grid-2col-full {
@@ -65,10 +82,12 @@ body {
   object-fit: cover;
 }
 
+/* === FULLSCREEN VIDEO WRAPPER === */
 .video-wrapper {
   position: relative;
   width: 100vw;
   height: 100vh;
+  left: calc(-50vw + 50%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -77,6 +96,8 @@ body {
 
 .video-bg {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -85,8 +106,9 @@ body {
 
 .video-wrapper video {
   position: relative;
-  width: 60%;
+  width: 65%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   z-index: 2;
+  max-height: 100%;
 }
