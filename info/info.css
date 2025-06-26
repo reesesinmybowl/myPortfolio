@@ -152,8 +152,7 @@ h2 + p {
 /* RIGHT SECTION */
 .right {
   margin-left: 300px;
-  max-width: 1400px;
-  width: calc(100vw - 360px);
+  max-width: 1450px;
   position: relative;
   padding-top: 250px;
   padding-right: 24px;

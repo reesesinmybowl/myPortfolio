@@ -14,10 +14,6 @@ body {
 
 /* STICKY HEADER */
 .menu-bar {
-  /* position: sticky; <-- REMOVE THIS */
-  /* top: 0;            <-- REMOVE THIS */
-  /* z-index: 999;      <-- REMOVE THIS */
-
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -28,46 +24,6 @@ body {
   padding: 20px 30px;
   box-sizing: border-box;
 }
-
-.back-button {
-  position: absolute;
-  top: 24px;
-  left: 20px;
-  font-family: 'Arial', sans-serif;
-  font-size: 16px;
-  font-weight: bold;
-  text-transform: lowercase;
-  padding: 12px 28px;
-  color: #000;
-  text-decoration: none;
-  background-color: #c0c0c0; /* flat win95 grey */
-  border: 2px solid #808080; /* thick dark frame */
-
-  /* thicker bevel illusion with double insets */
-  box-shadow:
-    inset 4px 4px 0 #ffffff,   /* top-left bright highlight */
-    inset -4px -4px 0 #a0a0a0, /* bottom-right subtle shadow */
-    inset 8px 8px 0 #dcdcdc,   /* inner surface highlight */
-    inset -8px -8px 0 #b0b0b0; /* inner surface shadow */
-
-  user-select: none;
-  cursor: pointer;
-  z-index: 999;
-}
-
-
-.back-button:active {
-  border-top-color: #808080;
-  border-left-color: #808080;
-  border-right-color: #fff;
-  border-bottom-color: #fff;
-  box-shadow:
-    inset 2px 2px 0 #000,
-    inset -2px -2px 0 #dfdfdf;
-}
-
-
-
 /* TITLE */
 .site-title {
   justify-self: center;
@@ -166,4 +122,32 @@ body {
   height: auto;
   object-fit: contain;
   display: block;
+}
+
+.back-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+
+  color: black;
+  background: white;
+  text-decoration: none;
+
+  padding: 8px 14px;
+  border: none;
+  border-radius: 4px;
+
+  mix-blend-mode: difference;
+  transition: background 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+
+.back-button .arrow {
+  position: relative;
+  top: -1.5px; /* nudge the arrow slightly upward */
 }
