@@ -1,18 +1,5 @@
-// === FILTER BUTTONS (Index Page Only) ===
-document.querySelectorAll('.filter-btn').forEach(button => {
-  button.addEventListener('click', () => {
-    const filter = button.dataset.filter;
-    document.querySelectorAll('.card').forEach(card => {
-      if (filter === 'all') {
-        card.style.display = 'block';
-      } else {
-        card.style.display = card.classList.contains(filter) ? 'block' : 'none';
-      }
-    });
-  });
-});
+let padding = 30;
 
-// === TYPEWRITER EFFECT (Left Sidebar) ===
 document.addEventListener('DOMContentLoaded', () => {
   const animatedTextContainer = document.querySelector('.animated-text');
   const animatedWordInner = document.querySelector('.animated-word-inner');
@@ -97,15 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     animateTypewriter();
   }
-});
 
-// === ABOUT PAGE TEXT ANIMATION + BLOB CURSOR (INTENSIFIED EFFECT) ===
-document.addEventListener('DOMContentLoaded', () => {
-  const right = document.querySelector('.right');
   const paragraphs = document.querySelectorAll('.right p');
-
-  if (!right || paragraphs.length === 0) return;
-
   paragraphs.forEach(p => {
     const wrappedContent = p.innerText.split(' ').map(word => {
       const charSpans = [...word].map(char => `<span class="char">${char}</span>`).join('');
@@ -114,71 +94,51 @@ document.addEventListener('DOMContentLoaded', () => {
     p.innerHTML = wrappedContent;
   });
 
-  const allWords = document.querySelectorAll('.right p .word');
   const allChars = document.querySelectorAll('.right p .char');
+  const blob = document.querySelector('.blob-cursor');
 
-  // === BLOB CURSOR ===
-  const blob = document.createElement('div');
-  blob.className = 'blob-cursor';
-  document.body.appendChild(blob);
-
-  const style = document.createElement('style');
-  style.textContent = `
-    .blob-cursor {
-      position: fixed;
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
-      background: white;
-      mix-blend-mode: difference;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }`;
-  document.head.appendChild(style);
-
-  function handleMousemoveDistortion(e) {
+  function handleMousemoveRetraction(e) {
     blob.style.opacity = 1;
     blob.style.left = `${e.clientX}px`;
     blob.style.top = `${e.clientY}px`;
 
+    const blobRadius = 90;
+    const influenceRadius = blobRadius + padding + 40;
+
     allChars.forEach(letter => {
-      const r = letter.getBoundingClientRect();
-      const dx = r.left + r.width / 2 - e.clientX;
-      const dy = r.top + r.height / 2 - e.clientY;
+      const rect = letter.getBoundingClientRect();
+      const dx = rect.left + rect.width / 2 - e.clientX;
+      const dy = rect.top + rect.height / 2 - e.clientY;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      const maxDist = 200;
-      const proximity = Math.max(0, (maxDist - dist) / maxDist);
+      if (dist < influenceRadius) {
+        const angle = Math.atan2(dy, dx);
+        const targetDist = blobRadius + padding;
+        const pushAmount = Math.max(0, targetDist - dist);
 
-      const scale = 1 + proximity * 0.4;
-      const blur = proximity * 2;
+        const offsetX = Math.cos(angle) * pushAmount;
+        const offsetY = Math.sin(angle) * pushAmount;
 
-      const wiggleX = (Math.random() - 0.5) * proximity * 15;
-      const wiggleY = (Math.random() - 0.5) * proximity * 15;
-      const rotate = (Math.random() - 0.5) * proximity * 20;
-
-      letter.style.transform = `
-        translate(${wiggleX}px, ${wiggleY}px)
-        scale(${scale})
-        rotate(${rotate}deg)
-      `;
-      letter.style.filter = `blur(${blur}px)`;
+        letter.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        letter.style.filter = 'none';
+      } else {
+        letter.style.transform = 'translate(0, 0)';
+        letter.style.filter = 'none';
+      }
     });
   }
 
-  document.addEventListener('mousemove', handleMousemoveDistortion);
+  document.addEventListener('mousemove', handleMousemoveRetraction);
 
   document.addEventListener('mouseleave', () => {
     blob.style.opacity = 0;
     allChars.forEach(letter => {
-      letter.style.transform = 'scale(1) translate(0, 0) rotate(0deg)';
-      letter.style.filter = 'blur(0)';
+      letter.style.transform = 'translate(0, 0)';
+      letter.style.filter = 'none';
     });
   });
 
+  const allWords = document.querySelectorAll('.right p .word');
   const introTimeline = gsap.timeline({
     delay: 0.5,
     onComplete: () => {

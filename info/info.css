@@ -3,7 +3,7 @@
   box-sizing: border-box;
 }
 
-/* RESET & BASE (for index.html and info/index.html) */
+/* RESET & BASE */
 html {
   height: 100%;
   overflow-y: scroll;
@@ -20,8 +20,8 @@ body {
   flex-direction: column;
 }
 
-/* PAGE LAYOUT - General structure for pages like index.html and info/index.html */
-.page { 
+/* PAGE LAYOUT */
+.page {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -29,10 +29,10 @@ body {
   gap: 0;
   width: 100%;
   box-sizing: border-box;
-  flex-grow: 1; /* Allows .page to take up all available vertical space */
+  flex-grow: 1;
 }
 
-/* LEFT SIDEBAR - Applies to index.html and info/index.html */
+/* LEFT SIDEBAR */
 .left {
   position: fixed;
   top: 40px;
@@ -42,7 +42,7 @@ body {
   z-index: 1000;
   background: transparent;
   mix-blend-mode: difference;
-  color: white; 
+  color: white;
 }
 
 .left p {
@@ -57,7 +57,7 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* UNSTYLED LINK - Global (for index.html and info/index.html) */
+/* UNSTYLED LINK */
 .unstyled-link {
   all: unset;
   cursor: pointer;
@@ -69,44 +69,41 @@ body {
   font-weight: 700;
 }
 
-/* --- ANIMATED TEXT STYLES (JavaScript Controlled Typewriter) --- */
+/* ANIMATED TEXT STYLES */
 .animated-text {
-  position: relative; 
-  display: inline-block; 
-  vertical-align: top; 
-  white-space: nowrap; 
-  transition: none; 
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  white-space: nowrap;
+  transition: none;
 }
 
 .animated-word-inner {
-  display: inline-block; 
-  transition: none; 
+  display: inline-block;
+  transition: none;
 }
 
-/* Typing Cursor */
 .animated-word-inner::after {
-    content: '|'; 
-    display: inline-block;
-    color: white; 
-    margin-left: -1.5px; 
-    margin-right: 0px; /* Adjusted to reduce space */
-    animation: blink-caret 0.75s step-end infinite; 
-    vertical-align: top;
+  content: '|';
+  display: inline-block;
+  color: white;
+  margin-left: -1.5px;
+  margin-right: 0px;
+  animation: blink-caret 0.75s step-end infinite;
+  vertical-align: top;
 }
 
-/* Hide cursor when deleting or empty */
 .animated-text.is-deleting .animated-word-inner::after,
 .animated-text.is-empty .animated-word-inner::after {
-    opacity: 0;
+  opacity: 0;
 }
 
 @keyframes blink-caret {
   from, to { opacity: 0; }
   50% { opacity: 1; }
 }
-/* --- END ANIMATED TEXT STYLES --- */
 
-/* GRID - Homepage Specific (index.html) */
+/* GRID */
 .grid {
   margin: 0;
   padding: 0;
@@ -118,7 +115,7 @@ body {
   box-sizing: border-box;
 }
 
-/* CARD STYLE – full bleed (for homepage) */
+/* CARD STYLE */
 .card {
   position: relative;
   width: 100vw;
@@ -127,6 +124,7 @@ body {
   background: #ccc;
   aspect-ratio: unset;
 }
+
 .card img,
 .card video {
   width: 100vw;
@@ -135,12 +133,13 @@ body {
   object-fit: cover;
   position: relative;
 }
+
 .card video {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* TEXT UTILITIES (for homepage, h2, p) */
+/* TEXT UTILITIES */
 h2 {
   margin: 40px 0 0 0;
   font-size: 1rem;
@@ -150,8 +149,7 @@ h2 + p {
   margin-top: 0;
 }
 
-
-/* RIGHT SECTION - Specific to info/index.html */
+/* RIGHT SECTION */
 .right {
   margin-left: 300px;
   max-width: 1400px;
@@ -174,7 +172,7 @@ h2 + p {
   word-break: normal;
 }
 
-/* WORD + CHARACTER SPANS - Specific to info/index.html */
+/* WORD + CHARACTER SPANS */
 .word {
   display: inline-block;
   white-space: nowrap;
@@ -182,14 +180,12 @@ h2 + p {
 
 .char {
   display: inline-block;
-  /* REVERTED: Transition for transform and filter only */
   transition: transform 0.2s ease, filter 0.2s ease;
   will-change: transform, filter;
   transform-origin: center;
 }
 
-
-/* BOTTOM FIXED ELEMENT - Global */
+/* BOTTOM FIXED ELEMENT */
 .bottom {
   position: fixed;
   bottom: 40px;
@@ -202,18 +198,33 @@ h2 + p {
   mix-blend-mode: difference;
 }
 
-/* IMPORTANT: Styles for the gap between bottom p elements */
 .bottom p {
-  margin: 0; /* Removes default browser top/bottom margins from all p tags in .bottom */
+  margin: 0;
 }
 
-.bottom p + p { /* Targets any <p> element that immediately follows another <p> element within .bottom */
-  margin-top: 30px; /* Adjust this value (e.g., 5px for smaller, 20px for larger) */
+.bottom p + p {
+  margin-top: 30px;
 }
 
-/* Responsive tweaks for index.html & info/index.html */
+/* BLOB CURSOR */
+.blob-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: white;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* RESPONSIVE */
 @media (max-width: 1024px) {
-  /* Right section (info page) */
   .right {
     margin-left: 220px;
     padding-top: 150px;
@@ -224,7 +235,6 @@ h2 + p {
 }
 
 @media (max-width: 768px) {
-  /* Left sidebar on mobile */
   .left {
     position: static;
     width: auto;
@@ -233,12 +243,12 @@ h2 + p {
     mix-blend-mode: normal;
   }
 
-  /* Right section (info page) on mobile */
   .right {
     margin-left: 0;
     padding: 15px;
     padding-top: 80px;
   }
+
   .right p {
     font-size: 30px;
     letter-spacing: -1px;
