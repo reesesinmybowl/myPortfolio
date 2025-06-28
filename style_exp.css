@@ -1,11 +1,10 @@
-/* UNIVERSAL RESET */
+/* === RESET === */
 * {
   box-sizing: border-box;
 }
 
-/* BASE STYLES for experimental.html */
 html {
-  height: 100%; /* Ensures body can flex vertically */
+  height: 100%;
   overflow-y: scroll;
 }
 
@@ -15,100 +14,123 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 15px;
   color: #111;
-  display: flex; /* Crucial for vertical layout/no white gap */
-  flex-direction: column; /* Crucial for vertical layout/no white gap */
+  display: flex;
+  flex-direction: column;
 }
 
-/* LEFT SIDEBAR - MATCHES HOMEPAGE (for experimental.html) */
+/* === LEFT SIDEBAR === */
 .left {
   position: fixed;
   top: 40px;
   left: 40px;
-  width: 280px; /* FURTHER INCREASED WIDTH to ensure text and cursor fit on one line */
+  width: 280px;
   line-height: 1.4;
   z-index: 1000;
   background: transparent;
-  mix-blend-mode: normal; /* MODIFIED: Set to normal to ensure visibility on light background */
-  color: #111; /* MODIFIED: Set to a dark color for visibility on light background */
+  mix-blend-mode: normal;
+  color: #111;
 }
 
 .left p {
-  margin: 0 0 24px 0;
+  margin: 0 0 16px 0;
   text-align: left;
   font-weight: 400;
 }
 
 .name {
-  font-weight: 900; /* Ensures 'Niklas Tsalkos' is always bold */
+  font-weight: 900;
   font-size: 1.1em;
   letter-spacing: -0.02em;
-  /* Removed font-variation-settings here to avoid conflict with unstyled-link */
 }
 
-/* UNSTYLED LINK (for experimental.html) - NOW USING font-weight to match homepage */
+.nav-links {
+  margin-top: 24px;
+}
+
+.nav-links a {
+  display: block;
+  line-height: 1.4;
+  margin: 0; /* ensures no extra gap */
+}
+
+/* === LINKS === */
 .unstyled-link {
   all: unset;
   cursor: pointer;
-  font-weight: 400; /* MODIFIED: Using font-weight instead of font-variation-settings */
-  transition: font-weight 0.25s ease; /* MODIFIED: Transitioning font-weight */
+  font-weight: 400;
+  color: inherit;
+  text-decoration: none;
 }
 
-.unstyled-link:hover {
-  font-weight: 700; /* MODIFIED: Using font-weight instead of font-variation-settings */
+.unstyled-link:hover,
+.unstyled-link:focus,
+.unstyled-link:active {
+  font-weight: 400;
+  color: inherit;
+  text-decoration: none;
+  opacity: 1;
 }
 
-/* --- ANIMATED TEXT STYLES (JavaScript Controlled Typewriter) --- */
+.nav-link {
+  text-decoration: none;
+  color: inherit;
+  font-weight: 400;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* === ANIMATED TEXT === */
 .animated-text {
   position: relative;
   display: inline-block;
   vertical-align: top;
-  overflow: hidden; /* Crucial for controlling text visibility */
-  transition: width 0.1s ease-out; /* Smooth width transition */
-  min-width: 5px; /* Ensures it doesn't collapse entirely */
-  min-height: 1em; /* Ensures it doesn't collapse entirely */
-  white-space: nowrap; /* Prevents text from wrapping within this element */
+  overflow: hidden;
+  transition: width 0.1s ease-out;
+  min-width: 5px;
+  min-height: 1em;
+  white-space: nowrap;
   margin-right: -4px;
 }
 
 .animated-word-inner {
   display: inline-block;
-  transition: none; /* No transition on inner content */
+  transition: none;
 }
 
-/* Typing Cursor */
 .animated-word-inner::after {
-    content: '|';
-    display: inline-block;
-    color: #111; /* Set to dark color for visibility on light background */
-    margin-left: -1.5px; 
-    margin-right: 0px; /* MODIFIED: Set to 0px to match homepage spacing */
-    vertical-align: top;
-    opacity: 1; /* Explicitly set default opacity to 1 for visibility */
-    animation: blink-caret 0.75s step-end infinite;
+  content: '|';
+  display: inline-block;
+  color: #111;
+  margin-left: -1.5px;
+  margin-right: 0;
+  vertical-align: top;
+  opacity: 1;
+  animation: blink-caret 0.75s step-end infinite;
 }
 
-/* Hide cursor when deleting or empty */
 .animated-text.is-deleting .animated-word-inner::after,
 .animated-text.is-empty .animated-word-inner::after {
-    opacity: 0;
+  opacity: 0;
 }
 
 @keyframes blink-caret {
-  from { opacity: 1; } /* Start visible */
-  50% { opacity: 0; }  /* Go to hidden */
-  to { opacity: 1; }   /* Come back to visible */
+  from { opacity: 1; }
+  50%  { opacity: 0; }
+  to   { opacity: 1; }
 }
-/* --- END ANIMATED TEXT STYLES --- */
 
-
-/* EXPERIMENTAL GRID (for experimental.html) - Your original rules */
+/* === GRID === */
 .experimental-grid {
   margin-left: 300px;
   padding: 24px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
-  flex-grow: 1; /* Allows grid to take up available vertical space */
+  flex-grow: 1;
 }
 
 .card {
@@ -124,7 +146,6 @@ body {
   grid-column: span 1;
 }
 
-/* Apply transitions and default opacity to both images and videos within cards */
 .card img,
 .card video {
   width: 100%;
@@ -133,12 +154,10 @@ body {
   object-fit: cover;
   border: none;
   pointer-events: auto;
-  opacity: 1; /* Default state: fully opaque. JS will adjust opacity for animating elements. */
-  transition: opacity 0.5s ease-out; /* Only transition opacity for the fade effect */
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
 }
 
-
-/* Aspect ratios */
 .card.aspect-16-9 video,
 .card.aspect-16-9 img {
   aspect-ratio: 16 / 9;
@@ -163,7 +182,7 @@ body {
   grid-column: span 2;
 }
 
-/* Corner label */
+/* === MEDIA LABELS === */
 .media-wrapper {
   position: relative;
   width: 100%;
@@ -178,14 +197,14 @@ body {
   font-weight: 500;
   color: #111;
   pointer-events: none;
-  opacity: 0; /* Keeps the text hidden permanently as per your original code */
+  opacity: 0;
 }
 
 .corner-text.light {
   color: white;
 }
 
-/* BOTTOM FIXED ELEMENT (for experimental.html) */
+/* === BOTTOM === */
 .bottom {
   position: fixed;
   bottom: 40px;
@@ -198,17 +217,15 @@ body {
   mix-blend-mode: difference;
 }
 
-/* IMPORTANT: Styles for the gap between bottom p elements */
 .bottom p {
-  margin: 0; /* Removes default browser top/bottom margins from all p tags in .bottom */
+  margin: 0;
 }
 
-.bottom p + p { /* Targets any <p> element that immediately follows another <p> element within .bottom */
-  margin-top: 8px; /* Adjust this value (e.g., 5px for smaller, 20px for larger) */
+.bottom p + p {
+  margin-top: 8px;
 }
 
-
-/* Responsive tweaks (for experimental.html) */
+/* === RESPONSIVE === */
 @media (max-width: 1024px) {
   .experimental-grid {
     grid-template-columns: 1fr;

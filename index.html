@@ -3,64 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Niklas Tsalkos</title>
-  <meta name="description" content="Niklas Tsalkos – Interactive Design, Motion, Type, and more. Based in Copenhagen.">
+  <title>About – Niklas Tsalkos</title>
 
   <script>
     if (window.innerWidth <= 768) {
-      window.location.href = "wip.html";
+      window.location.href = "../wip.html"; 
     }
   </script>
 
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BN9QSX45R8"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-BN9QSX45R8');
-  </script>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="info.css"> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body>
   <div class="page">
     <div class="left">
       <p>
-        <span class="name">Niklas Tsalkos</span><br>
-        <span class="animated-text">
-          <span class="animated-word-inner"></span></span> Designer 
+        <a href="/" class="unstyled-link"><span class="name">Niklas Tsalkos</span></a><br>
+        <span class="animated-text"><span class="animated-word-inner"></span></span> Designer
       </p>
-
       <p>
-        <a href="experimental.html" class="unstyled-link">Experimental</a><br>
-        <a href="info/" class="unstyled-link">About</a>
+        <a href="/project/projects.html" class="unstyled-link">Projects</a><br>
+        <a href="../experimental.html" class="unstyled-link">Experimental</a>
       </p>
     </div>
 
-    <div class="grid">
-      <a href="motelindustry-website/" class="card website motel">
-        <video src="Videos/motel industry video.mp4" muted loop playsinline autoplay></video>
-      </a>
-      <a href="ekko-website/" class="card website ekko">
-        <video src="Videos/ekko front video.mp4" muted loop playsinline autoplay></video>
-      </a>
-      <a class="card poster">
-        <img src="Images/camillekeller_frontcover.jpg" alt="Project 1">
-      </a>
-      <a class="card poster">
-        <img src="Images/champpagne tower.png" alt="Project 3">
-      </a>
-      <a class="card poster">
-        <img src="Images/yocho_frontcover.png" alt="Project 5">
-      </a>
+    <div class="right">
+      <div class="blob-cursor"></div>
+      <p>
+        Hi there! My name is Niklas! I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics. I'm currently studying at DMJX and previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
+      </p>
     </div>
   </div>
 
   <div class="bottom">
+    <p>
+      <a href="mailto:nikl2229us@gmail.com" class="unstyled-link">Contact</a><br>
+      <a href="https://instagram.com/niklastsalkos" target="_blank" class="unstyled-link">Instagram</a><br>
+      <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
+    </p>
     <p>©2025</p>
   </div>
 
-  <script src="script.js"></script>
+  <script src="index_script.js"></script>
 </body>
 </html>

@@ -71,6 +71,23 @@ body {
   font-weight: 700;
 }
 
+.no-hover-link {
+  all: unset;
+  cursor: pointer;
+  font-weight: inherit;
+  color: inherit;
+  text-decoration: none;
+}
+
+.no-hover-link:hover,
+.no-hover-link:focus,
+.no-hover-link:active {
+  font-weight: inherit;
+  color: inherit;
+  text-decoration: none;
+  opacity: 1;
+}
+
 /* --- ANIMATED TEXT STYLES (JavaScript Controlled Typewriter) --- */
 .animated-text {
   position: relative;
