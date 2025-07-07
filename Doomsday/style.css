@@ -1,0 +1,144 @@
+/* === GLOBAL RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  background-color: #f6f6f6;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #fcfcfc;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* FIX: White line glitch above due to blend mode */
+body::before {
+  content: "";
+  display: block;
+  height: 1px;
+  width: 100%;
+  background: #fbfbfb;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* === BACK BUTTON === */
+.back-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+
+  color: black;
+  background: white;
+  text-decoration: none;
+
+  padding: 8px 14px;
+  border: none;
+  border-radius: 4px;
+
+  mix-blend-mode: difference;
+  transition: background 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+
+.back-button .arrow {
+  position: relative;
+  top: -1.5px;
+}
+
+/* === HERO SECTION === */
+.hero {
+  width: 100%;
+  display: flex;
+  justify-content: center; /* center it instead of pushing to right */
+  margin: 24px 0 20px;
+  box-sizing: border-box;
+}
+
+.hero-inner {
+  width: 100%;
+  max-width: 1400px; /* increased max width from 1080px */
+  padding: 0 20px;    /* reduced padding from 120px right */
+  box-sizing: border-box;
+}
+
+.hero-inner video {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* === STACKED CONTENT === */
+.stacked {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+
+.stacked-video {
+  width: 90%;
+  max-width: 1080px;
+  margin: 0 auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.stacked-image {
+  width: 90%;
+  max-width: 1080px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* === MOCKUP SECTION === */
+.mockup-with-text {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1080px;
+  margin-left: 20px;
+  margin-bottom: 20px;
+  gap: 40px;
+}
+
+.mockup-with-text video {
+  width: 100%;
+  max-width: 1000px; /* or whatever feels right for your layout */
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+
+.mockup-description {
+  flex-grow: 1;
+  min-width: 650px;
+  padding-right: 20px;
+  box-sizing: border-box;
+  font-size: 1.1em;
+  line-height: 1.3;
+}
+
