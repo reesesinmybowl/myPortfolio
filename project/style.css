@@ -1,13 +1,11 @@
-/* UNIVERSAL RESET */
 * {
   box-sizing: border-box;
 }
 
-/* RESET & BASE (for index.html and info/index.html) */
 html {
   height: 100%;
   overflow-y: scroll;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
 body {
@@ -19,32 +17,34 @@ body {
   color: black;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
-/* PAGE LAYOUT - General structure for pages like index.html and info/index.html */
-.page { 
+.page {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 0;
-  gap: 0;
   width: 100%;
-  box-sizing: border-box;
   flex-grow: 1;
 }
 
-/* LEFT SIDEBAR - Applies to index.html and info/index.html */
+/* LEFT SIDEBAR */
 .left {
   position: fixed;
-  top: 40px;
+  top: 0;
   left: 40px;
   width: 200px;
-  line-height: 1.4;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   z-index: 1000;
   background: transparent;
   mix-blend-mode: difference;
   color: white;
+}
+
+.left-top {
+  padding-top: 40px;
 }
 
 .left p {
@@ -59,7 +59,6 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* UNSTYLED LINK - Global (for index.html and info/index.html) */
 .unstyled-link {
   all: unset;
   cursor: pointer;
@@ -74,43 +73,26 @@ body {
 .no-hover-link {
   all: unset;
   cursor: pointer;
-  font-weight: inherit;
   color: inherit;
-  text-decoration: none;
 }
 
-.no-hover-link:hover,
-.no-hover-link:focus,
-.no-hover-link:active {
-  font-weight: inherit;
-  color: inherit;
-  text-decoration: none;
-  opacity: 1;
-}
-
-/* --- ANIMATED TEXT STYLES (JavaScript Controlled Typewriter) --- */
+/* ANIMATED TEXT */
 .animated-text {
   position: relative;
   display: inline-block;
-  vertical-align: top;
   white-space: nowrap;
-  transition: none;
   margin-right: -4px;
 }
 
 .animated-word-inner {
   display: inline-block;
-  transition: none;
 }
 
 .animated-word-inner::after {
   content: '|';
-  display: inline-block;
   color: white;
   margin-left: -1.5px;
-  margin-right: 0px;
   vertical-align: top;
-  opacity: 1;
   animation: blink-caret 0.75s step-end infinite;
 }
 
@@ -120,32 +102,24 @@ body {
 }
 
 @keyframes blink-caret {
-  from { opacity: 1; }
+  0%, 100% { opacity: 1; }
   50% { opacity: 0; }
-  to { opacity: 1; }
 }
-/* --- END ANIMATED TEXT STYLES --- */
 
-/* GRID - Homepage Specific (index.html) */
+/* GRID CONTAINER */
 .grid {
   margin: 0;
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0;
   width: 100%;
-  background: transparent;
-  box-sizing: border-box;
 }
 
-/* CARD STYLE – full bleed (for homepage) */
+/* CARD */
 .card {
-  position: relative;
   width: 100%;
-  height: auto;
   display: block;
   background: #ccc;
-  aspect-ratio: unset;
 }
 
 .card img,
@@ -154,7 +128,6 @@ body {
   height: auto;
   display: block;
   object-fit: cover;
-  position: relative;
   opacity: 1;
   transition: opacity 0.5s ease-out;
 }
@@ -163,55 +136,7 @@ body {
   pointer-events: auto;
 }
 
-/* TEXT UTILITIES (for homepage, h2, p) */
-h2 {
-  margin: 40px 0 0 0;
-  font-size: 1rem;
-  font-weight: normal;
-}
-
-h2 + p {
-  margin-top: 0;
-}
-
-/* RIGHT SECTION - Specific to info/index.html */
-.right {
-  margin-left: 300px;
-  max-width: 100%;
-  width: calc(100vw - 360px);
-  box-sizing: border-box;
-  position: relative;
-  padding-top: 250px;
-  padding-right: 24px;
-  padding-left: 24px;
-  padding-bottom: 80px;
-}
-
-.right p {
-  font-size: 60px;
-  line-height: 1;
-  margin-top: 4px;
-  letter-spacing: -2px;
-  position: relative;
-  z-index: 1;
-  overflow: visible;
-  word-break: normal;
-}
-
-/* WORD + CHARACTER SPANS - Specific to info/index.html */
-.word {
-  display: inline-block;
-  white-space: nowrap;
-}
-
-.char {
-  display: inline-block;
-  transition: transform 0.2s ease, filter 0.2s ease;
-  will-change: transform, filter;
-  transform-origin: center;
-}
-
-/* BOTTOM FIXED ELEMENT - Global */
+/* BOTTOM */
 .bottom {
   position: fixed;
   bottom: 40px;
@@ -220,7 +145,6 @@ h2 + p {
   font-size: 0.9rem;
   line-height: 1.4;
   color: white;
-  background: transparent;
   mix-blend-mode: difference;
 }
 
@@ -232,18 +156,7 @@ h2 + p {
   margin-top: 30px;
 }
 
-/* Responsive tweaks for index.html & info/index.html */
-@media (max-width: 1024px) {
-  .right {
-    margin-left: 220px;
-    padding-top: 150px;
-  }
-
-  .right p {
-    font-size: 45px;
-  }
-}
-
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .left {
     position: static;
@@ -253,14 +166,8 @@ h2 + p {
     mix-blend-mode: normal;
   }
 
-  .right {
-    margin-left: 0;
-    padding: 15px;
-    padding-top: 80px;
-  }
-
-  .right p {
-    font-size: 30px;
-    letter-spacing: -1px;
+  .bottom {
+    position: static;
+    margin-top: 40px;
   }
 }

@@ -5,65 +5,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Niklas Tsalkos</title>
   <meta name="description" content="Niklas Tsalkos – Interactive Design, Motion, Type, and more. Based in Copenhagen.">
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
   <script>
     if (window.innerWidth <= 768) {
       window.location.href = "../wip.html";
     }
   </script>
-
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BN9QSX45R8"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-BN9QSX45R8');
-  </script>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="page">
-  <div class="left">
-    <p>
-      <a href="/index.html" class="unstyled-link no-hover-link">
-        <span class="name">Niklas Tsalkos</span><br>
-        <span class="animated-text">
-          <span class="animated-word-inner"></span>
-        </span> Designer
-      </a>
-    </p>
+  <div class="page">
+    <!-- LEFT SIDEBAR -->
+    <div class="left">
+      <div class="left-top">
+        <p>
+          <a href="/index.html" class="unstyled-link no-hover-link">
+            <span class="name">Niklas Tsalkos</span><br>
+            <span class="animated-text">
+              <span class="animated-word-inner"></span>
+            </span> Designer
+          </a>
+        </p>
 
-    <p>
-      <a href="/experimental.html" class="unstyled-link">Experimental</a><br>
-      <a href="../index.html" class="unstyled-link">About</a>
-    </p>
-  </div>
-</div>
+        <p>
+          <a href="/experimental.html" class="unstyled-link">Experimental</a><br>
+          <a href="/index.html" class="unstyled-link">About</a>
+        </p>
+      </div>
+    </div>
 
+    <!-- PROJECTS -->
     <div class="grid">
-      <a href="../motelindustry-website/" class="card website motel">
-        <video src="../Videos/motel industry video.mp4" muted loop playsinline autoplay></video>
-      </a>
-      <a href="../ekko-website/" class="card website ekko">
-        <video src="../Videos/ekko front video.mp4" muted loop playsinline autoplay></video>
-      </a>
-            <a href="../Doomsday/index.html" class="card website ekko">
-        <video src="../Videos/Udrust_frontpage.mp4" muted loop playsinline autoplay></video>
-      </a>
-            <a class="card website ekko">
-        <video src="../Videos/DJFest_frontpage.mp4" muted loop playsinline autoplay></video>
-      </a>
-      <a class="card poster">
-        <img src="../Images/champpagne tower.png" alt="Project 3">
-      </a>
-      <a class="card poster">
-        <img src="../Images/yocho_frontcover.png" alt="Project 5">
-      </a>
+      <section id="proj1">
+        <a href="../motelindustry-website/" class="card website motel">
+          <video src="../Videos/motel industry video.mp4" muted loop playsinline autoplay></video>
+        </a>
+      </section>
+
+      <section id="proj2">
+        <a href="../ekko-website/" class="card website ekko">
+          <video src="../Videos/ekko front video.mp4" muted loop playsinline autoplay></video>
+        </a>
+      </section>
+
+      <section id="proj3">
+        <a href="../tourdefrance/index.html" class="card website">
+          <video src="../Videos/mountainstagebg.mp4" muted loop playsinline autoplay></video>
+        </a>
+      </section>
+
+      <section id="proj4">
+        <a href="../Doomsday/index.html" class="card website">
+          <video src="../Videos/Udrust_frontpage.mp4" muted loop playsinline autoplay></video>
+        </a>
+      </section>
+
+      <section id="proj5">
+        <a class="card website" style="pointer-events: none;">
+          <video src="../Videos/DJFest_frontpage.mp4" muted loop playsinline autoplay></video>
+        </a>
+      </section>
+
+      <section id="proj6">
+        <a class="card website" style="pointer-events: none;">
+          <img src="../Images/champpagne tower.png" alt="Project 6">
+        </a>
+      </section>
+
+      <section id="proj7">
+        <a class="card website" style="pointer-events: none;">
+          <img src="../Images/yocho_frontcover.png" alt="Project 7">
+        </a>
+      </section>
     </div>
   </div>
 
+  <!-- FOOTER -->
   <div class="bottom">
     <p>©2025</p>
   </div>

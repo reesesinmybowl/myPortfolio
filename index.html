@@ -36,14 +36,36 @@
     </div>
   </div>
 
-  <div class="bottom">
-    <p>
-      <a href="mailto:nikl2229us@gmail.com" class="unstyled-link">Contact</a><br>
-      <a href="https://instagram.com/niklastsalkos" target="_blank" class="unstyled-link">Instagram</a><br>
-      <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
-    </p>
-    <p>©2025</p>
-  </div>
+<div class="bottom">
+  <p>
+    <a href="mailto:nikl2229us@gmail.com" class="unstyled-link contact-swap" onclick="copyEmail(event)">
+      <span class="default-text">Contact</span>
+      <span class="hover-text">nikl2229us@gmail.com</span>
+    </a><br>
+    <a href="https://instagram.com/niklastsalkos" target="_blank" class="unstyled-link">Instagram</a><br>
+    <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
+  </p>
+  <p>©2025</p>
+</div>
+
+<div class="email-popup" id="emailPopup">Email copied to clipboard</div>
+
+<script>
+  function copyEmail(event) {
+    const email = 'nikl2229us@gmail.com';
+    navigator.clipboard.writeText(email).then(() => {
+      const popup = document.getElementById('emailPopup');
+      popup.classList.add('visible');
+      setTimeout(() => {
+        popup.classList.remove('visible');
+      }, 1200);
+    });
+
+    // Let the mailto open as normal (don't call event.preventDefault())
+  }
+</script>
+
+
 
   <script src="index_script.js"></script>
 </body>
