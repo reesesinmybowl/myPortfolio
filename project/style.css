@@ -5,7 +5,6 @@
 html {
   height: 100%;
   overflow-y: scroll;
-  overflow-x: hidden;
 }
 
 body {
@@ -112,25 +111,24 @@ body {
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  width: 100%;
 }
+
 
 /* CARD */
 .card {
-  width: 100%;
-  display: block;
-  background: #ccc;
+  width: 100vw;       /* full width of viewport */
+  height: 100vh;      /* full height of viewport */
+  overflow: hidden;
 }
 
-.card img,
-.card video {
+.card video,
+.card img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: contain;
   display: block;
-  object-fit: cover;
-  opacity: 1;
-  transition: opacity 0.5s ease-out;
 }
+
 
 .card video {
   pointer-events: auto;
@@ -169,5 +167,29 @@ body {
   .bottom {
     position: static;
     margin-top: 40px;
+  }
+}
+
+.scroll-tease {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  animation: bounce 1.5s infinite;
+  opacity: 0.7;
+  mix-blend-mode: difference; /* ← ADD THIS */
+  color: white; /* ← Must be white to invert correctly */
+  pointer-events: none;
+  z-index: 9999;
+}
+
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, 10px);
   }
 }

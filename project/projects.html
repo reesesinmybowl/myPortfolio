@@ -78,7 +78,70 @@
         </a>
       </section>
     </div>
+
+    <!-- Dummy space to allow scroll nudge -->
+    <div style="height: 100vh;"></div>
   </div>
+
+  <!-- Scroll Nudge Script -->
+<script>
+  (() => {
+    const distance = 200;       // How far to scroll
+    const duration = 600;       // Scroll speed
+    const pause = 400;          // Pause at bottom
+    const repeatDelay = 5000;   // Every 5 seconds
+
+    let hasUserScrolled = false;
+
+    // Detect if user scrolls manually
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 0) {
+        hasUserScrolled = true;
+      }
+    });
+
+    function animateScroll(start, end, duration, callback) {
+      const startTime = performance.now();
+
+      function scrollStep(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 0.5 * (1 - Math.cos(Math.PI * progress)); // easeInOutSine
+        window.scrollTo(0, start + (end - start) * ease);
+
+        if (progress < 1) {
+          requestAnimationFrame(scrollStep);
+        } else if (callback) {
+          callback();
+        }
+      }
+
+      requestAnimationFrame(scrollStep);
+    }
+
+    function startLoopingScrollNudge() {
+      const loop = () => {
+        if (hasUserScrolled) return;
+
+        if (document.body.scrollHeight > window.innerHeight) {
+          animateScroll(0, distance, duration, () => {
+            setTimeout(() => {
+              animateScroll(distance, 0, duration);
+            }, pause);
+          });
+        }
+
+        setTimeout(loop, repeatDelay);
+      };
+
+      setTimeout(loop, repeatDelay);
+    }
+
+    window.addEventListener('load', startLoopingScrollNudge);
+  })();
+</script>
+
+
   <script src="script.js"></script>
 </body>
 </html>
