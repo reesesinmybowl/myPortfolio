@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Erotic Berries — Flood Layout</title>
+<style>
+:root{
+  --bg0:#8DB2FF;
+  --bg-dyn: var(--bg0);
+
+  --ink:#ffffff;
+  --gap:0.3em;
+
+  --region-eu:#2456d6;
+  --region-asia:#0f996e;
+  --region-amer:#a33bd4;
+  --region-arctic:#b8561a;
+  --region-africa:#d18f0a;
+  --region-oce:#0a7bd1;
+}
+
+*{box-sizing:border-box;}
+html,body{
+  height:100%;
+  margin:0;
+  font-family: Helvetica, Arial, sans-serif;
+  color:var(--ink);
+  display:flex;
+  flex-direction:column;
+  background:var(--bg-dyn);
+  transition: background-color .4s ease, background .4s ease;
+}
+
+header, footer{
+  padding:1rem;
+  font-size:1rem;
+  font-weight:500;
+  flex-shrink:0;
+  background:var(--bg-dyn);
+  transition: background-color .4s ease, background .4s ease;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+footer {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 1rem;
+  font-weight: 400;
+  max-width: 800px;
+  margin-left: 5px; /* match .text-block */
+  padding: 1rem 0;
+  line-height: 1.1;
+}
+
+/* region nav */
+.region-nav{
+  display:flex; gap:1rem;
+}
+.region-nav button{
+  background:none; border:none; color:#fff;
+  font-size:1rem; cursor:pointer;
+  padding:.3em .6em; border-radius:4px;
+  transition:background .25s ease;
+}
+.region-nav button:hover{ background:rgba(255,255,255,.2) }
+.region-nav button.active{ background:rgba(255,255,255,.4) }
+
+main{
+  flex:1;
+  padding:2rem 0;
+}
+
+.text-block{
+  font-size:clamp(2rem,5vw,6rem);
+  font-weight:400;
+  line-height:0.9em;
+  letter-spacing:-0.04em;
+  text-align:justify;
+  word-spacing:var(--gap);
+  hyphens:auto;
+  overflow-wrap:anywhere;
+  margin: 0 5px;
+}
+
+.berry{
+  display:inline-block;
+  margin-right:0.05em;
+  transition: transform 0.25s ease, color 0.25s ease, opacity .35s ease, top .35s ease;
+  position:relative;
+}
+
+.berry.hide{
+  opacity:0;
+  top:10px;
+  pointer-events:none;
+}
+</style>
+</head>
+<body>
+<header>
+  <div>Berries & Dairies ✦</div>
+  <div class="region-nav">
+    <button data-filter="all" class="active">All</button>
+    <button data-filter="Europe">Europe</button>
+    <button data-filter="Asia">Asia</button>
+    <button data-filter="Americas">Americas</button>
+    <button data-filter="Arctic">Arctic</button>
+    <button data-filter="Africa">Africa</button>
+    <button data-filter="Oceania">Oceania</button>
+  </div>
+</header>
+
+<main>
+  <div class="text-block">
+    <!-- Europe -->
+    <span class="berry" data-region="Europe">Lingonberry</span>
+    <span class="berry" data-region="Europe">Bilberry</span>
+    <span class="berry" data-region="Europe">Sea Buckthorn</span>
+    <span class="berry" data-region="Europe">Blackcurrant</span>
+    <span class="berry" data-region="Europe">Rowan Berry</span>
+    <span class="berry" data-region="Europe">Gooseberry</span>
+    <span class="berry" data-region="Europe">Elderberry</span>
+    <span class="berry" data-region="Europe">Redcurrant</span>
+    <span class="berry" data-region="Europe">Whitecurrant</span>
+    <span class="berry" data-region="Europe">Sloe</span>
+    <span class="berry" data-region="Europe">Barberry</span>
+
+    <!-- Arctic -->
+    <span class="berry" data-region="Arctic">Cloudberry</span>
+    <span class="berry" data-region="Arctic">Crowberry</span>
+    <span class="berry" data-region="Arctic">Bearberry</span>
+    <span class="berry" data-region="Arctic">Bog Bilberry</span>
+    <span class="berry" data-region="Arctic">Alpine Bearberry</span>
+
+    <!-- Asia -->
+    <span class="berry" data-region="Asia">Goji</span>
+    <span class="berry" data-region="Asia">Mulberry</span>
+    <span class="berry" data-region="Asia">Japanese Wineberry</span>
+    <span class="berry" data-region="Asia">Nanking Cherry</span>
+    <span class="berry" data-region="Asia">Hawthorn Berry</span>
+    <span class="berry" data-region="Asia">Schisandra</span>
+    <span class="berry" data-region="Asia">Indian Gooseberry</span>
+    <span class="berry" data-region="Asia">Bayberry</span>
+    <span class="berry" data-region="Asia">Chinese Wolfberry</span>
+
+    <!-- Americas -->
+    <span class="berry" data-region="Americas">Blueberry</span>
+    <span class="berry" data-region="Americas">Cranberry</span>
+    <span class="berry" data-region="Americas">Huckleberry</span>
+    <span class="berry" data-region="Americas">Boysenberry</span>
+    <span class="berry" data-region="Americas">Blackberry</span>
+    <span class="berry" data-region="Americas">Salmonberry</span>
+    <span class="berry" data-region="Americas">Serviceberry</span>
+    <span class="berry" data-region="Americas">Thimbleberry</span>
+    <span class="berry" data-region="Americas">American Elderberry</span>
+    <span class="berry" data-region="Americas">Buffaloberry</span>
+
+    <!-- Africa -->
+    <span class="berry" data-region="Africa">Marula</span>
+    <span class="berry" data-region="Africa">African Medlar</span>
+    <span class="berry" data-region="Africa">Kei Apple</span>
+    <span class="berry" data-region="Africa">Num Num Berry</span>
+    <span class="berry" data-region="Africa">Wild Medlar</span>
+
+    <!-- Oceania -->
+    <span class="berry" data-region="Oceania">Finger Lime</span>
+    <span class="berry" data-region="Oceania">Lilly Pilly</span>
+    <span class="berry" data-region="Oceania">Muntrie</span>
+    <span class="berry" data-region="Oceania">Davidson Plum</span>
+    <span class="berry" data-region="Oceania">Kakadu Plum</span>
+    <span class="berry" data-region="Oceania">Quandong</span>
+  </div>
+</main>
+
+<footer contenteditable="true">
+  This website was inspired by bonking out on a supposed quiet zone 2 ride and then stumbling upon some berries on the side of the road. I started seeing all kinds of crazy colors everywhere. The berries were not erotic, but the idea of erotic berries was born. Don't worry I was totally fine, just a little dizzy hehe =) <br>
+</footer>
+
+<script>
+const REGION_COLOR = {
+  Europe:   getComputedStyle(document.documentElement).getPropertyValue('--region-eu').trim(),
+  Asia:     getComputedStyle(document.documentElement).getPropertyValue('--region-asia').trim(),
+  Americas: getComputedStyle(document.documentElement).getPropertyValue('--region-amer').trim(),
+  Arctic:   getComputedStyle(document.documentElement).getPropertyValue('--region-arctic').trim(),
+  Africa:   getComputedStyle(document.documentElement).getPropertyValue('--region-africa').trim(),
+  Oceania:  getComputedStyle(document.documentElement).getPropertyValue('--region-oce').trim(),
+  all:      getComputedStyle(document.documentElement).getPropertyValue('--bg0').trim()
+};
+
+let currentFilter = 'all';
+
+document.querySelectorAll('.berry').forEach(berry => {
+  berry.addEventListener('mouseenter', () => {
+    const randomAngle = (Math.random() * 8 - 4).toFixed(2);
+    const randomScale = 1 + Math.random() * 0.1;
+    berry.style.transform = `rotate(${randomAngle}deg) scale(${randomScale})`;
+    berry.style.color = 'black';
+    const col = REGION_COLOR[berry.dataset.region] || REGION_COLOR.all;
+    document.documentElement.style.setProperty('--bg-dyn', col);
+  });
+
+  berry.addEventListener('mouseleave', () => {
+    berry.style.transform = '';
+    berry.style.color = '';
+    const col = REGION_COLOR[currentFilter] || REGION_COLOR.all;
+    document.documentElement.style.setProperty('--bg-dyn', col);
+  });
+});
+
+const buttons = document.querySelectorAll('.region-nav button');
+const berries = Array.from(document.querySelectorAll('.berry'));
+
+buttons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    buttons.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+
+    currentFilter = btn.getAttribute('data-filter');
+    document.documentElement.style.setProperty('--bg-dyn', REGION_COLOR[currentFilter] || REGION_COLOR.all);
+
+    let i = 0, j = 0;
+    berries.forEach(b=>{
+      const show = (currentFilter === 'all') || (b.dataset.region === currentFilter);
+      if (!show && !b.classList.contains('hide')){
+        setTimeout(()=> b.classList.add('hide'), i*25); i++;
+      }
+    });
+    berries.forEach(b=>{
+      const show = (currentFilter === 'all') || (b.dataset.region === currentFilter);
+      if (show && b.classList.contains('hide')){
+        setTimeout(()=> b.classList.remove('hide'), j*25); j++;
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
