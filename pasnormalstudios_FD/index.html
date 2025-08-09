@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PAS NORMAL STUDIOS — Intro + Gravity + Drag (Grab Cursor)</title>
+<style>
+  :root{
+    --green:#00a651;
+    --white:#ffffff;
+    --circle:240px;
+    --gap:12px;
+    --rowgap:24px;
+    --left-offset:40px; /* tweak left padding */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{
+    background:var(--green);
+    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+    padding-top:8px; /* smaller top padding */
+    cursor: grab; /* default grab cursor */
+  }
+  body.dragging {
+    cursor: grabbing; /* while dragging */
+  }
+  .disc{
+    width:var(--circle);
+    height:var(--circle);
+    border-radius:50%;
+    background:var(--white);
+    display:flex;align-items:center;justify-content:center;
+    position:absolute;
+    will-change:transform;
+    pointer-events:none;
+  }
+  .letter{
+    font-weight:900;
+    font-size:calc(var(--circle)*0.7);
+    line-height:1;
+    color:var(--green);
+    user-select:none;
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+const WORDS = ["PAS","NORMAL","STUDIOS"];
+const discs = [];
+const circle = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--circle'));
+const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
+const rowgap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rowgap'));
+const leftOffset = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--left-offset')) || 0;
+
+function buildAndIntro(done){
+  let finished = 0, total = WORDS.reduce((n,w)=>n+w.length,0);
+
+  WORDS.forEach((word, rowIndex) => {
+    [...word].forEach((char, i) => {
+      const disc = document.createElement('div');
+      disc.className = 'disc';
+      const letter = document.createElement('div');
+      letter.className = 'letter';
+      letter.textContent = char;
+      disc.appendChild(letter);
+      document.body.appendChild(disc);
+
+      const xTarget = leftOffset() + i*(circle+gap);
+      const yTarget = 20 + rowIndex*(circle+rowgap);
+
+      const fromLeft = rowIndex % 2 === 0;
+      const xStart = (fromLeft ? -1 : 1) * innerWidth * 1.2;
+      const startRot = (fromLeft ? -1 : 1) * (360 * (1 + Math.random()*0.5));
+      const startY = (Math.random()-0.5)*40;
+
+      gsap.fromTo(disc,
+        { x:xStart, y:yTarget+startY, rotate:startRot },
+        {
+          x:xTarget, y:yTarget, rotate:0,
+          duration:0.7, ease:"power2.out",
+          delay: rowIndex*0.22 + i*0.12,
+          onComplete: () => {
+            discs.push({ el: disc, x: xTarget, y: yTarget });
+            if (++finished === total) done && setTimeout(done, 150);
+          }
+        }
+      );
+    });
+  });
+}
+
+function startPhysics(){
+  const { Engine, World, Bodies, Runner, Mouse, MouseConstraint, Body } = Matter;
+  const engine = Engine.create();
+  engine.gravity.y = 1;
+  const world = engine.world;
+
+  const W = () => window.innerWidth;
+  const H = () => window.innerHeight;
+
+  const wallThick = 100;
+  const floorInset = -90;
+
+  const floor = Bodies.rectangle(
+    W()/2,
+    H() - wallThick/2 - floorInset,
+    W(),
+    wallThick,
+    { isStatic:true }
+  );
+  const leftWall  = Bodies.rectangle(-wallThick/2, H()/2, wallThick, H()*2, { isStatic:true });
+  const rightWall = Bodies.rectangle(W()+wallThick/2, H()/2, wallThick, H()*2, { isStatic:true });
+  World.add(world, [floor, leftWall, rightWall]);
+
+  const bodies = discs.map(d => {
+    const r = circle/2;
+    const body = Bodies.circle(d.x + r, d.y + r, r, {
+      restitution:0.35,
+      friction:0.1,
+      frictionAir:0.02
+    });
+    d.body = body;
+    return body;
+  });
+  World.add(world, bodies);
+
+  const mouse = Mouse.create(document.body);
+  const mouseConstraint = MouseConstraint.create(engine, {
+    mouse,
+    constraint: { stiffness:0.2, angularStiffness:0.2, render:{ visible:false } }
+  });
+  World.add(world, mouseConstraint);
+
+  // Change cursor on drag
+  Matter.Events.on(mouseConstraint, "startdrag", () => {
+    document.body.classList.add("dragging");
+  });
+  Matter.Events.on(mouseConstraint, "enddrag", () => {
+    document.body.classList.remove("dragging");
+  });
+
+  function sync(){
+    for (let i=0;i<bodies.length;i++){
+      const b = bodies[i];
+      discs[i].el.style.transform = `translate(${b.position.x - circle/2}px, ${b.position.y - circle/2}px) rotate(${b.angle}rad)`;
+    }
+    requestAnimationFrame(sync);
+  }
+
+  window.addEventListener('resize', () => {
+    Body.setPosition(floor, { x: W()/2, y: H() - wallThick/2 - floorInset });
+    Body.setVertices(floor, Bodies.rectangle(W()/2, H() - wallThick/2 - floorInset, W(), wallThick).vertices);
+    Body.setPosition(leftWall,  { x: -wallThick/2,        y: H()/2 });
+    Body.setPosition(rightWall, { x: W()+wallThick/2,     y: H()/2 });
+    Body.setVertices(leftWall,  Bodies.rectangle(-wallThick/2,    H()/2, wallThick, H()*2).vertices);
+    Body.setVertices(rightWall, Bodies.rectangle(W()+wallThick/2, H()/2, wallThick, H()*2).vertices);
+  });
+
+  Runner.run(Engine.run(engine));
+  sync();
+}
+
+window.addEventListener('load', () => {
+  buildAndIntro(startPhysics);
+});
+</script>
+</body>
+</html>
