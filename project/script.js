@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
       measuringDiv.style.textTransform = cs.textTransform;
     }
 
-    // FIXED: include space in width calculation so gap is kept
+    // include space in width calculation so gap is kept
     function getTextWidth(text) {
       measuringDiv.textContent = text + '\u00A0'; // non-breaking space
       return measuringDiv.offsetWidth;
@@ -89,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Kickoff after fonts ready
     const start = () => {
       syncMeasuringStyles();
       animateTypewriter();
@@ -104,52 +103,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   setupTypewriter();
-
-  // === FADE-IN ANIMATION FOR PROJECTS ===
-  const projectElements = document.querySelectorAll('.card video, .card img');
-
-  projectElements.forEach((element, index) => {
-    if (index > 0) {
-      element.style.opacity = 0;
-    }
-  });
-
-  function animateProject(element, index) {
-    if (index === 0) return;
-
-    const rect = element.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-
-    const start = viewportHeight * 0.8;
-    const end = viewportHeight * 0.2;
-
-    let opacity = 0;
-
-    if (rect.bottom > 0 && rect.top < viewportHeight) {
-      const progress = 1 - (rect.top - end) / (start - end);
-      opacity = Math.max(0, Math.min(1, progress));
-    }
-
-    element.style.opacity = opacity;
-
-    if (element.tagName === 'VIDEO') {
-      if (opacity > 0.1 && element.paused) {
-        element.play().catch(() => {});
-      } else if (opacity < 0.1 && !element.paused) {
-        element.pause();
-      }
-    }
-  }
-
-  function onScroll() {
-    window.requestAnimationFrame(() => {
-      projectElements.forEach((el, i) => animateProject(el, i));
-    });
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
-  window.addEventListener('load', () => {
-    projectElements.forEach((el, i) => animateProject(el, i));
-  });
 });
