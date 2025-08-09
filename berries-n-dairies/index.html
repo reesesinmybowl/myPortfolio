@@ -30,8 +30,13 @@ html,body{
   flex-direction:column;
   background:var(--bg-dyn);
   transition: background-color .4s ease, background .4s ease;
+  width:100%;
+  overflow-x:hidden;           /* ✅ kill horizontal scroll */
 }
 
+img,video,svg{max-width:100%; height:auto;} /* ✅ media never overflow */
+
+/* ===== Header / Footer ===== */
 header, footer{
   padding:1rem;
   font-size:1rem;
@@ -60,19 +65,24 @@ footer {
   line-height: 1.1;
 }
 
-/* region nav */
+/* ===== Region nav ===== */
 .region-nav{
-  display:flex; gap:1rem;
+  display:flex; 
+  gap:1rem;
+  flex-wrap:wrap;         /* ✅ wrap on small screens */
+  max-width:100%;         /* ✅ never exceed viewport */
 }
 .region-nav button{
   background:none; border:none; color:#fff;
   font-size:1rem; cursor:pointer;
   padding:.3em .6em; border-radius:4px;
   transition:background .25s ease;
+  min-width:0;            /* ✅ allow shrink */
 }
 .region-nav button:hover{ background:rgba(255,255,255,.2) }
 .region-nav button.active{ background:rgba(255,255,255,.4) }
 
+/* ===== Main ===== */
 main{
   flex:1;
   padding:2rem 0;
@@ -86,7 +96,7 @@ main{
   text-align:justify;
   word-spacing:var(--gap);
   hyphens:auto;
-  overflow-wrap:anywhere;
+  overflow-wrap:anywhere;  /* ✅ break long words */
   margin: 0 5px;
 }
 
@@ -102,6 +112,24 @@ main{
   opacity:0;
   transform:translateY(10px);
   pointer-events:none;
+}
+
+/* ===== Mobile tweaks ===== */
+@media (max-width: 768px){
+  header{ padding:.75rem .5rem; }
+  .region-nav{ gap:.5rem; }
+  .region-nav button{ font-size:.9rem; padding:.25em .5em; }
+  main{ padding:1rem 0; }
+  .text-block{
+    font-size: clamp(1.6rem, 9vw, 3.2rem); /* ✅ safer size on phone */
+    margin: 0 .5rem;                       /* ✅ tiny gutter */
+  }
+  footer{
+    max-width:none; 
+    margin: 0 .5rem; 
+    padding: .8rem 0;
+    line-height:1.3;
+  }
 }
 </style>
 </head>
@@ -220,7 +248,7 @@ document.querySelectorAll('.berry').forEach(berry => {
 const buttons = document.querySelectorAll('.region-nav button');
 const berries = Array.from(document.querySelectorAll('.berry'));
 
-// single-pass smooth trickle filter
+// smooth trickle filter
 buttons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     buttons.forEach(b=>b.classList.remove('active'));
@@ -230,13 +258,9 @@ buttons.forEach(btn=>{
     document.documentElement.style.setProperty('--bg-dyn', REGION_COLOR[currentFilter] || REGION_COLOR.all);
 
     let delay = 0;
-    // one continuous pass -> no mid-phase stutter
     berries.forEach(b=>{
       const show = (currentFilter === 'all') || (b.dataset.region === currentFilter);
-      const d = delay * 25;
-      setTimeout(()=>{
-        b.classList.toggle('hide', !show);
-      }, d);
+      setTimeout(()=> b.classList.toggle('hide', !show), delay*25);
       delay++;
     });
   });
