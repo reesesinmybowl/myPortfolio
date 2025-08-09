@@ -93,13 +93,14 @@ main{
 .berry{
   display:inline-block;
   margin-right:0.05em;
-  transition: transform 0.25s ease, color 0.25s ease, opacity .35s ease, top .35s ease;
   position:relative;
+  transition: opacity .35s ease, transform .35s ease, color .25s ease;
+  will-change: opacity, transform;
 }
 
 .berry.hide{
   opacity:0;
-  top:10px;
+  transform:translateY(10px);
   pointer-events:none;
 }
 </style>
@@ -197,6 +198,7 @@ const REGION_COLOR = {
 
 let currentFilter = 'all';
 
+// hover tilt + bg fade to hovered berry's region
 document.querySelectorAll('.berry').forEach(berry => {
   berry.addEventListener('mouseenter', () => {
     const randomAngle = (Math.random() * 8 - 4).toFixed(2);
@@ -218,6 +220,7 @@ document.querySelectorAll('.berry').forEach(berry => {
 const buttons = document.querySelectorAll('.region-nav button');
 const berries = Array.from(document.querySelectorAll('.berry'));
 
+// single-pass smooth trickle filter
 buttons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     buttons.forEach(b=>b.classList.remove('active'));
@@ -226,18 +229,15 @@ buttons.forEach(btn=>{
     currentFilter = btn.getAttribute('data-filter');
     document.documentElement.style.setProperty('--bg-dyn', REGION_COLOR[currentFilter] || REGION_COLOR.all);
 
-    let i = 0, j = 0;
+    let delay = 0;
+    // one continuous pass -> no mid-phase stutter
     berries.forEach(b=>{
       const show = (currentFilter === 'all') || (b.dataset.region === currentFilter);
-      if (!show && !b.classList.contains('hide')){
-        setTimeout(()=> b.classList.add('hide'), i*25); i++;
-      }
-    });
-    berries.forEach(b=>{
-      const show = (currentFilter === 'all') || (b.dataset.region === currentFilter);
-      if (show && b.classList.contains('hide')){
-        setTimeout(()=> b.classList.remove('hide'), j*25); j++;
-      }
+      const d = delay * 25;
+      setTimeout(()=>{
+        b.classList.toggle('hide', !show);
+      }, d);
+      delay++;
     });
   });
 });
