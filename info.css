@@ -171,6 +171,16 @@ h2 + p {
   word-break: normal;
 }
 
+/* IMAGE BEHIND TEXT */
+.text-behind-img {
+  position: absolute;
+  top: 350px;         /* adjust as needed */
+  left: 1037px;        /* adjust as needed */
+  width: 400px;   /* adjust as needed */
+  height: auto;
+  z-index: 0;
+}
+
 /* WORD + CHARACTER SPANS */
 .word {
   display: inline-block;
@@ -281,7 +291,6 @@ h2 + p {
   visibility: visible;
   opacity: 1;
 }
-
 
 /* CONTACT SWAP EFFECT */
 .contact-swap {

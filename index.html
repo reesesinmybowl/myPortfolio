@@ -17,6 +17,7 @@
 </head>
 <body>
   <div class="page">
+    <!-- LEFT SIDEBAR -->
     <div class="left">
       <p>
         <a href="/" class="unstyled-link"><span class="name">Niklas Tsalkos</span></a><br>
@@ -28,44 +29,47 @@
       </p>
     </div>
 
+    <!-- RIGHT SECTION -->
     <div class="right">
       <div class="blob-cursor"></div>
+
+      <!-- Image that will sit behind the text -->
+      <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img">
+
       <p>
         Hi there! My name is Niklas! I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics. I'm currently studying at DMJX and previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
       </p>
     </div>
   </div>
 
-<div class="bottom">
-  <p>
-    <a href="mailto:nikl2229us@gmail.com" class="unstyled-link contact-swap" onclick="copyEmail(event)">
-      <span class="default-text">Contact</span>
-      <span class="hover-text">nikl2229us@gmail.com</span>
-    </a><br>
-    <a href="https://instagram.com/niklastsalkos" target="_blank" class="unstyled-link">Instagram</a><br>
-    <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
-  </p>
-  <p>©2025</p>
-</div>
+  <!-- BOTTOM FIXED FOOTER -->
+  <div class="bottom">
+    <p>
+      <a href="mailto:nikl2229us@gmail.com" class="unstyled-link contact-swap" onclick="copyEmail(event)">
+        <span class="default-text">Contact</span>
+        <span class="hover-text">nikl2229us@gmail.com</span>
+      </a><br>
+      <a href="https://instagram.com/niklastsalkos" target="_blank" class="unstyled-link">Instagram</a><br>
+      <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
+    </p>
+    <p>©2025</p>
+  </div>
 
-<div class="email-popup" id="emailPopup">Email copied to clipboard</div>
+  <!-- EMAIL POPUP -->
+  <div class="email-popup" id="emailPopup">Email copied to clipboard</div>
 
-<script>
-  function copyEmail(event) {
-    const email = 'nikl2229us@gmail.com';
-    navigator.clipboard.writeText(email).then(() => {
-      const popup = document.getElementById('emailPopup');
-      popup.classList.add('visible');
-      setTimeout(() => {
-        popup.classList.remove('visible');
-      }, 1200);
-    });
-
-    // Let the mailto open as normal (don't call event.preventDefault())
-  }
-</script>
-
-
+  <script>
+    function copyEmail(event) {
+      const email = 'nikl2229us@gmail.com';
+      navigator.clipboard.writeText(email).then(() => {
+        const popup = document.getElementById('emailPopup');
+        popup.classList.add('visible');
+        setTimeout(() => {
+          popup.classList.remove('visible');
+        }, 1200);
+      });
+    }
+  </script>
 
   <script src="index_script.js"></script>
 </body>
