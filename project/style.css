@@ -81,6 +81,7 @@ body {
   display: inline-block;
   white-space: nowrap;
   margin-right: -4px;
+  padding-right: 6px; /* MATCHES MAIN PAGE GAP BEFORE "Designer" */
 }
 
 .animated-word-inner {
@@ -99,6 +100,8 @@ body {
 .animated-text.is-empty .animated-word-inner::after {
   opacity: 0;
 }
+
+.animated-text { display:inline-block; white-space:nowrap; }
 
 @keyframes blink-caret {
   0%, 100% { opacity: 1; }

@@ -12,6 +12,7 @@
       window.location.href = "../wip.html";
     }
   </script>
+  <script src="script.js" defer></script>
 </head>
 <body>
   <div class="page">
@@ -85,8 +86,11 @@
       </section>
     </div>
 
-    <!-- Dummy space to allow scroll (keep or remove as you like) -->
+    <!-- Spacer for scroll -->
     <div style="height: 100vh;"></div>
   </div>
+
+  <!-- Harmless blob element (script is guarded if not present elsewhere) -->
+  <div class="blob-cursor" style="position:fixed; left:0; top:0; width:180px; height:180px; border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); opacity:0; mix-blend-mode:difference;"></div>
 </body>
 </html>
