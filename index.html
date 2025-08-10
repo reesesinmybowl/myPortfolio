@@ -5,14 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>About – Niklas Tsalkos</title>
 
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BN9QSX45R8"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-BN9QSX45R8', {
+      page_path: location.pathname + location.search
+      // send_page_view: true  // default true - leave as is unless you manage pageviews manually
+    });
+  </script>
+  <!-- End Google Analytics -->
+
   <script>
     if (window.innerWidth <= 768) {
-      window.location.href = "../wip.html"; 
+      window.location.href = "../wip.html";
     }
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="info.css"> 
+  <link rel="stylesheet" href="info.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body>
