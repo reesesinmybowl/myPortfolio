@@ -4,7 +4,17 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>PSN - Concept</title>
+
 <style>
+  @font-face {
+    font-family: "SF Pro Display";
+    src: local("SF Pro Display Bold"), local("SFProDisplay-Bold"),
+         url("SFProDisplay-Bold.woff2") format("woff2"),
+         url("SFProDisplay-Bold.woff") format("woff");
+    font-weight: 700;
+    font-style: normal;
+  }
+
   :root{
     --green:#00a651;
     --white:#ffffff;
@@ -17,7 +27,7 @@
   html,body{height:100%;overflow:hidden}
   body{
     background:var(--green);
-    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family:"SF Pro Display","Helvetica Neue", Helvetica, Arial, sans-serif;
     padding-top:8px; /* smaller top padding */
     cursor: grab; /* default grab cursor */
   }
@@ -35,12 +45,13 @@
     pointer-events:none;
   }
   .letter{
-    font-weight:900;
+    font-weight:700;
     font-size:calc(var(--circle)*0.7);
     line-height:1;
     color:var(--green);
     user-select:none;
     pointer-events:none;
+    font-family:"SF Pro Display","Helvetica Neue", Helvetica, Arial, sans-serif;
   }
   .instruction {
     position: fixed;
@@ -51,7 +62,7 @@
     color: var(--white);
     user-select: none;
     pointer-events: none;
-    font-family: Arial, sans-serif;
+    font-family:"SF Pro Display","Helvetica Neue", Helvetica, Arial, sans-serif;
   }
 </style>
 </head>
