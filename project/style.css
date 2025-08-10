@@ -148,7 +148,7 @@ body {
 .grid {
   margin-left: auto; /* push to right */
   margin-right: 20px; /* only right margin */
-  padding-top: 30px;
+  padding-top: 20px;
   display: flex;
   flex-direction: column;
   gap: 7px;
