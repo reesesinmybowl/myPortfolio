@@ -65,7 +65,8 @@ body {
   transition: font-weight 0.2s ease;
 }
 
-.unstyled-link:hover {
+/* FIX: don't bold no-hover-link anchors */
+.unstyled-link:not(.no-hover-link):hover {
   font-weight: 700;
 }
 
@@ -101,7 +102,10 @@ body {
   opacity: 0;
 }
 
-.animated-text { display:inline-block; white-space:nowrap; }
+.animated-text { 
+  display:inline-block; 
+  white-space:nowrap; 
+}
 
 @keyframes blink-caret {
   0%, 100% { opacity: 1; }

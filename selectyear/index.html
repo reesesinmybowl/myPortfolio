@@ -2,13 +2,14 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>p5.js — Year Scroller (Same Weight & Size)</title>
+  <title>Be There On Time Please</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Inter variable font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
   <style>
     html, body { margin:0; padding:0; overflow:hidden; background:#fff; }
     canvas { display:block; }
+
     .center-year{
       position:fixed;
       left:50%;
@@ -19,7 +20,34 @@
       font-family:'Inter', sans-serif;
       font-optical-sizing:auto;
       text-rendering: optimizeLegibility;
+      font-weight: 400;
+      font-size: 20px;
       color:#000;
+      white-space: nowrap;
+      /* default (not complete): transparent background */
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    /* per-segment highlight while scrolling */
+    .center-year .seg { padding:0 0; border-radius:2px; }
+    .center-year .seg.active {
+      background:#000; color:#fff; padding:2px 6px; border-radius:2px;
+    }
+
+    /* === COMPLETE STATE (bottom reached) === */
+    .center-year.all-complete{
+      background:#000;          /* full black box */
+      color:#fff;               /* white text */
+      padding: 2px 6px;         /* box padding */
+      border-radius: 2px;       /* tweak if you want square: set to 0 */
+    }
+    /* kill any per-segment pills in complete state */
+    .center-year.all-complete .seg{
+      background: transparent !important;
+      color: #fff !important;
+      padding: 0 !important;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
@@ -29,8 +57,8 @@
 
 <script>
   // ===== SETTINGS =====
-  const FONT_WEIGHT       = 400; // same for selected and non-selected
-  const ALL_TEXT_SIZE_PX  = 20;  // same size for all
+  const FONT_WEIGHT       = 400;
+  const ALL_TEXT_SIZE_PX  = 20;
 
   const SCROLL_SENSITIVITY = 0.0016;
   const MAX_VELOCITY       = 0.35;
@@ -40,16 +68,78 @@
   const SNAP_STRENGTH      = 0.25;
   const SPACING_FACTOR     = 0.05;
 
-  // Gap range for non-center years
+  // Gap range for non-center rows
   const MIN_GAP_PX = 50;
   const MAX_GAP_PX = 500;
   const FADE_RANGE_ROWS = 5;
 
-  let years = [];
-  let midIndex = 0;
+  const MONTHS    = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const WEEKDAYS  = ['MON','TUE','WED','THU','FRI','SAT','SUN']; // Monday-first rendering
+
+  // Data
+  let items = [];   // unified sequence: years → months → days → weekdays → hours → minutes
+
+  // segment boundaries (inclusive ends)
+  let idxYearStart=0, idxYearEnd=0;
+  let idxMonthStart=0, idxMonthEnd=0;
+  let idxDayStart=0, idxDayEnd=0;
+  let idxWkStart=0, idxWkEnd=0;
+  let idxHourStart=0, idxHourEnd=0;
+  let idxMinStart=0, idxMinEnd=0;
+
+  let idx1975 = 0;
+  let idx2025 = 0;
+
+  // State
   let offset = 0, targetOffset = 0, velocity = 0;
   let dragging = false, lastY = 0, lastInputMs = 0;
   const $center = document.getElementById('centerYear');
+
+  function pad2(n){ return n < 10 ? '0'+n : ''+n; }
+  function monFirstWeekdayIndex(date){ return (date.getDay() + 6) % 7; } // JS 0=Sun -> 6, so MON=0
+
+  function buildSequence(){
+    items = [];
+    const now = new Date();
+    const currentMonth = now.getMonth();        // 0..11
+    const currentDay   = now.getDate();         // 1..31
+    const currentHour  = now.getHours();        // 0..23
+    const currentMin   = now.getMinutes();      // 0..59
+    const curWkIdx     = monFirstWeekdayIndex(now);
+
+    // YEARS
+    idxYearStart = items.length;
+    for(let y=1975; y<=2025; y++){ items.push(String(y)); }
+    idxYearEnd = items.length - 1;
+
+    // MONTHS (up to current month)
+    idxMonthStart = items.length;
+    for(let m=0; m<=currentMonth; m++){ items.push(MONTHS[m]); }
+    idxMonthEnd = items.length - 1;
+
+    // DAYS (01..today)
+    idxDayStart = items.length;
+    for(let d=1; d<=currentDay; d++){ items.push(pad2(d)); }
+    idxDayEnd = items.length - 1;
+
+    // WEEKDAYS (MON..today’s weekday)
+    idxWkStart = items.length;
+    for(let w=0; w<=curWkIdx; w++){ items.push(WEEKDAYS[w]); }
+    idxWkEnd = items.length - 1;
+
+    // HOURS (00..current hour)
+    idxHourStart = items.length;
+    for(let h=0; h<=currentHour; h++){ items.push(pad2(h)); }
+    idxHourEnd = items.length - 1;
+
+    // MINUTES (00..current minute)
+    idxMinStart = items.length;
+    for(let mm=0; mm<=currentMin; mm++){ items.push(pad2(mm)); }
+    idxMinEnd = items.length - 1;
+
+    idx1975 = items.indexOf('1975');
+    idx2025 = items.indexOf('2025');
+  }
 
   function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -57,11 +147,11 @@
     textFont('Inter');
     textSize(ALL_TEXT_SIZE_PX);
     textStyle(NORMAL);
-    for (let y = 1975; y <= 2025; y++) years.push(y);
-    midIndex = years.indexOf(1975);
     frameRate(60);
 
-    // Center year HTML style
+    buildSequence();
+
+    // Center overlay style
     $center.style.fontVariationSettings = `"wght" ${FONT_WEIGHT}`;
     $center.style.fontWeight = FONT_WEIGHT;
     $center.style.fontSize = ALL_TEXT_SIZE_PX + 'px';
@@ -76,25 +166,26 @@
     velocity *= DAMPING;
     velocity = constrain(velocity, -MAX_VELOCITY, MAX_VELOCITY);
 
-    const now = millis();
-    const idle = now - lastInputMs > SNAP_IDLE_MS && !dragging && abs(velocity) < 0.01;
+    const nowMs = millis();
+    const idle = nowMs - lastInputMs > SNAP_IDLE_MS && !dragging && abs(velocity) < 0.01;
     if (idle) targetOffset = lerp(targetOffset, round(targetOffset), SNAP_STRENGTH);
 
     offset = lerp(offset, targetOffset, LERP_TO_TARGET);
 
-    // Clamp scroll bounds
-    const maxUp = midIndex;
-    const maxDown = years.length - 1 - midIndex;
+    // Bounds
+    const maxUp = idx1975;                               // how far up from 1975
+    const maxDown = items.length - 1 - idx1975;          // how far down from 1975
     offset       = constrain(offset,       -maxUp - 0.01, maxDown + 0.01);
     targetOffset = constrain(targetOffset, -maxUp,         maxDown);
 
+    // Visible rows around center
     const visible = ceil(height / spacing) + 6;
     const centerRow = floor(offset);
 
-    // Draw non-center years with increasing gap
+    // Draw non-center rows (with letter gaps)
     for (let r = centerRow - visible; r <= centerRow + visible; r++) {
-      const i = midIndex + r;
-      if (i < 0 || i >= years.length) continue;
+      const i = idx1975 + r;
+      if (i < 0 || i >= items.length) continue;
       const rel = r - offset;
       const y = height / 2 + rel * spacing;
       if (abs(rel) < 0.5) continue;
@@ -106,22 +197,119 @@
       fill(0);
       textSize(ALL_TEXT_SIZE_PX);
       textStyle(NORMAL);
-      drawYearWithGap(years[i].toString(), width/2, y, gap);
+      drawWithGap(items[i], width/2, y, gap);
       pop();
     }
 
-    // Center year text
+    // Determine progressive locked display + active segment
     const nearest = round(offset);
-    const centerIndex = midIndex + nearest;
-    if (centerIndex >= 0 && centerIndex < years.length) {
-      $center.textContent = years[centerIndex];
-      $center.style.opacity = '1';
+    const globalIndex = idx1975 + nearest; // absolute index in items
+
+    const nowLocal = new Date();
+    const curMonth = nowLocal.getMonth();
+    const curDay   = nowLocal.getDate();
+    const curHour  = nowLocal.getHours();
+    const curMin   = nowLocal.getMinutes();
+    const curWkIdx = monFirstWeekdayIndex(nowLocal);
+
+    // Which segment is active right now?
+    let active = 'minute';
+    if (globalIndex <= idx2025) active = 'year';
+    else if (globalIndex <= idxMonthEnd) active = 'month';
+    else if (globalIndex <= idxDayEnd) active = 'day';
+    else if (globalIndex <= idxWkEnd) active = 'weekday';
+    else if (globalIndex <= idxHourEnd) active = 'hour';
+    else if (globalIndex <= idxMinEnd) active = 'minute';
+
+    // Progressive values (locked/passing)
+    let Y=null, M=null, D=null, W=null, H=null, Min=null;
+
+    // YEAR
+    if (active === 'year') {
+      Y = items[globalIndex];
     } else {
-      $center.style.opacity = '0';
+      Y = '2025';
     }
+
+    // MONTH
+    if (globalIndex < idxMonthStart) {
+      M = null;
+    } else if (active === 'month') {
+      M = items[globalIndex];
+    } else {
+      M = MONTHS[curMonth];
+    }
+
+    // DAY
+    if (globalIndex < idxDayStart) {
+      D = null;
+    } else if (active === 'day') {
+      D = items[globalIndex];
+    } else {
+      D = pad2(curDay);
+    }
+
+    // WEEKDAY
+    if (globalIndex < idxWkStart) {
+      W = null;
+    } else if (active === 'weekday') {
+      W = items[globalIndex];
+    } else {
+      W = WEEKDAYS[curWkIdx];
+    }
+
+    // HOUR
+    if (globalIndex < idxHourStart) {
+      H = null;
+    } else if (active === 'hour') {
+      H = items[globalIndex];
+    } else {
+      H = pad2(curHour);
+    }
+
+    // MINUTE
+    if (globalIndex < idxMinStart) {
+      Min = null;
+    } else if (active === 'minute') {
+      Min = items[globalIndex];
+    } else {
+      Min = pad2(curMin);
+    }
+
+    // Build overlay with only the ACTIVE segment highlighted (until complete)
+    $center.innerHTML = buildOverlayHTML({Y,M,D,W,H,Min, active});
+    $center.style.opacity = '1';
+
+    // === When at the very bottom (fully complete), make the WHOLE box black + white text ===
+    const allComplete = globalIndex >= idxMinEnd;
+    $center.classList.toggle('all-complete', allComplete);
   }
 
-  function drawYearWithGap(txt, x, y, gap) {
+  function buildOverlayHTML({Y,M,D,W,H,Min, active}) {
+    const parts = [];
+
+    if (Y) parts.push(segHTML(Y, active==='year'));
+    if (M) parts.push(segHTML(M, active==='month'));
+    if (D) parts.push(segHTML(D, active==='day'));
+    if (W) parts.push(segHTML(W, active==='weekday'));
+
+    if (H && Min !== null) {
+      const hourHTML = segHTML(H, active==='hour');
+      const minHTML  = segHTML(Min, active==='minute');
+      parts.push(`${hourHTML}<span class="seg">:</span>${minHTML}`);
+    } else if (H && Min === null) {
+      parts.push(segHTML(H, active==='hour'));
+    }
+
+    return parts.join(' ');
+  }
+
+  function segHTML(text, isActive){
+    const cls = 'seg' + (isActive ? ' active' : '');
+    return `<span class="${cls}">${text}</span>`;
+  }
+
+  function drawWithGap(txt, x, y, gap) {
     const chars = txt.split('');
     let totalWidth = chars.reduce((acc, ch) => acc + textWidth(ch), 0) + gap * (chars.length - 1);
     let cx = x - totalWidth / 2;
@@ -141,22 +329,41 @@
   function mousePressed(){ dragging = true; lastY = mouseY; lastInputMs = millis(); }
   function mouseDragged(){
     if (!dragging) return;
+    const unit = min(110, height * SPACING_FACTOR);
     const dy = mouseY - lastY; lastY = mouseY;
-    targetOffset -= dy / min(110, height * SPACING_FACTOR);
-    velocity = constrain(-dy / min(110, height * SPACING_FACTOR), -MAX_VELOCITY, MAX_VELOCITY);
+    targetOffset -= dy / unit;
+    velocity = constrain(-dy / unit, -MAX_VELOCITY, MAX_VELOCITY);
     lastInputMs = millis();
   }
   function mouseReleased(){ dragging = false; }
+
+  // Touch
   function touchStarted(){ lastY = touches[0]?.y ?? mouseY; lastInputMs = millis(); }
   function touchMoved(){
     const t = touches[0]; if (!t) return false;
+    const unit = min(110, height * SPACING_FACTOR);
     const dy = t.y - lastY; lastY = t.y;
-    targetOffset -= dy / min(110, height * SPACING_FACTOR);
-    velocity = constrain(-dy / min(110, height * SPACING_FACTOR), -MAX_VELOCITY, MAX_VELOCITY);
+    targetOffset -= dy / unit;
+    velocity = constrain(-dy / unit, -MAX_VELOCITY, MAX_VELOCITY);
     lastInputMs = millis();
     return false;
   }
+
   function windowResized(){ resizeCanvas(windowWidth, windowHeight); }
+
+  // Keep minutes fresh
+  setInterval(() => {
+    const beforeLen = items.length;
+    const wasAtEnd = (round(targetOffset) + idx1975) === (beforeLen - 1);
+    buildSequence();
+    const afterLen = items.length;
+    const shift = afterLen - beforeLen; // usually +1 per minute
+    targetOffset += shift;
+    offset += shift;
+    if (wasAtEnd) {
+      targetOffset = Math.max(targetOffset, afterLen - 1 - idx1975);
+    }
+  }, 5000);
 </script>
 </body>
 </html>
