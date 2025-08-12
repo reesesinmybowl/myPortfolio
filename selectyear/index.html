@@ -3,19 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <title>Be There On Time Please</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <!-- Inter variable font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
   <style>
-    html, body { margin:0; padding:0; overflow:hidden; background:#fff; }
+    html, body { margin:0; padding:0; background:#fff; height:100%; }
+    /* Avoid iOS bounce showing white gaps around canvas */
+    html, body { overscroll-behavior: none; touch-action: manipulation; }
     canvas { display:block; }
 
     .center-year{
       position:fixed;
       left:50%;
-      top:50%;
+      top:calc(50% + env(safe-area-inset-top));
       transform:translate(-50%,-50%);
-      line-height:1;
+      line-height:1.15;
       pointer-events:none;
       font-family:'Inter', sans-serif;
       font-optical-sizing:auto;
@@ -24,30 +26,38 @@
       font-size: 20px;
       color:#000;
       white-space: nowrap;
-      /* default (not complete): transparent background */
       background: transparent;
       padding: 0;
       border-radius: 0;
+      max-width: calc(100vw - 24px); /* keep pills inside on tiny screens */
     }
 
-    /* per-segment highlight while scrolling */
     .center-year .seg { padding:0 0; border-radius:2px; }
     .center-year .seg.active {
       background:#000; color:#fff; padding:2px 6px; border-radius:2px;
     }
 
-    /* === COMPLETE STATE (bottom reached) === */
     .center-year.all-complete{
-      background:#000;          /* full black box */
-      color:#fff;               /* white text */
-      padding: 2px 6px;         /* box padding */
-      border-radius: 2px;       /* tweak if you want square: set to 0 */
+      background:#000;
+      color:#fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      /* subtle lift for readability on photos/bright screens */
+      box-shadow: 0 2px 16px rgba(0,0,0,.15);
     }
-    /* kill any per-segment pills in complete state */
     .center-year.all-complete .seg{
       background: transparent !important;
       color: #fff !important;
       padding: 0 !important;
+    }
+
+    /* Mobile fine-tune */
+    @media (max-width: 768px){
+      .center-year{
+        line-height:1.1;
+      }
+      .center-year .seg.active { padding:2px 6px; border-radius:3px; }
+      .center-year.all-complete{ padding:6px 10px; border-radius:6px; }
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
@@ -56,22 +66,22 @@
 <div class="center-year" id="centerYear">1975</div>
 
 <script>
-  // ===== SETTINGS =====
-  const FONT_WEIGHT       = 400;
-  const ALL_TEXT_SIZE_PX  = 20;
+  // ===== RESPONSIVE SETTINGS (recomputed on resize) =====
+  let FONT_WEIGHT = 400;
+  let ALL_TEXT_SIZE_PX = 20;
 
-  const SCROLL_SENSITIVITY = 0.0016;
-  const MAX_VELOCITY       = 0.35;
-  const DAMPING            = 0.85;
-  const LERP_TO_TARGET     = 0.18;
-  const SNAP_IDLE_MS       = 160;
-  const SNAP_STRENGTH      = 0.25;
-  const SPACING_FACTOR     = 0.05;
+  let SCROLL_SENSITIVITY = 0.0016;
+  let MAX_VELOCITY = 0.35;
+  let DAMPING = 0.85;
+  let LERP_TO_TARGET = 0.18;
+  let SNAP_IDLE_MS = 160;
+  let SNAP_STRENGTH = 0.25;
+  let SPACING_FACTOR = 0.05;
 
   // Gap range for non-center rows
-  const MIN_GAP_PX = 50;
-  const MAX_GAP_PX = 500;
-  const FADE_RANGE_ROWS = 5;
+  let MIN_GAP_PX = 50;
+  let MAX_GAP_PX = 500;
+  let FADE_RANGE_ROWS = 5;
 
   const MONTHS    = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   const WEEKDAYS  = ['MON','TUE','WED','THU','FRI','SAT','SUN']; // Monday-first rendering
@@ -95,8 +105,36 @@
   let dragging = false, lastY = 0, lastInputMs = 0;
   const $center = document.getElementById('centerYear');
 
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
   function pad2(n){ return n < 10 ? '0'+n : ''+n; }
   function monFirstWeekdayIndex(date){ return (date.getDay() + 6) % 7; } // JS 0=Sun -> 6, so MON=0
+
+  function isMobile(){ return window.innerWidth <= 768; }
+
+  function recalcResponsive(){
+    const minSide = Math.min(window.innerWidth, window.innerHeight);
+    const mobile = isMobile();
+
+    // Type size scales with viewport but stays readable
+    ALL_TEXT_SIZE_PX = Math.round(clamp(minSide * (mobile ? 0.05 : 0.04), 14, mobile ? 28 : 32));
+
+    // Spacing between rows – slightly denser on mobile
+    SPACING_FACTOR   = mobile ? 0.065 : 0.05;
+
+    // Gaps between letters for off-center rows – shrink on small screens
+    MIN_GAP_PX = Math.round(clamp(minSide * 0.035, 12, 40));
+    MAX_GAP_PX = Math.round(clamp(minSide * 0.45, 120, mobile ? 120 : 160));
+
+    // Softer physics on touch to avoid whiplash
+    SCROLL_SENSITIVITY = mobile ? 0.0011 : 0.0016;
+    MAX_VELOCITY       = mobile ? 0.22   : 0.35;
+    DAMPING            = mobile ? 0.88   : 0.85;
+
+    // Apply to overlay
+    $center.style.fontVariationSettings = `"wght" ${FONT_WEIGHT}`;
+    $center.style.fontWeight = FONT_WEIGHT;
+    $center.style.fontSize = ALL_TEXT_SIZE_PX + 'px';
+  }
 
   function buildSequence(){
     items = [];
@@ -143,23 +181,19 @@
 
   function setup() {
     createCanvas(windowWidth, windowHeight);
+    // Make the canvas crisp on high-DPI screens
+    pixelDensity(Math.min(window.devicePixelRatio || 1, 2));
     textAlign(CENTER, CENTER);
     textFont('Inter');
-    textSize(ALL_TEXT_SIZE_PX);
-    textStyle(NORMAL);
     frameRate(60);
 
     buildSequence();
-
-    // Center overlay style
-    $center.style.fontVariationSettings = `"wght" ${FONT_WEIGHT}`;
-    $center.style.fontWeight = FONT_WEIGHT;
-    $center.style.fontSize = ALL_TEXT_SIZE_PX + 'px';
+    recalcResponsive();
   }
 
   function draw() {
     background(255);
-    const spacing = min(110, height * SPACING_FACTOR);
+    const spacing = Math.min(110, height * SPACING_FACTOR);
 
     // Physics
     targetOffset += velocity;
@@ -167,42 +201,39 @@
     velocity = constrain(velocity, -MAX_VELOCITY, MAX_VELOCITY);
 
     const nowMs = millis();
-    const idle = nowMs - lastInputMs > SNAP_IDLE_MS && !dragging && abs(velocity) < 0.01;
-    if (idle) targetOffset = lerp(targetOffset, round(targetOffset), SNAP_STRENGTH);
+    const idle = nowMs - lastInputMs > SNAP_IDLE_MS && !dragging && Math.abs(velocity) < 0.01;
+    if (idle) targetOffset = lerp(targetOffset, Math.round(targetOffset), SNAP_STRENGTH);
 
     offset = lerp(offset, targetOffset, LERP_TO_TARGET);
 
     // Bounds
-    const maxUp = idx1975;                               // how far up from 1975
-    const maxDown = items.length - 1 - idx1975;          // how far down from 1975
+    const maxUp = idx1975;
+    const maxDown = items.length - 1 - idx1975;
     offset       = constrain(offset,       -maxUp - 0.01, maxDown + 0.01);
     targetOffset = constrain(targetOffset, -maxUp,         maxDown);
 
     // Visible rows around center
-    const visible = ceil(height / spacing) + 6;
-    const centerRow = floor(offset);
+    const visible = Math.ceil(height / spacing) + 6;
+    const centerRow = Math.floor(offset);
 
     // Draw non-center rows (with letter gaps)
+    fill(0);
+    textSize(ALL_TEXT_SIZE_PX);
     for (let r = centerRow - visible; r <= centerRow + visible; r++) {
       const i = idx1975 + r;
       if (i < 0 || i >= items.length) continue;
       const rel = r - offset;
       const y = height / 2 + rel * spacing;
-      if (abs(rel) < 0.5) continue;
+      if (Math.abs(rel) < 0.5) continue;
 
-      const d = abs(rel);
-      const gap = lerp(MIN_GAP_PX, MAX_GAP_PX, constrain(d / FADE_RANGE_ROWS, 0, 1));
+      const d = Math.abs(rel);
+      const gap = lerp(MIN_GAP_PX, MAX_GAP_PX, clamp(d / FADE_RANGE_ROWS, 0, 1));
 
-      push();
-      fill(0);
-      textSize(ALL_TEXT_SIZE_PX);
-      textStyle(NORMAL);
       drawWithGap(items[i], width/2, y, gap);
-      pop();
     }
 
     // Determine progressive locked display + active segment
-    const nearest = round(offset);
+    const nearest = Math.round(offset);
     const globalIndex = idx1975 + nearest; // absolute index in items
 
     const nowLocal = new Date();
@@ -221,66 +252,42 @@
     else if (globalIndex <= idxHourEnd) active = 'hour';
     else if (globalIndex <= idxMinEnd) active = 'minute';
 
-    // Progressive values (locked/passing)
+    // Progressive values
     let Y=null, M=null, D=null, W=null, H=null, Min=null;
 
     // YEAR
-    if (active === 'year') {
-      Y = items[globalIndex];
-    } else {
-      Y = '2025';
-    }
+    if (active === 'year') { Y = items[globalIndex]; } else { Y = '2025'; }
 
     // MONTH
-    if (globalIndex < idxMonthStart) {
-      M = null;
-    } else if (active === 'month') {
-      M = items[globalIndex];
-    } else {
-      M = MONTHS[curMonth];
-    }
+    if (globalIndex < idxMonthStart) { M = null; }
+    else if (active === 'month') { M = items[globalIndex]; }
+    else { M = MONTHS[curMonth]; }
 
     // DAY
-    if (globalIndex < idxDayStart) {
-      D = null;
-    } else if (active === 'day') {
-      D = items[globalIndex];
-    } else {
-      D = pad2(curDay);
-    }
+    if (globalIndex < idxDayStart) { D = null; }
+    else if (active === 'day') { D = items[globalIndex]; }
+    else { D = pad2(curDay); }
 
     // WEEKDAY
-    if (globalIndex < idxWkStart) {
-      W = null;
-    } else if (active === 'weekday') {
-      W = items[globalIndex];
-    } else {
-      W = WEEKDAYS[curWkIdx];
-    }
+    if (globalIndex < idxWkStart) { W = null; }
+    else if (active === 'weekday') { W = items[globalIndex]; }
+    else { W = WEEKDAYS[curWkIdx]; }
 
     // HOUR
-    if (globalIndex < idxHourStart) {
-      H = null;
-    } else if (active === 'hour') {
-      H = items[globalIndex];
-    } else {
-      H = pad2(curHour);
-    }
+    if (globalIndex < idxHourStart) { H = null; }
+    else if (active === 'hour') { H = items[globalIndex]; }
+    else { H = pad2(curHour); }
 
     // MINUTE
-    if (globalIndex < idxMinStart) {
-      Min = null;
-    } else if (active === 'minute') {
-      Min = items[globalIndex];
-    } else {
-      Min = pad2(curMin);
-    }
+    if (globalIndex < idxMinStart) { Min = null; }
+    else if (active === 'minute') { Min = items[globalIndex]; }
+    else { Min = pad2(curMin); }
 
     // Build overlay with only the ACTIVE segment highlighted (until complete)
     $center.innerHTML = buildOverlayHTML({Y,M,D,W,H,Min, active});
     $center.style.opacity = '1';
 
-    // === When at the very bottom (fully complete), make the WHOLE box black + white text ===
+    // Completed state: whole pill flips black/white
     const allComplete = globalIndex >= idxMinEnd;
     $center.classList.toggle('all-complete', allComplete);
   }
@@ -329,7 +336,7 @@
   function mousePressed(){ dragging = true; lastY = mouseY; lastInputMs = millis(); }
   function mouseDragged(){
     if (!dragging) return;
-    const unit = min(110, height * SPACING_FACTOR);
+    const unit = Math.min(110, height * SPACING_FACTOR);
     const dy = mouseY - lastY; lastY = mouseY;
     targetOffset -= dy / unit;
     velocity = constrain(-dy / unit, -MAX_VELOCITY, MAX_VELOCITY);
@@ -338,23 +345,27 @@
   function mouseReleased(){ dragging = false; }
 
   // Touch
-  function touchStarted(){ lastY = touches[0]?.y ?? mouseY; lastInputMs = millis(); }
+  function touchStarted(){ lastY = (touches[0]?.y ?? mouseY); lastInputMs = millis(); }
   function touchMoved(){
     const t = touches[0]; if (!t) return false;
-    const unit = min(110, height * SPACING_FACTOR);
+    const unit = Math.min(110, height * SPACING_FACTOR);
     const dy = t.y - lastY; lastY = t.y;
     targetOffset -= dy / unit;
     velocity = constrain(-dy / unit, -MAX_VELOCITY, MAX_VELOCITY);
     lastInputMs = millis();
     return false;
   }
+  function touchEnded(){ dragging = false; }
 
-  function windowResized(){ resizeCanvas(windowWidth, windowHeight); }
+  function windowResized(){
+    resizeCanvas(windowWidth, windowHeight);
+    recalcResponsive();
+  }
 
   // Keep minutes fresh
   setInterval(() => {
     const beforeLen = items.length;
-    const wasAtEnd = (round(targetOffset) + idx1975) === (beforeLen - 1);
+    const wasAtEnd = (Math.round(targetOffset) + idx1975) === (beforeLen - 1);
     buildSequence();
     const afterLen = items.length;
     const shift = afterLen - beforeLen; // usually +1 per minute
