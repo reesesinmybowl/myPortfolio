@@ -1,0 +1,162 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>p5.js — Year Scroller (Same Weight & Size)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Inter variable font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin:0; padding:0; overflow:hidden; background:#fff; }
+    canvas { display:block; }
+    .center-year{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      line-height:1;
+      pointer-events:none;
+      font-family:'Inter', sans-serif;
+      font-optical-sizing:auto;
+      text-rendering: optimizeLegibility;
+      color:#000;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+</head>
+<body>
+<div class="center-year" id="centerYear">1975</div>
+
+<script>
+  // ===== SETTINGS =====
+  const FONT_WEIGHT       = 400; // same for selected and non-selected
+  const ALL_TEXT_SIZE_PX  = 20;  // same size for all
+
+  const SCROLL_SENSITIVITY = 0.0016;
+  const MAX_VELOCITY       = 0.35;
+  const DAMPING            = 0.85;
+  const LERP_TO_TARGET     = 0.18;
+  const SNAP_IDLE_MS       = 160;
+  const SNAP_STRENGTH      = 0.25;
+  const SPACING_FACTOR     = 0.05;
+
+  // Gap range for non-center years
+  const MIN_GAP_PX = 50;
+  const MAX_GAP_PX = 500;
+  const FADE_RANGE_ROWS = 5;
+
+  let years = [];
+  let midIndex = 0;
+  let offset = 0, targetOffset = 0, velocity = 0;
+  let dragging = false, lastY = 0, lastInputMs = 0;
+  const $center = document.getElementById('centerYear');
+
+  function setup() {
+    createCanvas(windowWidth, windowHeight);
+    textAlign(CENTER, CENTER);
+    textFont('Inter');
+    textSize(ALL_TEXT_SIZE_PX);
+    textStyle(NORMAL);
+    for (let y = 1975; y <= 2025; y++) years.push(y);
+    midIndex = years.indexOf(1975);
+    frameRate(60);
+
+    // Center year HTML style
+    $center.style.fontVariationSettings = `"wght" ${FONT_WEIGHT}`;
+    $center.style.fontWeight = FONT_WEIGHT;
+    $center.style.fontSize = ALL_TEXT_SIZE_PX + 'px';
+  }
+
+  function draw() {
+    background(255);
+    const spacing = min(110, height * SPACING_FACTOR);
+
+    // Physics
+    targetOffset += velocity;
+    velocity *= DAMPING;
+    velocity = constrain(velocity, -MAX_VELOCITY, MAX_VELOCITY);
+
+    const now = millis();
+    const idle = now - lastInputMs > SNAP_IDLE_MS && !dragging && abs(velocity) < 0.01;
+    if (idle) targetOffset = lerp(targetOffset, round(targetOffset), SNAP_STRENGTH);
+
+    offset = lerp(offset, targetOffset, LERP_TO_TARGET);
+
+    // Clamp scroll bounds
+    const maxUp = midIndex;
+    const maxDown = years.length - 1 - midIndex;
+    offset       = constrain(offset,       -maxUp - 0.01, maxDown + 0.01);
+    targetOffset = constrain(targetOffset, -maxUp,         maxDown);
+
+    const visible = ceil(height / spacing) + 6;
+    const centerRow = floor(offset);
+
+    // Draw non-center years with increasing gap
+    for (let r = centerRow - visible; r <= centerRow + visible; r++) {
+      const i = midIndex + r;
+      if (i < 0 || i >= years.length) continue;
+      const rel = r - offset;
+      const y = height / 2 + rel * spacing;
+      if (abs(rel) < 0.5) continue;
+
+      const d = abs(rel);
+      const gap = lerp(MIN_GAP_PX, MAX_GAP_PX, constrain(d / FADE_RANGE_ROWS, 0, 1));
+
+      push();
+      fill(0);
+      textSize(ALL_TEXT_SIZE_PX);
+      textStyle(NORMAL);
+      drawYearWithGap(years[i].toString(), width/2, y, gap);
+      pop();
+    }
+
+    // Center year text
+    const nearest = round(offset);
+    const centerIndex = midIndex + nearest;
+    if (centerIndex >= 0 && centerIndex < years.length) {
+      $center.textContent = years[centerIndex];
+      $center.style.opacity = '1';
+    } else {
+      $center.style.opacity = '0';
+    }
+  }
+
+  function drawYearWithGap(txt, x, y, gap) {
+    const chars = txt.split('');
+    let totalWidth = chars.reduce((acc, ch) => acc + textWidth(ch), 0) + gap * (chars.length - 1);
+    let cx = x - totalWidth / 2;
+    for (let ch of chars) {
+      text(ch, cx + textWidth(ch)/2, y);
+      cx += textWidth(ch) + gap;
+    }
+  }
+
+  // Input
+  function mouseWheel(e) {
+    velocity += e.delta * SCROLL_SENSITIVITY;
+    velocity = constrain(velocity, -MAX_VELOCITY, MAX_VELOCITY);
+    lastInputMs = millis();
+    return false;
+  }
+  function mousePressed(){ dragging = true; lastY = mouseY; lastInputMs = millis(); }
+  function mouseDragged(){
+    if (!dragging) return;
+    const dy = mouseY - lastY; lastY = mouseY;
+    targetOffset -= dy / min(110, height * SPACING_FACTOR);
+    velocity = constrain(-dy / min(110, height * SPACING_FACTOR), -MAX_VELOCITY, MAX_VELOCITY);
+    lastInputMs = millis();
+  }
+  function mouseReleased(){ dragging = false; }
+  function touchStarted(){ lastY = touches[0]?.y ?? mouseY; lastInputMs = millis(); }
+  function touchMoved(){
+    const t = touches[0]; if (!t) return false;
+    const dy = t.y - lastY; lastY = t.y;
+    targetOffset -= dy / min(110, height * SPACING_FACTOR);
+    velocity = constrain(-dy / min(110, height * SPACING_FACTOR), -MAX_VELOCITY, MAX_VELOCITY);
+    lastInputMs = millis();
+    return false;
+  }
+  function windowResized(){ resizeCanvas(windowWidth, windowHeight); }
+</script>
+</body>
+</html>
