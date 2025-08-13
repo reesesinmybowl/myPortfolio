@@ -1,11 +1,6 @@
-* {
-  box-sizing: border-box;
-}
-
-html {
-  height: 100%;
-  overflow-y: scroll;
-}
+/* Reset / base */
+* { box-sizing: border-box; }
+html { height: 100%; overflow-y: scroll; }
 
 body {
   margin: 0;
@@ -13,21 +8,18 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 15px;
   line-height: 1.4;
-  color: black;
-  display: flex;
-  flex-direction: column;
+  color: #000;
   overflow-x: hidden;
 }
 
+/* Layout wrapper — reserves space for fixed left sidebar on desktop */
 .page {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  width: 100%;
-  flex-grow: 1;
+  display: block;
+  padding-left: 280px;           /* ← key fix so content stays to the right of left sidebar */
+  padding-right: 20px;
 }
 
-/* LEFT SIDEBAR */
+/* LEFT SIDEBAR (fixed) */
 .left {
   position: fixed;
   top: 0;
@@ -42,9 +34,7 @@ body {
   color: white;
 }
 
-.left-top {
-  padding-top: 40px;
-}
+.left-top { padding-top: 40px; }
 
 .left p {
   margin: 0 0 24px 0;
@@ -64,31 +54,12 @@ body {
   font-weight: 400;
   transition: font-weight 0.2s ease;
 }
+.unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+.no-hover-link { all: unset; cursor: pointer; color: inherit; }
 
-/* FIX: don't bold no-hover-link anchors */
-.unstyled-link:not(.no-hover-link):hover {
-  font-weight: 700;
-}
-
-.no-hover-link {
-  all: unset;
-  cursor: pointer;
-  color: inherit;
-}
-
-/* ANIMATED TEXT */
-.animated-text {
-  position: relative;
-  display: inline-block;
-  white-space: nowrap;
-  margin-right: -4px;
-  padding-right: 6px; /* MATCHES MAIN PAGE GAP BEFORE "Designer" */
-}
-
-.animated-word-inner {
-  display: inline-block;
-}
-
+/* Animated text caret */
+.animated-text { position: relative; display: inline-block; white-space: nowrap; margin-right: -4px; padding-right: 6px; }
+.animated-word-inner { display: inline-block; }
 .animated-word-inner::after {
   content: '|';
   color: white;
@@ -96,81 +67,78 @@ body {
   vertical-align: top;
   animation: blink-caret 0.75s step-end infinite;
 }
-
 .animated-text.is-deleting .animated-word-inner::after,
-.animated-text.is-empty .animated-word-inner::after {
-  opacity: 0;
-}
+.animated-text.is-empty .animated-word-inner::after { opacity: 0; }
+@keyframes blink-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-.animated-text { 
-  display:inline-block; 
-  white-space:nowrap; 
-}
-
-@keyframes blink-caret {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-/* BOTTOM */
-.bottom {
-  position: fixed;
-  bottom: 40px;
-  left: 40px;
-  width: 200px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: white;
-  mix-blend-mode: difference;
-}
-
-.bottom p {
-  margin: 0;
-}
-
-.bottom p + p {
-  margin-top: 30px;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .left {
-    position: static;
-    width: auto;
-    padding: 20px;
-    color: black;
-    mix-blend-mode: normal;
-  }
-
-  .bottom {
-    position: static;
-    margin-top: 40px;
-  }
-}
-
-/* === Right-column stacked layout === */
+/* PROJECTS — right-aligned stack on desktop */
 .grid {
-  margin-left: auto; /* push to right */
-  margin-right: 20px; /* only right margin */
   padding-top: 20px;
   display: flex;
   flex-direction: column;
   gap: 7px;
-  align-items: flex-end;
+  align-items: flex-end;          /* right edge alignment */
+  margin-left: auto;              /* push to the right */
+  margin-right: 0;
 }
 
 .card {
-  width: 800px; /* fixed width */
+  width: 800px;                   /* your original fixed width */
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
+  /* no border radius */
 }
 
 .card video,
 .card img {
   width: 100%;
-  height: auto; /* keep aspect ratio */
+  height: auto;
   display: block;
   object-fit: contain;
+}
+
+/* Blob cursor */
+.blob-cursor {
+  position: fixed;
+  left: 0; top: 0;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%,-50%);
+  opacity: 0;
+  mix-blend-mode: difference;
+  background: radial-gradient(circle at 50% 50%, #fff 0 60%, rgba(255,255,255,0) 61%);
+  transition: opacity .25s ease, transform .1s linear;
+}
+
+/* Mobile / tablet */
+@media (max-width: 900px) {
+  .page {
+    padding-left: 0;              /* remove reserved space */
+    padding-right: 0;
+  }
+
+  .left {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 20px;
+    color: black;
+    mix-blend-mode: normal;
+    background: transparent;
+  }
+
+  .grid {
+    align-items: stretch;         /* full-width cards */
+    padding: 16px;
+  }
+
+  .card { width: 100%; }          /* fluid on mobile */
+}
+
+/* Tiny phones */
+@media (max-width: 360px) {
+  .name { font-size: 1em; }
 }
