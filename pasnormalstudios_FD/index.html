@@ -21,19 +21,19 @@
     --circle:240px;
     --gap:12px;
     --rowgap:24px;
-    --left-offset:40px; /* tweak left padding */
+    --left-offset:40px; /* desktop left padding */
   }
+
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden}
   body{
     background:var(--green);
     font-family:"SF Pro Display","Helvetica Neue", Helvetica, Arial, sans-serif;
-    padding-top:8px; /* smaller top padding */
-    cursor: grab; /* default grab cursor */
+    padding-top:8px;
+    cursor: grab;
   }
-  body.dragging {
-    cursor: grabbing; /* while dragging */
-  }
+  body.dragging { cursor: grabbing; }
+
   .disc{
     width:var(--circle);
     height:var(--circle);
@@ -64,6 +64,16 @@
     pointer-events: none;
     font-family:"SF Pro Display","Helvetica Neue", Helvetica, Arial, sans-serif;
   }
+
+  /* Mobile tuning */
+  @media (max-width: 768px){
+    :root{
+      --circle: 200px;
+      --gap: 12px;      /* not used in vertical, but keep */
+      --rowgap: 18px;
+      --left-offset: 0; /* ignored on mobile */
+    }
+  }
 </style>
 </head>
 <body>
@@ -73,12 +83,35 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 <script>
-const WORDS = ["PAS","NORMAL","STUDIOS"];
+/* === Desktop shows PAS NORMAL STUDIOS (rows), mobile shows vertical P N S === */
+const isMobile = window.innerWidth <= 768; // breakpoint
+
+// Data model:
+// - Desktop: rows of words
+// - Mobile: a single "word" so we can place letters vertically using index
+const WORDS = isMobile ? ["PNS"] : ["PAS","NORMAL","STUDIOS"];
+
 const discs = [];
-const circle = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--circle'));
-const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
-const rowgap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rowgap'));
+const circle  = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--circle'));
+const gap     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
+const rowgap  = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rowgap'));
 const leftOffset = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--left-offset')) || 0;
+
+/* Compute target x,y per character depending on layout mode */
+function getTargets(rowIndex, i){
+  if (isMobile){
+    // Vertical stack centered horizontally
+    const x = (window.innerWidth - circle) / 2;
+    const topPad = 20; // small top padding
+    const y = topPad + i * (circle + rowgap);
+    return { x, y };
+  } else {
+    // Desktop: rows from left to right
+    const x = leftOffset() + i * (circle + gap);
+    const y = 20 + rowIndex * (circle + rowgap);
+    return { x, y };
+  }
+}
 
 function buildAndIntro(done){
   let finished = 0, total = WORDS.reduce((n,w)=>n+w.length,0);
@@ -93,10 +126,10 @@ function buildAndIntro(done){
       disc.appendChild(letter);
       document.body.appendChild(disc);
 
-      const xTarget = leftOffset() + i*(circle+gap);
-      const yTarget = 20 + rowIndex*(circle+rowgap);
+      const { x: xTarget, y: yTarget } = getTargets(rowIndex, i);
 
-      const fromLeft = rowIndex % 2 === 0;
+      // Intro animation: alternate entry sides so it feels lively
+      const fromLeft = (isMobile ? i : rowIndex) % 2 === 0;
       const xStart = (fromLeft ? -1 : 1) * innerWidth * 1.2;
       const startRot = (fromLeft ? -1 : 1) * (360 * (1 + Math.random()*0.5));
       const startY = (Math.random()-0.5)*40;
@@ -106,7 +139,7 @@ function buildAndIntro(done){
         {
           x:xTarget, y:yTarget, rotate:0,
           duration:0.7, ease:"power2.out",
-          delay: rowIndex*0.22 + i*0.12,
+          delay: (isMobile ? i : rowIndex)*0.22 + i*0.12,
           onComplete: () => {
             discs.push({ el: disc, x: xTarget, y: yTarget });
             if (++finished === total) done && setTimeout(done, 150);
@@ -118,7 +151,7 @@ function buildAndIntro(done){
 }
 
 function startPhysics(){
-  const { Engine, World, Bodies, Runner, Mouse, MouseConstraint, Body } = Matter;
+  const { Engine, World, Bodies, Runner, Mouse, MouseConstraint, Body, Events } = Matter;
   const engine = Engine.create();
   engine.gravity.y = 1;
   const world = engine.world;
@@ -160,17 +193,18 @@ function startPhysics(){
   World.add(world, mouseConstraint);
 
   // Change cursor on drag
-  Matter.Events.on(mouseConstraint, "startdrag", () => {
+  Events.on(mouseConstraint, "startdrag", () => {
     document.body.classList.add("dragging");
   });
-  Matter.Events.on(mouseConstraint, "enddrag", () => {
+  Events.on(mouseConstraint, "enddrag", () => {
     document.body.classList.remove("dragging");
   });
 
   function sync(){
     for (let i=0;i<bodies.length;i++){
       const b = bodies[i];
-      discs[i].el.style.transform = `translate(${b.position.x - circle/2}px, ${b.position.y - circle/2}px) rotate(${b.angle}rad)`;
+      discs[i].el.style.transform =
+        `translate(${b.position.x - circle/2}px, ${b.position.y - circle/2}px) rotate(${b.angle}rad)`;
     }
     requestAnimationFrame(sync);
   }
