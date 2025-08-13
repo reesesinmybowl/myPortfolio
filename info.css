@@ -156,10 +156,10 @@ body {
 
   .right {
     margin-left: 0;
-    padding: 20px 16px 80px;
+    padding: 0px 16px 80px;
   }
     .text-behind-img {
-    top: 360px; /* move image further down for mobile */
+    top: 400px; /* move image further down for mobile */
   }
   .bottom {
     position: static;
