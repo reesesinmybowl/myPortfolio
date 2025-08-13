@@ -1,38 +1,23 @@
-/* UNIVERSAL RESET */
-* {
-  box-sizing: border-box;
-}
-
-/* RESET & BASE */
-html {
-  height: 100%;
-  overflow-y: scroll;
-}
-
+/* ===== Base / reset ===== */
+* { box-sizing: border-box; }
+html { height: 100%; overflow-y: scroll; }
 body {
   margin: 0;
   background: #fbfbfb;
   font-family: 'Inter', sans-serif;
   font-size: 15px;
   line-height: 1.4;
-  color: black;
-  display: flex;
-  flex-direction: column;
+  color: #000;
+  overflow-x: hidden;
 }
 
-/* PAGE LAYOUT */
+/* ===== Layout wrapper — reserve room for fixed left on desktop ===== */
 .page {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 0;
-  gap: 0;
-  width: 100%;
-  box-sizing: border-box;
-  flex-grow: 1;
+  padding-left: 280px;   /* 40px left gap + 200px sidebar + breathing room */
+  padding-right: 20px;
 }
 
-/* LEFT SIDEBAR */
+/* ===== Left sidebar (fixed) ===== */
 .left {
   position: fixed;
   top: 40px;
@@ -42,159 +27,62 @@ body {
   z-index: 1000;
   background: transparent;
   mix-blend-mode: difference;
-  color: white;
+  color: #fff;
 }
+.left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
+.name { font-weight: 900; font-size: 1.1em; letter-spacing: -0.02em; }
 
-.left p {
-  margin: 0 0 24px 0;
-  text-align: left;
-  font-weight: 400;
-}
+/* Links */
+.unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight .2s ease; }
+.unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+.no-hover-link { all: unset; cursor: pointer; color: inherit; }
 
-.name {
-  font-weight: 900;
-  font-size: 1.1em;
-  letter-spacing: -0.02em;
-}
-
-/* UNSTYLED LINK */
-.unstyled-link {
-  all: unset;
-  cursor: pointer;
-  font-weight: 400;
-  transition: font-weight 0.2s ease;
-}
-
-.unstyled-link:hover {
-  font-weight: 700;
-}
-
-/* ANIMATED TEXT STYLES */
-.animated-text {
-  position: relative;
-  display: inline-block;
-  vertical-align: top;
-  white-space: nowrap;
-  transition: none;
-}
-
-.animated-word-inner {
-  display: inline-block;
-  transition: none;
-}
-
+/* Animated word + caret */
+.animated-text { position: relative; display: inline-block; white-space: nowrap; }
+.animated-word-inner { display: inline-block; }
 .animated-word-inner::after {
   content: '|';
   display: inline-block;
-  color: white;
+  color: #fff;
   margin-left: -1.5px;
-  margin-right: 0px;
-  animation: blink-caret 0.75s step-end infinite;
+  animation: blink-caret .75s step-end infinite;
   vertical-align: top;
 }
-
 .animated-text.is-deleting .animated-word-inner::after,
-.animated-text.is-empty .animated-word-inner::after {
-  opacity: 0;
-}
+.animated-text.is-empty .animated-word-inner::after { opacity: 0; }
+@keyframes blink-caret { 0%,100%{opacity:1;} 50%{opacity:0;} }
 
-@keyframes blink-caret {
-  from, to { opacity: 0; }
-  50% { opacity: 1; }
-}
-
-/* GRID */
-.grid {
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-  width: 100vw;
-  background: transparent;
-  box-sizing: border-box;
-}
-
-/* CARD STYLE */
-.card {
-  position: relative;
-  width: 100vw;
-  height: auto;
-  display: block;
-  background: #ccc;
-  aspect-ratio: unset;
-}
-
-.card img,
-.card video {
-  width: 100vw;
-  height: auto;
-  display: block;
-  object-fit: cover;
-  position: relative;
-}
-
-.card video {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* TEXT UTILITIES */
-h2 {
-  margin: 40px 0 0 0;
-  font-size: 1rem;
-  font-weight: normal;
-}
-h2 + p {
-  margin-top: 0;
-}
-
-/* RIGHT SECTION */
+/* ===== Right column ===== */
 .right {
-  margin-left: 300px;
+  position: relative;
   max-width: 1450px;
-  position: relative;
-  padding-top: 250px;
-  padding-right: 24px;
-  padding-left: 24px;
-  padding-bottom: 80px;
+  padding: 220px 24px 120px; /* top gives breathing room below header name */
+  margin-left: auto;         /* push to the right edge of page wrapper */
 }
 
+/* Big intro paragraph */
 .right p {
-  font-size: 60px;
+  font-size: clamp(28px, 6vw, 60px);
   line-height: 1.05;
-  margin-top: 4px;
-  letter-spacing: -2px;
+  margin: 4px 0 0 0;
+  letter-spacing: clamp(-0.5px, -0.3vw, -2px);
   position: relative;
-  z-index: 1;
-  overflow: visible;
-  word-break: normal;
+  z-index: 1; /* above the decorative image */
 }
 
-/* IMAGE BEHIND TEXT */
+/* ===== Image behind text (responsive position) ===== */
 .text-behind-img {
   position: absolute;
-  top: 350px;         /* adjust as needed */
-  left: 1037px;        /* adjust as needed */
-  width: 400px;   /* adjust as needed */
+  top: clamp(120px, 22vh, 360px);
+  right: clamp(12px, 8vw, 120px);
+  width: clamp(160px, 28vw, 420px);
   height: auto;
   z-index: 0;
+  pointer-events: none;
+  user-select: none;
 }
 
-/* WORD + CHARACTER SPANS */
-.word {
-  display: inline-block;
-  white-space: nowrap;
-}
-
-.char {
-  display: inline-block;
-  transition: transform 0.2s ease, filter 0.2s ease;
-  will-change: transform, filter;
-  transform-origin: center;
-}
-
-/* BOTTOM FIXED ELEMENT */
+/* ===== Bottom footer ===== */
 .bottom {
   position: fixed;
   bottom: 40px;
@@ -202,131 +90,83 @@ h2 + p {
   width: 200px;
   font-size: 0.9rem;
   line-height: 1.35;
-  color: white;
+  color: #fff;
   background: transparent;
   mix-blend-mode: difference;
 }
+.bottom p { margin: 0; }
+.bottom p + p { margin-top: 30px; }
 
-.bottom p {
-  margin: 0;
-}
-
-.bottom p + p {
-  margin-top: 30px;
-}
-
-/* BLOB CURSOR */
+/* ===== Blob cursor (desktop only via JS) ===== */
 .blob-cursor {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 180px;
-  height: 180px;
+  top: 0; left: 0;
+  width: 180px; height: 180px;
   border-radius: 50%;
-  background: white;
+  background: #fff;
   mix-blend-mode: difference;
   pointer-events: none;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%,-50%);
   z-index: 10;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity .2s ease, transform .1s linear;
 }
 
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .right {
-    margin-left: 220px;
-    padding-top: 150px;
-  }
-  .right p {
-    font-size: 45px;
-  }
-}
-
-@media (max-width: 768px) {
-  .left {
-    position: static;
-    width: auto;
-    padding: 20px;
-    color: black;
-    mix-blend-mode: normal;
-  }
-
-  .right {
-    margin-left: 0;
-    padding: 15px;
-    padding-top: 80px;
-  }
-
-  .right p {
-    font-size: 30px;
-    letter-spacing: -1px;
-  }
-}
-
-/* CUSTOM TOOLTIP FOR EMAIL */
-.contact-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.email-tooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  left: 100%;
-  top: 0;
-  background-color: black;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  margin-left: 10px;
-  transition: opacity 0.2s ease;
-  z-index: 100;
-}
-
-.contact-wrapper:hover .email-tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* CONTACT SWAP EFFECT */
-.contact-swap {
-  position: relative;
-  display: inline-block;
-}
-
-.contact-swap .hover-text {
-  display: none;
-}
-
-.contact-swap:hover .default-text {
-  display: none;
-}
-
-.contact-swap:hover .hover-text {
-  display: inline;
-}
-
-/* EMAIL POPUP */
+/* ===== Email popup ===== */
 .email-popup {
   position: fixed;
   bottom: 50px;
   left: 50%;
   transform: translateX(-50%);
-  background: black;
-  color: white;
+  background: #000;
+  color: #fff;
   padding: 8px 14px;
   font-size: 13px;
-  border-radius: 5px;
+  /* no border radius */
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity .3s ease;
   z-index: 999;
 }
+.email-popup.visible { opacity: 1; }
 
-.email-popup.visible {
-  opacity: 1;
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .page { padding-left: 240px; }
+  .right { padding-top: 160px; }
+}
+
+@media (max-width: 900px) {
+  .page { padding-left: 0; padding-right: 0; }
+  .left {
+    position: static;
+    width: auto;
+    padding: 20px;
+    color: #000;
+    mix-blend-mode: normal;
+  }
+  .right {
+    margin-left: 0;
+    padding: 0px 16px 80px;
+  }
+  .bottom {
+    position: static;
+    mix-blend-mode: normal;
+    color: #000;
+    padding: 0 16px 24px;
+    background: transparent;
+  }
+}
+
+@media (max-width: 900px) {
+  .text-behind-img {
+    top: 380px;        /* move up/down */
+    right: 16px;      /* move left/right */
+    width: 160px;     /* make smaller/larger */
+  }
+}
+
+/* Tiny phones */
+@media (max-width: 360px) {
+  .name { font-size: 1em; }
 }

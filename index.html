@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>About – Niklas Tsalkos</title>
 
   <!-- Google Analytics 4 -->
@@ -13,50 +13,48 @@
     gtag('js', new Date());
     gtag('config', 'G-BN9QSX45R8', {
       page_path: location.pathname + location.search
-      // send_page_view: true  // default true - leave as is unless you manage pageviews manually
+      // send_page_view: true
     });
   </script>
   <!-- End Google Analytics -->
 
-  <script>
-    if (window.innerWidth <= 768) {
-      window.location.href = "../wip.html";
-    }
-  </script>
+  <!-- NOTE: mobile redirect removed so the page works on phones -->
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="info.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="index_script.js" defer></script>
 </head>
 <body>
   <div class="page">
     <!-- LEFT SIDEBAR -->
-    <div class="left">
+    <aside class="left" aria-label="Site meta">
       <p>
-        <a href="/" class="unstyled-link"><span class="name">Niklas Tsalkos</span></a><br>
+        <a href="/" class="unstyled-link no-hover-link"><span class="name">Niklas Tsalkos</span></a><br>
         <span class="animated-text"><span class="animated-word-inner"></span></span> Designer
       </p>
       <p>
         <a href="/project/projects.html" class="unstyled-link">Projects</a><br>
-        <a href="../experimental.html" class="unstyled-link">Experimental</a>
+        <a href="/experimental.html" class="unstyled-link">Experimental</a>
       </p>
-    </div>
+    </aside>
 
     <!-- RIGHT SECTION -->
-    <div class="right">
-      <div class="blob-cursor"></div>
+    <main class="right">
+      <!-- Decorative cursor (desktop only) -->
+      <div class="blob-cursor" aria-hidden="true"></div>
 
-      <!-- Image that will sit behind the text -->
-      <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img">
+      <!-- Image behind text (responsive position) -->
+      <img src="Images/selfie.JPG" alt="" class="text-behind-img" aria-hidden="true"/>
 
       <p>
         Hi there! My name is Niklas! I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics. I'm currently studying at DMJX and previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
       </p>
-    </div>
+    </main>
   </div>
 
-  <!-- BOTTOM FIXED FOOTER -->
-  <div class="bottom">
+  <!-- BOTTOM FIXED FOOTER (becomes static on mobile) -->
+  <footer class="bottom">
     <p>
       <a href="mailto:nikl2229us@gmail.com" class="unstyled-link contact-swap" onclick="copyEmail(event)">
         <span class="default-text">Contact</span>
@@ -66,24 +64,20 @@
       <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
     </p>
     <p>©2025</p>
-  </div>
+  </footer>
 
   <!-- EMAIL POPUP -->
   <div class="email-popup" id="emailPopup">Email copied to clipboard</div>
 
   <script>
-    function copyEmail(event) {
+    function copyEmail(e) {
       const email = 'nikl2229us@gmail.com';
       navigator.clipboard.writeText(email).then(() => {
         const popup = document.getElementById('emailPopup');
         popup.classList.add('visible');
-        setTimeout(() => {
-          popup.classList.remove('visible');
-        }, 1200);
+        setTimeout(() => popup.classList.remove('visible'), 1200);
       });
     }
   </script>
-
-  <script src="index_script.js"></script>
 </body>
 </html>
