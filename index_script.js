@@ -1,6 +1,9 @@
 let padding = 30;
 
 document.addEventListener('DOMContentLoaded', () => {
+  /* ===========================
+     TYPEWRITER ANIMATION
+  ============================ */
   const animatedTextContainer = document.querySelector('.animated-text');
   const animatedWordInner = document.querySelector('.animated-word-inner');
   const words = ['Interactive', 'Graphic', 'Motion'];
@@ -13,10 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (animatedTextContainer && animatedWordInner) {
     const measuringDiv = document.createElement('div');
-    measuringDiv.style.position = 'absolute';
-    measuringDiv.style.visibility = 'hidden';
-    measuringDiv.style.whiteSpace = 'nowrap';
-    measuringDiv.style.zIndex = '-1';
+    Object.assign(measuringDiv.style, {
+      position: 'absolute',
+      visibility: 'hidden',
+      whiteSpace: 'nowrap',
+      zIndex: '-1'
+    });
     document.body.appendChild(measuringDiv);
 
     const computedStyle = getComputedStyle(animatedWordInner);
@@ -29,12 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
       textTransform: computedStyle.textTransform
     });
 
-    function getTextWidth(text) {
+    const getTextWidth = (text) => {
       measuringDiv.textContent = text;
       return measuringDiv.offsetWidth;
-    }
+    };
 
-    function typeWord(word, callback) {
+    const typeWord = (word, callback) => {
       let charIndex = 0;
       animatedTextContainer.classList.remove('is-deleting', 'is-empty');
       animatedWordInner.textContent = '';
@@ -49,9 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
           callback();
         }
       }, typingSpeed);
-    }
+    };
 
-    function deleteWord(callback) {
+    const deleteWord = (callback) => {
       let text = animatedWordInner.textContent;
       animatedTextContainer.classList.add('is-deleting');
 
@@ -66,9 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
           callback();
         }
       }, deletingSpeed);
-    }
+    };
 
-    function animateTypewriter() {
+    const animateTypewriter = () => {
       const currentWord = words[currentIndex];
       typeWord(currentWord, () => {
         setTimeout(() => {
@@ -80,11 +85,14 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         }, wordDisplayTime);
       });
-    }
+    };
 
     animateTypewriter();
   }
 
+  /* ===========================
+     SPLIT TEXT INTO WORDS/CHARS
+  ============================ */
   const paragraphs = document.querySelectorAll('.right p');
   paragraphs.forEach(p => {
     const wrappedContent = p.innerText.split(' ').map(word => {
@@ -97,7 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const allChars = document.querySelectorAll('.right p .char');
   const blob = document.querySelector('.blob-cursor');
 
-  function handleMousemoveRetraction(e) {
+  /* ===========================
+     BLOB CURSOR INTERACTION
+  ============================ */
+  const handleMousemoveRetraction = (e) => {
     blob.style.opacity = 1;
     blob.style.left = `${e.clientX}px`;
     blob.style.top = `${e.clientY}px`;
@@ -120,13 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const offsetY = Math.sin(angle) * pushAmount;
 
         letter.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-        letter.style.filter = 'none';
       } else {
         letter.style.transform = 'translate(0, 0)';
-        letter.style.filter = 'none';
       }
     });
-  }
+  };
 
   document.addEventListener('mousemove', handleMousemoveRetraction);
 
@@ -134,10 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
     blob.style.opacity = 0;
     allChars.forEach(letter => {
       letter.style.transform = 'translate(0, 0)';
-      letter.style.filter = 'none';
     });
   });
 
+  /* ===========================
+     INTRO ANIMATION
+  ============================ */
   const allWords = document.querySelectorAll('.right p .word');
   const introTimeline = gsap.timeline({
     delay: 0.5,
@@ -160,4 +171,26 @@ document.addEventListener('DOMContentLoaded', () => {
     duration: 0.7,
     ease: 'power3.out'
   }, '<0.1');
+
+  /* ===========================
+     EMAIL CLICK FUNCTIONALITY
+  ============================ */
+  const contactLink = document.querySelector('.contact-swap');
+  const emailPopup = document.getElementById('emailPopup');
+  const emailAddress = 'nikl2229us@gmail.com';
+
+  if (contactLink) {
+    contactLink.addEventListener('click', (e) => {
+      e.preventDefault(); // stop default mailto
+      navigator.clipboard.writeText(emailAddress).then(() => {
+        // Show email text
+        contactLink.classList.add('show-email');
+        // Show popup
+        emailPopup.classList.add('visible');
+        setTimeout(() => {
+          emailPopup.classList.remove('visible');
+        }, 1200);
+      });
+    });
+  }
 });
