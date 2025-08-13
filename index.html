@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>About – Niklas Tsalkos</title>
 
   <!-- Google Analytics 4 -->
@@ -16,45 +16,39 @@
       // send_page_view: true
     });
   </script>
-  <!-- End Google Analytics -->
 
-  <!-- NOTE: mobile redirect removed so the page works on phones -->
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="info.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-  <script src="index_script.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body>
   <div class="page">
     <!-- LEFT SIDEBAR -->
-    <aside class="left" aria-label="Site meta">
+    <div class="left">
       <p>
-        <a href="/" class="unstyled-link no-hover-link"><span class="name">Niklas Tsalkos</span></a><br>
+        <a href="/" class="unstyled-link"><span class="name">Niklas Tsalkos</span></a><br>
         <span class="animated-text"><span class="animated-word-inner"></span></span> Designer
       </p>
       <p>
         <a href="/project/projects.html" class="unstyled-link">Projects</a><br>
-        <a href="/experimental.html" class="unstyled-link">Experimental</a>
+        <a href="../experimental.html" class="unstyled-link">Experimental</a>
       </p>
-    </aside>
+    </div>
 
     <!-- RIGHT SECTION -->
-    <main class="right">
-      <!-- Decorative cursor (desktop only) -->
-      <div class="blob-cursor" aria-hidden="true"></div>
-
-      <!-- Image behind text (responsive position) -->
-      <img src="Images/selfie.JPG" alt="" class="text-behind-img" aria-hidden="true"/>
-
+    <div class="right">
+      <div class="blob-cursor"></div>
       <p>
         Hi there! My name is Niklas! I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics. I'm currently studying at DMJX and previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
       </p>
-    </main>
+
+      <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img">
+
+    </div>
   </div>
 
-  <!-- BOTTOM FIXED FOOTER (becomes static on mobile) -->
-  <footer class="bottom">
+  <!-- BOTTOM FIXED FOOTER -->
+  <div class="bottom">
     <p>
       <a href="mailto:nikl2229us@gmail.com" class="unstyled-link contact-swap" onclick="copyEmail(event)">
         <span class="default-text">Contact</span>
@@ -64,20 +58,24 @@
       <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
     </p>
     <p>©2025</p>
-  </footer>
+  </div>
 
   <!-- EMAIL POPUP -->
   <div class="email-popup" id="emailPopup">Email copied to clipboard</div>
 
   <script>
-    function copyEmail(e) {
+    function copyEmail(event) {
       const email = 'nikl2229us@gmail.com';
       navigator.clipboard.writeText(email).then(() => {
         const popup = document.getElementById('emailPopup');
         popup.classList.add('visible');
-        setTimeout(() => popup.classList.remove('visible'), 1200);
+        setTimeout(() => {
+          popup.classList.remove('visible');
+        }, 1200);
       });
     }
   </script>
+
+  <script src="index_script.js"></script>
 </body>
 </html>
