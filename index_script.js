@@ -105,72 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const allChars = document.querySelectorAll('.right p .char');
   const blob = document.querySelector('.blob-cursor');
 
-  /* ===========================
-     BLOB CURSOR INTERACTION
-  ============================ */
-  const handleMousemoveRetraction = (e) => {
-    blob.style.opacity = 1;
-    blob.style.left = `${e.clientX}px`;
-    blob.style.top = `${e.clientY}px`;
 
-    const blobRadius = 90;
-    const influenceRadius = blobRadius + padding + 40;
-
-    allChars.forEach(letter => {
-      const rect = letter.getBoundingClientRect();
-      const dx = rect.left + rect.width / 2 - e.clientX;
-      const dy = rect.top + rect.height / 2 - e.clientY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < influenceRadius) {
-        const angle = Math.atan2(dy, dx);
-        const targetDist = blobRadius + padding;
-        const pushAmount = Math.max(0, targetDist - dist);
-
-        const offsetX = Math.cos(angle) * pushAmount;
-        const offsetY = Math.sin(angle) * pushAmount;
-
-        letter.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-      } else {
-        letter.style.transform = 'translate(0, 0)';
-      }
-    });
-  };
-
-  document.addEventListener('mousemove', handleMousemoveRetraction);
-
-  document.addEventListener('mouseleave', () => {
-    blob.style.opacity = 0;
-    allChars.forEach(letter => {
-      letter.style.transform = 'translate(0, 0)';
-    });
-  });
-
-  /* ===========================
-     INTRO ANIMATION
-  ============================ */
-  const allWords = document.querySelectorAll('.right p .word');
-  const introTimeline = gsap.timeline({
-    delay: 0.5,
-    onComplete: () => {
-      gsap.set(allWords, { clearProps: 'transform,opacity' });
-      gsap.set(paragraphs, { clearProps: 'visibility,opacity' });
-    }
-  });
-
-  introTimeline.to(paragraphs, {
-    opacity: 1,
-    visibility: 'visible',
-    duration: 0.01
-  }, 0);
-
-  introTimeline.from(allWords, {
-    y: '100%',
-    opacity: 0,
-    stagger: 0.04,
-    duration: 0.7,
-    ease: 'power3.out'
-  }, '<0.1');
 
   /* ===========================
      EMAIL CLICK FUNCTIONALITY
