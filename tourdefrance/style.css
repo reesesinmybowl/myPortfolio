@@ -58,29 +58,31 @@ body::before {
   top: -1.5px;
 }
 
+/* Hide back button on mobile only */
+@media (max-width: 768px) {
+  .back-button {
+    display: none;
+  }
+}
+
 /* === HERO SECTION === */
 .hero {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin: 24px 0 20px;
-  box-sizing: border-box;
+  margin: 0;
 }
 
 .hero-inner {
   width: 100%;
-  max-width: 1400px;
-  padding: 0 20px;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 20px; /* gap between videos */
 }
 
 .hero-inner video {
-  width: 100%;
+  width: 100vw; /* full bleed */
   height: auto;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
 }
 
@@ -92,4 +94,5 @@ body::before {
   color: #333;
   max-width: 800px;
   width: 100%;
+  margin: 0 auto;
 }
