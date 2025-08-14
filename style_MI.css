@@ -44,7 +44,6 @@ body {
   max-width: 650px;
   max-height: 975px;
   object-fit: contain;
-  border-radius: 12px;
   background: black;
 }
 
@@ -61,7 +60,6 @@ body {
   max-width: none;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: 12px;
   background: black;
 }
 
@@ -104,7 +102,6 @@ body {
   width: 75%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: 12px;
   max-height: 100%;
   display: block;
 }
