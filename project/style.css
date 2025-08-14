@@ -1,7 +1,6 @@
 /* Reset / base */
 * { box-sizing: border-box; }
-html { height: 100%; overflow-y: scroll; }
-
+html { height: 100%; } /* remove forced overflow here */
 body {
   margin: 0;
   background: #fbfbfb;
@@ -115,7 +114,12 @@ body {
   transition: opacity .25s ease, transform .1s linear;
 }
 
+/* ===== MOBILE ===== */
 @media (max-width: 900px) {
+  /* Kill the forced scrollbar + 100% height combo on mobile */
+  html { height: auto; overflow-y: auto; }
+  body { min-height: 100svh; } /* visual viewport unit prevents iOS ghost space */
+
   .page {
     padding-left: 0;              /* remove reserved space */
     padding-right: 0;
@@ -135,13 +139,13 @@ body {
 
   .grid {
     align-items: stretch;
-    padding: 0 16px;
+    padding: 0 16px 16px;
   }
 
   .card { width: 100%; }
 
-  /* Only add extra scroll feel on mobile if you want it */
-  .spacer { height: 100vh; }
+  /* No extra scroll on mobile */
+  .spacer { height: 0; }
 }
 
 /* ===== TINY PHONES ===== */
