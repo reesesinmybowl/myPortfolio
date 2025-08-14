@@ -1,28 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Editorial Design - Ekko</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Editorial Design - Ekko</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* === GLOBAL RESET === */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { background-color: #f6f6f6; }
+body {
+  background: #fcfcfc;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* === BACK BUTTON (desktop) === */
+.back-button {
+  position: fixed; top: 20px; left: 20px; z-index: 999;
+  font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 400;
+  color: #000; background: #fff; text-decoration: none;
+  padding: 8px 14px; border: none; border-radius: 4px;
+  mix-blend-mode: difference; transition: background .2s, color .2s; cursor: pointer;
+}
+.back-button .arrow { position: relative; top: -1.5px; }
+
+/* === DESKTOP LAYOUT === */
+.hero { width: 100%; }
+.hero-inner {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; width: 100vw;
+}
+.hero-inner img, .hero-inner video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+
+.hero-image { width: 100vw; height: 100vh; overflow: hidden; }
+.hero-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* === MOBILE LAYOUT: merge hero-image into carousel === */
+@media (max-width: 768px) {
+  /* Hide back button */
+  .back-button { display: none; }
+
+  /* Turn .hero into a full-height horizontal scroller containing all images */
+  .hero {
+    width: 100%;
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 0;
+  }
+  @supports (height: 100svh) {
+    .hero { height: 100svh; }
+  }
+
+  /* Flatten .hero-inner and .hero-image into same flex track */
+  .hero-inner {
+    display: contents; /* keep children but remove wrapper from layout */
+  }
+
+  .hero-inner img,
+  .hero-inner video,
+  .hero-image img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    border-radius: 0;
+    background: #000;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .hero-inner::-webkit-scrollbar,
+  .hero::-webkit-scrollbar { display: none; }
+  .hero-inner, .hero { scrollbar-width: none; }
+
+  /* Remove separate hero-image block spacing */
+  .hero-image { display: contents; height: auto; }
+}
+</style>
 </head>
 <body>
 
-  <a href="../project/projects.html" class="back-button"><span class="arrow">←</span> Back</a>
+<a href="../project/projects.html" class="back-button"><span class="arrow">←</span> Back</a>
 
-  <!-- Two-column full-bleed grid -->
-  <div class="hero">
-    <div class="hero-inner">
-      <img src="../Images/yocho2.png" alt="Mountain Stage Background">
-      <img src="../Images/yochopic1.png" alt="Tour de France Postcard">
-    </div>
+<div class="hero">
+  <div class="hero-inner">
+    <img src="../Images/yocho2.png" alt="Mountain Stage Background" loading="lazy" decoding="async">
+    <img src="../Images/yochopic1.png" alt="Tour de France Postcard" loading="lazy" decoding="async">
   </div>
-
-  <!-- Fullscreen, full-bleed hero image -->
   <div class="hero-image">
-    <img src="../Images/yocho_frontcover.png" alt="Hero Image">
+    <img src="../Images/yocho_frontcover.png" alt="Hero Image" loading="lazy" decoding="async">
   </div>
+</div>
 
 </body>
 </html>
