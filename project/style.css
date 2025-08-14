@@ -15,7 +15,7 @@ body {
 /* Layout wrapper — reserves space for fixed left sidebar on desktop */
 .page {
   display: block;
-  padding-left: 280px;           /* ← key fix so content stays to the right of left sidebar */
+  padding-left: 280px;           /* keep content to the right of left sidebar */
   padding-right: 20px;
 }
 
@@ -83,7 +83,7 @@ body {
 }
 
 .card {
-  width: 800px;                   /* your original fixed width */
+  width: 800px;                   /* fixed width cards on desktop */
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -97,6 +97,9 @@ body {
   display: block;
   object-fit: contain;
 }
+
+/* Spacer — no extra scroll on desktop */
+.spacer { height: 0; }
 
 /* Blob cursor */
 .blob-cursor {
@@ -122,24 +125,24 @@ body {
     position: static;
     width: auto;
     height: auto;
-    padding: 20px;              /* keep side padding, remove top/bottom */
+    padding: 20px;
     color: black;
     mix-blend-mode: normal;
     background: transparent;
   }
 
-  .left-top {
-    padding-top: 0;               /* reset the 40px top pad on mobile */
-  }
+  .left-top { padding-top: 0; }
 
   .grid {
-    align-items: stretch;         
-    padding: 0 16px;              /* side-only padding (no top space) */
+    align-items: stretch;
+    padding: 0 16px;
   }
 
   .card { width: 100%; }
-}
 
+  /* Only add extra scroll feel on mobile if you want it */
+  .spacer { height: 100vh; }
+}
 
 /* ===== TINY PHONES ===== */
 @media (max-width: 360px) {
