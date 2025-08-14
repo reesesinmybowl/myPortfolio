@@ -159,8 +159,7 @@ body {
     padding: 0px 16px 80px;
   }
     .text-behind-img {
-    top: 310px; /* move image further down for mobile */
-    right: 25px;
+    top: 360px; /* move image further down for mobile */
   }
   .bottom {
     position: static;
