@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smoother sticky → list stack (clickable rows + bg image hover)</title>
+  <style>
+    :root{
+      --content-margin-left: 5%;
+      --left-col-width: 220px;
+      --gap: 40px;
+
+      --big-size: clamp(40px, 8vw, 100px);
+      --small-size: clamp(18px, 2.2vw, 18px);
+      --left-compact-size: 14px;
+
+      --sticky-offset: 0px;
+      --list-row-height: 42px;
+
+      --divider: rgba(0,0,0,0.12);
+      --bg: #fff;
+      --ink: #171717;
+      --muted: #e9e9e9;
+      --side: #5a5a5a;
+
+      --left-nudge: 12px;
+      --left-shift-x: 0px;
+
+      --loading-blur-max: 20px;
+    }
+
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+    body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; padding: 20px; overflow-x: hidden; }
+
+    /* Fixed STACK */
+    .stack {
+      position: fixed;
+      top: var(--sticky-offset);
+      left: calc(var(--content-margin-left) + 20px);
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      pointer-events: auto;
+    }
+
+    .stack-row {
+      height: var(--list-row-height);
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: center;
+      white-space: nowrap;
+      overflow: hidden;
+      border-bottom: 1px solid var(--divider);
+      background: var(--bg);
+
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.35s ease, transform 0.35s ease, background-image .3s ease;
+      cursor: pointer;
+      user-select: none;
+
+      background-size: cover;
+      background-position: center;
+      color: var(--ink);
+    }
+    .stack-row.visible { opacity: 1; transform: translateY(0); }
+    .stack-row:hover { background-size: cover; background-position: center; }
+    .stack-row:active { filter: brightness(0.9); }
+
+    .row-inner {
+      display: grid;
+      grid-template-columns: 1fr var(--gap) 1fr;
+      align-items: center;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .row-header {
+      margin-left: calc(var(--left-col-width) + var(--gap));
+      display: flex; align-items: baseline; gap: 8px;
+      font-size: var(--small-size);
+      letter-spacing: -0.01em;
+    }
+    .row-header .h { font-weight: 700; color: var(--ink); }
+    .row-header .s { font-weight: 400; color: var(--side); }
+
+    .row-side {
+      display: flex; gap: 12px;
+      overflow: hidden; text-overflow: ellipsis;
+      font-size: var(--left-compact-size); color: var(--side);
+    }
+
+    /* CONTENT */
+    .object {
+      display: grid;
+      grid-template-columns: var(--left-col-width) var(--gap) 1fr;
+      align-items: start;
+      margin-left: var(--content-margin-left);
+      max-width: 100%;
+      min-height: 120vh;
+      padding-bottom: 10vh;
+      position: relative;
+      --dynamic-top: 0px;
+    }
+
+    .left-text  { 
+      grid-column: 1; 
+      transform: translate(var(--left-shift-x), var(--left-nudge));
+    }
+    .right-text { grid-column: 3; }
+
+    .left-text,
+    .right-text {
+      position: sticky;
+      top: calc(var(--sticky-offset) + var(--dynamic-top) + var(--list-row-height) * var(--stack-count, 0));
+      align-self: start;
+      background: var(--bg);
+      transition: opacity 0.35s ease;
+    }
+
+    .left-text { z-index: 1; padding: 4px 0; }
+    .left-text p {
+      font-size: 16px; line-height: 1; margin: 4px 0; color: var(--side);
+      white-space: normal;
+    }
+
+    .right-text { white-space: nowrap; overflow: visible; z-index: 2; }
+    .right-text h2, .right-text p {
+      letter-spacing: -0.05em; line-height: 1; margin: 0; font-size: var(--big-size);
+    }
+    .right-text h2 { font-weight: 700; color: var(--ink); }
+    .right-text p  { font-weight: 400; color: var(--muted); margin-top: -0.12em; }
+
+    .right-media {
+      grid-column: 3;
+      align-self: start;
+      margin-top: 16px;
+    }
+    .right-media img {
+      display: block;
+      width: clamp(240px, 44vw, 720px);
+      height: clamp(160px, 28vw, 480px);
+      object-fit: cover;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .object.is-stacked .left-text,
+    .object.is-stacked .right-text {
+      opacity: 0; visibility: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="stack" id="stack"></div>
+
+  <div class="object">
+    <div class="left-text">
+      <p>Oceanfront · Algarve, PT</p>
+      <p>Brutalist shell · warm core</p>
+      <p>Sleeps 12 · 6 suites</p>
+      <p>Bookings · Autumn 2025</p>
+    </div>
+    <div class="right-text">
+      <h2>Domingo & Abranada</h2><p>Big Vacation Home</p>
+    </div>
+    <figure class="right-media">
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop" alt="Domingo & Abranada — Big Vacation Home">
+    </figure>
+  </div>
+
+  <div class="object">
+    <div class="left-text">
+      <p>Studio capsule collection</p>
+      <p>Shot in Trastevere, Rome</p>
+      <p>Raw denim · hand-dyed silks</p>
+      <p>Edition of 200</p>
+    </div>
+    <div class="right-text">
+      <h2>Bashka</h2><p>In Rome We Love</p>
+    </div>
+    <figure class="right-media">
+      <img src="https://images.unsplash.com/photo-1503220317375-aaad61436b1b?q=80&w=1600&auto=format&fit=crop" alt="Bashka — In Rome We Love">
+    </figure>
+  </div>
+
+  <div class="object">
+    <div class="left-text">
+      <p>Night-ops dive timer</p>
+      <p>Ceramic bezel · 300 m WR</p>
+      <p>Tritium hybrid lume</p>
+      <p>Serial · 03 / 200</p>
+    </div>
+    <div class="right-text">
+      <h2>NOCTURNAL</h2><p>Submerger 3k</p>
+    </div>
+    <figure class="right-media">
+      <img src="https://images.unsplash.com/photo-1505761671935-60b3a7427bad?q=80&w=1600&auto=format&fit=crop" alt="NOCTURNAL — Submerger 3k">
+    </figure>
+  </div>
+
+  <div class="object">
+    <div class="left-text">
+      <p>Immersive listening room</p>
+      <p>Walnut + wool acoustics</p>
+      <p>2.1 nearfield · 96 kHz</p>
+      <p>Open late · Thursdays</p>
+    </div>
+    <div class="right-text">
+      <h2>Comfortably Numb</h2><p>Satisfaction</p>
+    </div>
+    <figure class="right-media">
+      <img src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1600&auto=format&fit=crop" alt="Comfortably Numb — Satisfaction">
+    </figure>
+  </div>
+
+  <script>
+    (function(){
+      const sections = Array.from(document.querySelectorAll('.object'));
+      const stackEl = document.getElementById('stack');
+
+      /* Smooth scroll helper */
+      const easeInOutQuad = t => (t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t);
+      function smoothScrollTo(targetY, duration = 700) {
+        const startY = window.pageYOffset;
+        const delta = targetY - startY;
+        if (Math.abs(delta) < 1) return;
+        const start = performance.now();
+        function step(now){
+          const t = Math.min(1, (now - start) / duration);
+          window.scrollTo(0, startY + delta * easeInOutQuad(t));
+          if (t < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      function ensureRow(idx, headerHTML, sideTexts, bgImg){
+        let row = stackEl.querySelector(`[data-idx="${idx}"]`);
+        if (!row){
+          row = document.createElement('div');
+          row.className = 'stack-row';
+          row.dataset.idx = String(idx);
+          row.style.setProperty('--bg-img', `url('${bgImg}')`);
+          row.innerHTML = `
+            <div class="row-inner">
+              <div class="row-header"><span class="h"></span><span class="s"></span></div>
+              <div></div>
+              <div class="row-side"></div>
+            </div>`;
+          stackEl.appendChild(row);
+          requestAnimationFrame(() => row.classList.add('visible'));
+
+          /* Hover background preview */
+          row.addEventListener('mouseenter', () => {
+            row.style.backgroundImage = `url('${bgImg}')`;
+          });
+          row.addEventListener('mouseleave', () => {
+            row.style.backgroundImage = '';
+          });
+
+          /* CLICK → animated scroll that accounts for stacked rows */
+          row.addEventListener('click', () => {
+            const rows = Array.from(stackEl.querySelectorAll('.stack-row'));
+            const indexInStack = rows.indexOf(row); // 0-based from top
+            const cs = getComputedStyle(document.documentElement);
+            const rowH = parseFloat(cs.getPropertyValue('--list-row-height')) || 56;
+            const stickyOffset = parseFloat(cs.getPropertyValue('--sticky-offset')) || 0;
+
+            const sec = sections[idx];
+            const sectionTopDoc = sec.getBoundingClientRect().top + window.pageYOffset;
+
+            // Place so header pins right under existing rows
+            const target = sectionTopDoc - (stickyOffset + indexInStack * rowH);
+            const distance = Math.abs(window.pageYOffset - target);
+            const DURATION_MS = Math.max(300, Math.min(900, distance * 0.5));
+            smoothScrollTo(Math.max(0, target), DURATION_MS);
+          });
+        }
+        row.querySelector('.row-header .h').textContent = headerHTML.h2;
+        row.querySelector('.row-header .s').textContent = headerHTML.p;
+        const side = row.querySelector('.row-side');
+        side.innerHTML = '';
+        sideTexts.forEach(t => {
+          const span = document.createElement('span');
+          span.textContent = t;
+          side.appendChild(span);
+        });
+      }
+
+      function removeRow(idx){
+        const row = stackEl.querySelector(`[data-idx="${idx}"]`);
+        if (row){
+          row.classList.remove('visible');
+          setTimeout(()=> row.remove(), 350);
+        }
+      }
+
+      function cssPx(name, fallback = 0){
+        const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        const n = parseFloat(v);
+        return isNaN(n) ? fallback : n;
+      }
+
+      function update(){
+        const rowH = cssPx('--list-row-height', 56);
+        let stackedCount = 0;
+        sections.forEach((sec, idx) => {
+          const secRect = sec.getBoundingClientRect();
+          const header = sec.querySelector('.right-text');
+          const left   = sec.querySelector('.left-text');
+          const img    = sec.querySelector('img');
+
+          const naturalTop   = secRect.top + header.offsetTop;
+          const headerHeight = header.scrollHeight;
+          const naturalBottom = naturalTop + headerHeight;
+          const stickyLineY = stackedCount * rowH;
+
+          const shouldStack = (naturalBottom <= stickyLineY + 0.5);
+          if (shouldStack){
+            const headerHTML = {
+              h2: header.querySelector('h2')?.textContent || '',
+              p:  header.querySelector('p')?.textContent || ''
+            };
+            const sideTexts = Array.from(left.querySelectorAll('p')).map(p => p.textContent || '');
+            ensureRow(idx, headerHTML, sideTexts, img?.src || '');
+            sec.classList.add('is-stacked');
+            stackedCount += 1;
+          } else {
+            removeRow(idx);
+            sec.classList.remove('is-stacked');
+          }
+        });
+        document.body.style.setProperty('--stack-count', stackedCount);
+      }
+
+      let ticking = false;
+      const onScrollOrResize = () => {
+        if (!ticking){
+          ticking = true;
+          requestAnimationFrame(() => { update(); ticking = false; });
+        }
+      };
+      window.addEventListener('scroll', onScrollOrResize, { passive: true });
+      window.addEventListener('resize', onScrollOrResize, { passive: true });
+      update();
+    })();
+  </script>
+</body>
+</html>
