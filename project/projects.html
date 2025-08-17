@@ -6,23 +6,142 @@
   <title>Niklas Tsalkos</title>
   <meta name="description" content="Niklas Tsalkos – Interactive Design, Motion, Type, and more. Based in Copenhagen.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <script src="script.js" defer></script>
+
+  <style>
+    /* ===== Base ===== */
+    * { box-sizing: border-box; }
+    html { height: 100%; }
+    body {
+      margin: 0;
+      background: #fbfbfb;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+      color: #000;
+      overflow-x: hidden;
+    }
+
+    .page {
+      display: block;
+      padding-left: 280px;
+      padding-right: 20px;
+    }
+
+    /* LEFT SIDEBAR */
+    .left {
+      position: fixed;
+      top: 0;
+      left: 40px;
+      width: 200px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      background: transparent;
+      mix-blend-mode: difference;
+      color: white;
+    }
+    .left-top { padding-top: 20px; }
+    .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
+    .name { font-weight: 600; font-size: 1.1em; letter-spacing: -0.02em; }
+
+    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight 0.2s ease; }
+    .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+    .no-hover-link { all: unset; cursor: pointer; color: inherit; }
+
+    /* ===== Designer typewriter ===== */
+    .animated-text { position: relative; display: inline-block; white-space: nowrap; }
+    .animated-word-inner { display: inline-block; }
+    .animated-word-inner::after {
+      content: '|';
+      display: inline-block;
+      color: #fff;
+      margin-left: -1.5px;
+      animation: blink-caret .75s step-end infinite;
+      vertical-align: top;
+    }
+    .animated-text.is-deleting .animated-word-inner::after,
+    .animated-text.is-empty .animated-word-inner::after { opacity: 0; }
+    @keyframes blink-caret { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+    /* PROJECTS */
+    .grid {
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      align-items: flex-end;
+      margin-left: auto;
+      margin-right: 0;
+      position: relative;
+    }
+
+    .project-row {
+      position: relative;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .meta {
+      position: absolute;
+      left: -400px;
+      top: 0;
+      width: 320px;
+      font-size: 14px;
+      line-height: 1.4;
+      color: #444;
+    }
+    .meta p { margin: 0; }
+
+    .card {
+      width: 800px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: #fff;
+    }
+    .card video, .card img {
+      width: 100%; height: auto; display: block; object-fit: contain;
+    }
+
+    .spacer { height: 0; }
+
+    .blob-cursor {
+      position: fixed; left:0; top:0;
+      width:180px; height:180px; border-radius:50%;
+      opacity:0; mix-blend-mode:difference;
+      background: radial-gradient(circle at 50% 50%, #fff 0 60%, rgba(255,255,255,0) 61%);
+      pointer-events:none; transform:translate(-50%,-50%);
+      transition: opacity .25s ease, transform .1s linear;
+    }
+
+    /* MOBILE */
+    @media (max-width:900px){
+      html{height:auto; overflow-y:auto;}
+      body{min-height:100svh;}
+      .page{padding-left:0; padding-right:0;}
+      .left{position:static;width:auto;height:auto;padding:20px;color:black;mix-blend-mode:normal;}
+      .left-top{padding-top:0;}
+      .grid{align-items:stretch;padding:0 16px 16px;}
+      .project-row{position:static;flex-direction:column;}
+      .meta{display:none;}   /* hides descriptions on phone */
+      .card{width:100%;align-items:center;}
+    }
+    @media (max-width:360px){.name{font-size:1em;}}
+  </style>
 </head>
 <body>
   <div class="page">
-    <!-- LEFT SIDEBAR -->
+    <!-- SIDEBAR -->
     <div class="left">
       <div class="left-top">
         <p>
           <a href="/index.html" class="unstyled-link no-hover-link">
             <span class="name">Niklas Tsalkos</span><br>
-            <span class="animated-text">
-              <span class="animated-word-inner"></span>
-            </span> Designer
+            <span class="animated-text"><span class="animated-word-inner"></span></span> Designer
           </a>
         </p>
-
         <p>
           <a href="/experimental.html" class="unstyled-link">Experimental</a><br>
           <a href="/index.html" class="unstyled-link">About</a>
@@ -32,72 +151,145 @@
 
     <!-- PROJECTS -->
     <div class="grid">
-      <section id="proj0">
+      <section id="proj0" class="project-row">
+        <div class="meta"><p>Berries & Dairies is an editorial style web experiment combining typography and motion, exploring how identity shifts dynamically across geographies.</p></div>
         <a href="../berries-n-dairies/index.html" class="card website">
           <img src="../Images/bnd_frontcover.png" alt="Berries and Dairies Project">
         </a>
       </section>
 
-      <section id="proj1">
+      <section id="proj1" class="project-row">
+        <div class="meta"><p>A refined take on the existing brand Pas Normal Studios, reworked for a capsule collection with focused layout and motion elements.</p></div>
         <a href="../pasnormalstudios_FD/index.html" class="card website">
           <img src="../Images/pasnormal_frontcover.png" alt="PSN_FD_Project">
         </a>
       </section>
 
-      <section id="proj2">
+      <section id="proj2" class="project-row">
+        <div class="meta"><p>Motel Industry is a conceptual minisite for a rave festival in Berlin. Focusing on atmosphere and attitude over conventional structure with the grittiness of sketchy environments.</p></div>
         <a href="../motelindustry-website/" class="card website motel">
           <video src="../Videos/motel industry video.mp4" muted loop playsinline autoplay></video>
         </a>
       </section>
 
-      <section id="proj3">
+      <section id="proj3" class="project-row">
+        <div class="meta"><p>Redesign of the renowned Ekko Film Magazine. Responsive editorial design built around using fluid grids and minimal type to create a magazine-like reading experience in motion.</p></div>
         <a href="../ekko-website/" class="card website ekko">
           <video src="../Videos/ekko front video.mp4" muted loop playsinline autoplay></video>
         </a>
       </section>
 
-      <section id="proj4">
+      <section id="proj4" class="project-row">
+        <div class="meta"><p>Yocho is a playful identity experiment where bold modular shapes, oversized type, and simple interactions create a distinct front cover feel with strong character.</p></div>
         <a class="card website" href="../yocho/index.html">
-          <img src="../Images/yocho_frontcover.png" alt="Project 7">
+          <img src="../Images/yocho_frontcover.png" alt="Yocho Project">
         </a>
       </section>
 
-      <section id="proj5">
+      <section id="proj5" class="project-row">
+        <div class="meta"><p>A motion driven rebrand of the brutal mountain stages of the Tour de France, using dynamic type and rhythm to capture the intensity of the race and its iconic climbs.</p></div>
         <a href="../tourdefrance/index.html" class="card website">
           <video src="../Videos/mountainstagebg.mp4" muted loop playsinline autoplay></video>
         </a>
       </section>
 
-      <!-- <section id="proj6">
-        <a href="../domingo/index.html" class="card website">
-          <img src="../Images/domingo.png" alt="Domingo_Project">
-        </a>
-      </section> -->
-
-      <section id="proj7">
+      <section id="proj7" class="project-row">
+        <div class="meta"><p>Udrust is a barebones utilitarian identity and landing page concept, where military inspired elements and morphing motion reinforce a sense of compatibility and storage management.</p></div>
         <a href="../Doomsday/index.html" class="card website">
           <video src="../Videos/Udrust_frontpage.mp4" muted loop playsinline autoplay></video>
         </a>
       </section>
 
-      <section id="proj8">
+      <section id="proj8" class="project-row">
+        <div class="meta"><p>An energetic microsite for DJ booking platform as well as casual music exploration, with animated textures, looping visuals, and bold type to mirror the intensity of a live music event.</p></div>
         <a class="card website" style="pointer-events: none;">
           <video src="../Videos/DJFest_frontpage.mp4" muted loop playsinline autoplay></video>
         </a>
       </section>
 
-      <section id="proj9">
+      <section id="proj9" class="project-row">
+        <div class="meta"><p>Champagne Tower a surreal visual study combining reflective surfaces, stacked geometry, and light play to explore form, luxury, and celebration as graphic narrative.</p></div>
         <a class="card website" style="pointer-events: none;">
-          <img src="../Images/champpagne tower.png" alt="Project 6">
+          <img src="../Images/champpagne tower.png" alt="Champagne Tower Project">
         </a>
       </section>
     </div>
 
-    <!-- Spacer for scroll (mobile only now) -->
-    <div class="spacer"></div>
+    <div class="blob-cursor"></div>
   </div>
 
-  <!-- Harmless blob element (script is guarded if not present elsewhere) -->
-  <div class="blob-cursor" style="position:fixed; left:0; top:0; width:180px; height:180px; border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); opacity:0; mix-blend-mode:difference;"></div>
+  <!-- Typewriter JS -->
+  <script>
+    document.addEventListener('DOMContentLoaded',()=>{
+      const animatedTextContainer=document.querySelector('.animated-text');
+      const animatedWordInner=document.querySelector('.animated-word-inner');
+      const words=['Interactive','Graphic','Motion'];
+      let currentIndex=0;
+      const typingSpeed=70,deletingSpeed=40,wordDisplayTime=3000,pauseBeforeTyping=300;
+
+      function setupTypewriter(){
+        if(!animatedTextContainer||!animatedWordInner)return;
+        const measuringDiv=document.createElement('div');
+        measuringDiv.style.position='absolute';
+        measuringDiv.style.visibility='hidden';
+        measuringDiv.style.whiteSpace='nowrap';
+        document.body.appendChild(measuringDiv);
+
+        function getTextWidth(text){
+          measuringDiv.textContent=text;
+          return measuringDiv.offsetWidth;
+        }
+
+        function typeWord(word,cb){
+          let i=0;
+          animatedTextContainer.classList.remove('is-deleting','is-empty');
+          animatedWordInner.textContent='';
+          const iv=setInterval(()=>{
+            if(i<word.length){
+              animatedWordInner.textContent+=word[i];
+              animatedTextContainer.style.width=`${getTextWidth(animatedWordInner.textContent)}px`;
+              i++;
+            }else{
+              clearInterval(iv);
+              cb&&cb();
+            }
+          },typingSpeed);
+        }
+
+        function deleteWord(cb){
+          let t=animatedWordInner.textContent;
+          animatedTextContainer.classList.add('is-deleting');
+          const iv=setInterval(()=>{
+            if(t.length>0){
+              t=t.slice(0,-1);
+              animatedWordInner.textContent=t;
+              animatedTextContainer.style.width=`${getTextWidth(t)}px`;
+            }else{
+              clearInterval(iv);
+              animatedTextContainer.classList.add('is-empty');
+              animatedTextContainer.style.width='0px';
+              cb&&cb();
+            }
+          },deletingSpeed);
+        }
+
+        function loop(){
+          const currentWord=words[currentIndex];
+          typeWord(currentWord,()=>{
+            setTimeout(()=>{
+              deleteWord(()=>{
+                setTimeout(()=>{
+                  currentIndex=(currentIndex+1)%words.length;
+                  loop();
+                },pauseBeforeTyping);
+              });
+            },wordDisplayTime);
+          });
+        }
+        loop();
+      }
+      setupTypewriter();
+    });
+  </script>
 </body>
 </html>
