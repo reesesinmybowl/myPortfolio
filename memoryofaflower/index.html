@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>Memory of a Flower</title>
 <style>
+  /* Ensure the browser doesn't add its own smooth scrolling */
+  html, body { scroll-behavior: auto; }
+
   body {
     margin: 0;
     background: #fafafa;
@@ -64,15 +67,18 @@ window.addEventListener("resize", resizeCanvas);
 
 function adjustBodyHeight() {
   const revealZone = window.innerHeight * 2;
-  const morphLength = 2000;
-  const fallZone = 500;
-  document.body.style.height = (revealZone+morphLength+fallZone+window.innerHeight)+"px";
+  const morphLength = 150;   // quick morph
+  const fallZone    = 800;   // extra scroll space only (does not alter speed)
+  document.body.style.height =
+    (revealZone + morphLength + fallZone + window.innerHeight) + "px";
 }
 
+/* ===== FLOWERS ===== */
 function noise(t,seed=0){return Math.sin(t*2.3+seed*10)+Math.sin(t*0.7+1.5+seed)*0.5;}
 
 function makeFlower(cx,cy,R,petals,layersCount,seedOffset=0){
   let layers=[];
+  // Precompute a reasonably fine path; we'll downsample dynamically when drawing
   for(let layer=0;layer<layersCount;layer++){
     let path=[];
     for(let a=0;a<=Math.PI*2;a+=0.05){
@@ -88,71 +94,82 @@ function makeFlower(cx,cy,R,petals,layersCount,seedOffset=0){
 function generateFlowers(){
   flowers=[];
   const W=bgCanvas.width,H=bgCanvas.height;
-  for(let i=0;i<25;i++){
+  const count = 25; // total geometry stays the same; draw-time decimation keeps FPS stable
+  for(let i=0;i<count;i++){
     let cx=Math.random()*W,cy=Math.random()*H;
     let R=40+Math.random()*Math.min(W,H)/4;
     let petals=4+Math.floor(Math.random()*6);
     let layersCount=3+Math.floor(Math.random()*3);
     let depth=0.3+Math.random()*0.9;
-    flowers.push({layers:makeFlower(cx,cy,R,petals,layersCount,i*0.77),depth});
+    flowers.push({layers:makeFlower(cx,cy,R,petals,layersCount,i*0.77),depth, idx:i});
   }
 }
 
+/* ===== DRAW GARDEN with render-budget decimation ===== */
 function drawMemoryGarden(cutY,parallaxY){
   const W=bgCanvas.width,H=bgCanvas.height;
+  const revealP = Math.min(cutY / H, 1);        // 0 → 1 across reveal
+  // As more canvas is revealed, increase skip to keep total drawn vertices ~constant
+  // skip = 1 (full detail) at start, grows up to ~4x fewer points near full reveal
+  const pointSkip = 1 + Math.floor(revealP * 3);
+
   bgCtx.clearRect(0,0,W,H);
-  flowers.forEach((flower,fIndex)=>{
-    let {layers,depth}=flower;
-    let offsetY=parallaxY*depth*0.5; // parallax on reveal too
-    let offsetX=Math.sin(fIndex)*parallaxY*0.05*depth;
+  bgCtx.lineWidth = 1;
+
+  flowers.forEach((flower)=>{
+    const {layers,depth, idx} = flower;
+    const offsetY = parallaxY*depth*0.5;
+    const offsetX = Math.sin(idx)*parallaxY*0.05*depth;
+
     layers.forEach((layer,lIndex)=>{
       bgCtx.beginPath();
-      bgCtx.strokeStyle=`rgba(0,0,0,${0.05+0.03*lIndex})`;
+      bgCtx.strokeStyle = `rgba(0,0,0,${0.05+0.03*lIndex})`;
       let started=false;
-      for(let [bx,by,a,li] of layer){
-        if(by>cutY) continue;
-        let jitter=Math.sin(time*0.002+a*5+li*10)*2;
-        let x=bx+Math.cos(a)*jitter+offsetX;
-        let y=by+Math.sin(a)*jitter+offsetY;
-        if(Math.random()<0.01){started=false;continue;}
-        if(!started){bgCtx.moveTo(x,y);started=true;}else{bgCtx.lineTo(x,y);}
+
+      // dynamic decimation: draw every Nth point
+      for(let k=0;k<layer.length;k+=pointSkip){
+        const item = layer[k];
+        const bx=item[0], by=item[1], a=item[2], li=item[3];
+
+        if(by>cutY) { started=false; continue; }
+
+        // light jitter
+        const jitter = Math.sin(time*0.002 + a*5 + li*10) * 2;
+        const x = bx + Math.cos(a)*jitter + offsetX;
+        const y = by + Math.sin(a)*jitter + offsetY;
+
+        if(!started){ bgCtx.moveTo(x,y); started=true; }
+        else { bgCtx.lineTo(x,y); }
       }
       bgCtx.stroke();
     });
   });
 }
 
+/* ===== SCROLL MAPPING (no scroll speed manipulation) ===== */
 function getCutAndParallax(){
   const H=bgCanvas.height;
   const revealZone=window.innerHeight*2;
   const scrollY=window.scrollY;
-  let cutY,parallax=0;
 
+  let cutY, parallax=0;
   if(scrollY<revealZone){
     cutY=H*(scrollY/revealZone);
-    parallax=scrollY; // apply parallax already during reveal
+    parallax=scrollY;
   }else{
     cutY=H;
     parallax=scrollY;
   }
-
-  // extra fall-out section
-  const fallZone=2000;
-  let maxScroll=document.body.scrollHeight-window.innerHeight;
-  let fallStart=maxScroll-fallZone;
-  if(scrollY>fallStart){
-    let fallProgress=Math.min((scrollY-fallStart)/fallZone,1);
-    parallax+=(fallProgress*window.innerHeight*2);
-  }
-
+  // no extra math that changes perceived speed
   return {cutY,parallax,scrollY,revealZone};
 }
 
-/* === title morph === */
+/* ===== TITLE MORPH (quick & linear) ===== */
 const fromText="Memory of a Flower";
 const toText="Never Forget Love";
+
 function morphText(p){
-  const from=fromText.split(""),to=toText.split("");
+  const from=fromText.split(""), to=toText.split("");
   const maxLen=Math.max(from.length,to.length);
   const changeCount=Math.floor(p*maxLen);
   let result=[];
@@ -167,11 +184,10 @@ function morphText(p){
 function drawTitle(scrollY,revealZone){
   titleCtx.clearRect(0,0,titleCanvas.width,titleCanvas.height);
 
-  // start morph earlier
-  const morphStart = revealZone * 0.1;  // 50% into reveal
-  const morphLength = 4000;             // same length
-  let progress = 0;
+  const morphStart  = revealZone * 0.3;
+  const morphLength = 150; // finishes fast
 
+  let progress = 0;
   if(scrollY > morphStart) {
     progress = Math.min((scrollY - morphStart) / morphLength, 1);
   }
@@ -181,23 +197,10 @@ function drawTitle(scrollY,revealZone){
   titleCtx.font="bold 100px serif";
   titleCtx.textBaseline="middle";
   titleCtx.textAlign="left";
-  const kernLetter = {
-    "w": -6, "v": -6, "y": -8, "t": -6,
-    "W": -30, "V": -12, "Y": -8, "T": -6,
-    "g": -4, "r": -2, " ": -2
-  };
 
-  const kernPair = {
-    "wo": -16, "wa": -14,
-    "ow": -7, "aw": -10,
-    "Fo": -10, "Fl": 0,
-    "ov": -7, "Ne": -5,
-    "ev": -4, "Me": -5,
-    "mo": -4, "or": -4,
-    "lo": -4, "tF": 30,
-    "et": -2, "ry": 1,
-    "of": -2, "er": -1.5
-  };
+  const kernLetter = { "w": -6,"v": -6,"y": -8,"t": -6,"W": -30,"V": -12,"Y": -8,"T": -6,"g": -4,"r": -2," ": -2 };
+  const kernPair   = { "wo": -16,"wa": -14,"ow": -7,"aw": -10,"Fo": -10,"Fl": 0,"ov": -7,"Ne": -5,"ev": -4,"Me": -5,"mo": -4,"or": -4,"lo": -4,"tF": 30,"et": -2,"ry": 1,"of": -2,"er": -1.5 };
+
   function measure(arr){
     let tot=0;
     for(let i=0;i<arr.length;i++){
@@ -208,19 +211,27 @@ function drawTitle(scrollY,revealZone){
     }
     return tot;
   }
+
   const total=measure(letters);
-  let x=(titleCanvas.width-total)/2,y=titleCanvas.height/2;
+  let x=(titleCanvas.width-total)/2, y=titleCanvas.height/2;
+
+  titleCtx.shadowColor = "rgba(0,0,0,0.15)";
+  titleCtx.shadowBlur  = 6;
+  titleCtx.strokeStyle = "rgba(0,0,0,0.35)";
+
   for(let i=0;i<letters.length;i++){
     const ch=letters[i],next=letters[i+1]||"";
-    for(let j=0;j<5;j++){titleCtx.strokeStyle="rgba(0,0,0,0.15)";titleCtx.strokeText(ch,x,y);}
+    titleCtx.strokeText(ch,x,y);
     const w=titleCtx.measureText(ch).width;
     x+=w+(kernLetter[ch]||0)+(kernPair[ch+next]||0);
   }
+  titleCtx.shadowBlur = 0;
 }
 
+/* ===== LOOP ===== */
 function animate(){
   time++;
-  let {cutY,parallax,scrollY,revealZone}=getCutAndParallax();
+  const {cutY,parallax,scrollY,revealZone}=getCutAndParallax();
   drawMemoryGarden(cutY,parallax);
   drawTitle(scrollY,revealZone);
   document.getElementById("scroll-indicator").classList.toggle("hidden",scrollY>50);
