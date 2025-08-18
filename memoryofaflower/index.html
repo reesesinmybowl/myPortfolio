@@ -64,8 +64,8 @@ window.addEventListener("resize", resizeCanvas);
 
 function adjustBodyHeight() {
   const revealZone = window.innerHeight * 2;
-  const morphLength = 4000;
-  const fallZone = 6000;
+  const morphLength = 2000;
+  const fallZone = 500;
   document.body.style.height = (revealZone+morphLength+fallZone+window.innerHeight)+"px";
 }
 
@@ -137,7 +137,7 @@ function getCutAndParallax(){
   }
 
   // extra fall-out section
-  const fallZone=6000;
+  const fallZone=2000;
   let maxScroll=document.body.scrollHeight-window.innerHeight;
   let fallStart=maxScroll-fallZone;
   if(scrollY>fallStart){
@@ -166,10 +166,17 @@ function morphText(p){
 
 function drawTitle(scrollY,revealZone){
   titleCtx.clearRect(0,0,titleCanvas.width,titleCanvas.height);
-  const morphStart=revealZone,morphLength=4000;
-  let progress=0;
-  if(scrollY>morphStart) progress=Math.min((scrollY-morphStart)/morphLength,1);
-  const txt=morphText(progress);
+
+  // start morph earlier
+  const morphStart = revealZone * 0.1;  // 50% into reveal
+  const morphLength = 4000;             // same length
+  let progress = 0;
+
+  if(scrollY > morphStart) {
+    progress = Math.min((scrollY - morphStart) / morphLength, 1);
+  }
+
+  const txt = morphText(progress);
   const letters=txt.split("");
   titleCtx.font="bold 100px serif";
   titleCtx.textBaseline="middle";
