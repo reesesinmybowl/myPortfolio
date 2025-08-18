@@ -7,7 +7,6 @@
   body {
     margin: 0;
     background: #fafafa;
-    height: 9000px; /* extra tall page */
     overflow-x: hidden;
   }
   canvas {
@@ -65,8 +64,19 @@ function resizeCanvas() {
   titleCanvas.width = window.innerWidth;
   titleCanvas.height = window.innerHeight;
   generateFlowers();
+  adjustBodyHeight();
 }
 window.addEventListener("resize", resizeCanvas);
+
+function adjustBodyHeight() {
+  const revealZone = window.innerHeight * 2;
+  const pauseZone = 1200;
+  const morphLength = 4000;
+  const fallZone = 2000;
+
+  const neededHeight = revealZone + pauseZone + morphLength + fallZone + window.innerHeight;
+  document.body.style.height = neededHeight + "px";
+}
 
 function noise(t, seed=0) {
   return Math.sin(t*2.3 + seed*10) + Math.sin(t*0.7 + 1.5 + seed)*0.5;
@@ -202,7 +212,6 @@ function getMorphText(progress) {
 function drawTitle(scrollY, revealZone, pauseZone) {
   titleCtx.clearRect(0,0,titleCanvas.width,titleCanvas.height);
 
-  // scroll → morph progress
   const morphStart = revealZone + pauseZone;
   const morphLength = 4000;
   let progress = 0;
@@ -213,33 +222,27 @@ function drawTitle(scrollY, revealZone, pauseZone) {
 
   titleCtx.font = "bold 100px serif";
   titleCtx.textBaseline = "middle";
-  titleCtx.textAlign = "left"; // we're manually centering
+  titleCtx.textAlign = "left";
   titleCtx.lineWidth = 1;
 
-  // Per-letter tweaks (include LOWERCASE!)
   const kernLetter = {
     "w": -6, "v": -6, "y": -8, "t": -6,
     "W": -30, "V": -12, "Y": -8, "T": -6,
-    "g": -4, "r": -2, 
-    " ": -2 // tighten spaces a hair
+    "g": -4, "r": -2, " ": -2
   };
 
-  // Pair-specific tweaks (most impactful)
   const kernPair = {
-    "we": -0, "wo": -16, "wa": -14,
+    "wo": -16, "wa": -14,
     "ow": -7, "aw": -10,
-    "Fo": -6,  "Fl": 0, // for "Flower"
-    "ov": -7, "ve": -0,
-    "Ne": -5, "ev": -4,
-    "Me": -5, "mo": -4,
-    "or": -4, "lo": -4,
-    "Fo": -10, "tF": 30,
-    "et": -2, "lo": -3,
-    "ry": 1, "of": -2,
-    "er": -1.5,
+    "Fo": -10, "Fl": 0,
+    "ov": -7, "Ne": -5,
+    "ev": -4, "Me": -5,
+    "mo": -4, "or": -4,
+    "lo": -4, "tF": 30,
+    "et": -2, "ry": 1,
+    "of": -2, "er": -1.5
   };
 
-  // Measure total width with kerning (for centering)
   function measureWithKerning(arr) {
     let total = 0;
     for (let i = 0; i < arr.length; i++) {
@@ -256,7 +259,6 @@ function drawTitle(scrollY, revealZone, pauseZone) {
   let x = (titleCanvas.width - totalWidth) / 2;
   const y = titleCanvas.height / 2;
 
-  // Draw, applying kerning as we advance the pen
   for (let i = 0; i < letters.length; i++) {
     const ch   = letters[i];
     const next = letters[i+1] || "";
@@ -270,8 +272,6 @@ function drawTitle(scrollY, revealZone, pauseZone) {
   }
 }
 
-
-
 /* ===== Animate ===== */
 function animate() {
   time++;
@@ -279,7 +279,6 @@ function animate() {
   drawMemoryGarden(cutY, extra);
   drawTitle(scrollY, revealZone, pauseZone);
 
-  // hide scroll indicator once you scroll
   if (scrollY > 50) {
     document.getElementById("scroll-indicator").classList.add("hidden");
   } else {
