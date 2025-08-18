@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <title>Memory of a Flower</title>
 <style>
-  /* Ensure the browser doesn't add its own smooth scrolling */
-  html, body { scroll-behavior: auto; }
-
   body {
     margin: 0;
     background: #fafafa;
@@ -52,33 +49,48 @@ const bgCtx = bgCanvas.getContext("2d");
 const titleCanvas = document.getElementById("titleCanvas");
 const titleCtx = titleCanvas.getContext("2d");
 
+// --- timings / layout control (only tweak here) ---
+const CONFIG = {
+  revealZoneMult: 2,     // how many viewheights to reveal the garden
+  morphStartFrac: 0.10,  // fraction into reveal where the morph begins
+  morphLength: 4000      // px of scroll for the morph itself
+};
+
 let flowers = [];
 let time = 0;
+
+// Derived scroll landmarks (recomputed on resize)
+let REVEAL_ZONE = 0;
+let MORPH_START = 0;
+let MORPH_END = 0;
+
+function recomputeScrollLandmarks() {
+  REVEAL_ZONE = window.innerHeight * CONFIG.revealZoneMult;
+  MORPH_START = REVEAL_ZONE * CONFIG.morphStartFrac;
+  MORPH_END   = MORPH_START + CONFIG.morphLength;
+}
 
 function resizeCanvas() {
   bgCanvas.width = window.innerWidth;
   bgCanvas.height = window.innerHeight;
   titleCanvas.width = window.innerWidth;
   titleCanvas.height = window.innerHeight;
+  recomputeScrollLandmarks();
   generateFlowers();
   adjustBodyHeight();
 }
 window.addEventListener("resize", resizeCanvas);
 
 function adjustBodyHeight() {
-  const revealZone = window.innerHeight * 2;
-  const morphLength = 150;   // quick morph
-  const fallZone    = 800;   // extra scroll space only (does not alter speed)
-  document.body.style.height =
-    (revealZone + morphLength + fallZone + window.innerHeight) + "px";
+  // Hard stop exactly when morph completes (+ one viewport so it can rest there)
+  const totalScrollable = Math.max(REVEAL_ZONE, MORPH_END);
+  document.body.style.height = (totalScrollable + window.innerHeight) + "px";
 }
 
-/* ===== FLOWERS ===== */
 function noise(t,seed=0){return Math.sin(t*2.3+seed*10)+Math.sin(t*0.7+1.5+seed)*0.5;}
 
 function makeFlower(cx,cy,R,petals,layersCount,seedOffset=0){
   let layers=[];
-  // Precompute a reasonably fine path; we'll downsample dynamically when drawing
   for(let layer=0;layer<layersCount;layer++){
     let path=[];
     for(let a=0;a<=Math.PI*2;a+=0.05){
@@ -94,82 +106,64 @@ function makeFlower(cx,cy,R,petals,layersCount,seedOffset=0){
 function generateFlowers(){
   flowers=[];
   const W=bgCanvas.width,H=bgCanvas.height;
-  const count = 25; // total geometry stays the same; draw-time decimation keeps FPS stable
-  for(let i=0;i<count;i++){
+  for(let i=0;i<25;i++){
     let cx=Math.random()*W,cy=Math.random()*H;
     let R=40+Math.random()*Math.min(W,H)/4;
     let petals=4+Math.floor(Math.random()*6);
     let layersCount=3+Math.floor(Math.random()*3);
     let depth=0.3+Math.random()*0.9;
-    flowers.push({layers:makeFlower(cx,cy,R,petals,layersCount,i*0.77),depth, idx:i});
+    flowers.push({layers:makeFlower(cx,cy,R,petals,layersCount,i*0.77),depth});
   }
 }
 
-/* ===== DRAW GARDEN with render-budget decimation ===== */
 function drawMemoryGarden(cutY,parallaxY){
   const W=bgCanvas.width,H=bgCanvas.height;
-  const revealP = Math.min(cutY / H, 1);        // 0 → 1 across reveal
-  // As more canvas is revealed, increase skip to keep total drawn vertices ~constant
-  // skip = 1 (full detail) at start, grows up to ~4x fewer points near full reveal
-  const pointSkip = 1 + Math.floor(revealP * 3);
-
   bgCtx.clearRect(0,0,W,H);
-  bgCtx.lineWidth = 1;
-
-  flowers.forEach((flower)=>{
-    const {layers,depth, idx} = flower;
-    const offsetY = parallaxY*depth*0.5;
-    const offsetX = Math.sin(idx)*parallaxY*0.05*depth;
-
+  flowers.forEach((flower,fIndex)=>{
+    let {layers,depth}=flower;
+    let offsetY=parallaxY*depth*0.5;
+    let offsetX=Math.sin(fIndex)*parallaxY*0.05*depth;
     layers.forEach((layer,lIndex)=>{
       bgCtx.beginPath();
-      bgCtx.strokeStyle = `rgba(0,0,0,${0.05+0.03*lIndex})`;
+      bgCtx.strokeStyle=`rgba(0,0,0,${0.05+0.03*lIndex})`;
       let started=false;
-
-      // dynamic decimation: draw every Nth point
-      for(let k=0;k<layer.length;k+=pointSkip){
-        const item = layer[k];
-        const bx=item[0], by=item[1], a=item[2], li=item[3];
-
-        if(by>cutY) { started=false; continue; }
-
-        // light jitter
-        const jitter = Math.sin(time*0.002 + a*5 + li*10) * 2;
-        const x = bx + Math.cos(a)*jitter + offsetX;
-        const y = by + Math.sin(a)*jitter + offsetY;
-
-        if(!started){ bgCtx.moveTo(x,y); started=true; }
-        else { bgCtx.lineTo(x,y); }
+      for(let [bx,by,a,li] of layer){
+        if(by>cutY) continue;
+        let jitter=Math.sin(time*0.002+a*5+li*10)*2;
+        let x=bx+Math.cos(a)*jitter+offsetX;
+        let y=by+Math.sin(a)*jitter+offsetY;
+        if(Math.random()<0.01){started=false;continue;}
+        if(!started){bgCtx.moveTo(x,y);started=true;}else{bgCtx.lineTo(x,y);}
       }
       bgCtx.stroke();
     });
   });
 }
 
-/* ===== SCROLL MAPPING (no scroll speed manipulation) ===== */
 function getCutAndParallax(){
   const H=bgCanvas.height;
-  const revealZone=window.innerHeight*2;
-  const scrollY=window.scrollY;
+  const rawScroll = window.scrollY;
+  // Clamp all rendering past the morph end so visuals don't "creep"
+  const scrollY = Math.min(rawScroll, MORPH_END);
 
-  let cutY, parallax=0;
-  if(scrollY<revealZone){
-    cutY=H*(scrollY/revealZone);
-    parallax=scrollY;
+  let cutY, parallax = 0;
+
+  if(scrollY < REVEAL_ZONE){
+    cutY = H * (scrollY / REVEAL_ZONE);
+    parallax = scrollY;
   }else{
-    cutY=H;
-    parallax=scrollY;
+    cutY = H;
+    parallax = scrollY;
   }
-  // no extra math that changes perceived speed
-  return {cutY,parallax,scrollY,revealZone};
+
+  return {cutY,parallax,scrollY};
 }
 
-/* ===== TITLE MORPH (quick & linear) ===== */
+/* === title morph === */
 const fromText="Memory of a Flower";
 const toText="Never Forget Love";
-
 function morphText(p){
-  const from=fromText.split(""), to=toText.split("");
+  const from=fromText.split(""),to=toText.split("");
   const maxLen=Math.max(from.length,to.length);
   const changeCount=Math.floor(p*maxLen);
   let result=[];
@@ -181,15 +175,12 @@ function morphText(p){
   return result.join("");
 }
 
-function drawTitle(scrollY,revealZone){
+function drawTitle(scrollY){
   titleCtx.clearRect(0,0,titleCanvas.width,titleCanvas.height);
 
-  const morphStart  = revealZone * 0.3;
-  const morphLength = 150; // finishes fast
-
   let progress = 0;
-  if(scrollY > morphStart) {
-    progress = Math.min((scrollY - morphStart) / morphLength, 1);
+  if(scrollY > MORPH_START) {
+    progress = Math.min((scrollY - MORPH_START) / (MORPH_END - MORPH_START), 1);
   }
 
   const txt = morphText(progress);
@@ -197,9 +188,22 @@ function drawTitle(scrollY,revealZone){
   titleCtx.font="bold 100px serif";
   titleCtx.textBaseline="middle";
   titleCtx.textAlign="left";
-
-  const kernLetter = { "w": -6,"v": -6,"y": -8,"t": -6,"W": -30,"V": -12,"Y": -8,"T": -6,"g": -4,"r": -2," ": -2 };
-  const kernPair   = { "wo": -16,"wa": -14,"ow": -7,"aw": -10,"Fo": -10,"Fl": 0,"ov": -7,"Ne": -5,"ev": -4,"Me": -5,"mo": -4,"or": -4,"lo": -4,"tF": 30,"et": -2,"ry": 1,"of": -2,"er": -1.5 };
+  const kernLetter = {
+    "w": -6, "v": -6, "y": -8, "t": -6,
+    "W": -30, "V": -12, "Y": -8, "T": -6,
+    "g": -4, "r": -2, " ": -2
+  };
+  const kernPair = {
+    "wo": -16, "wa": -14,
+    "ow": -7, "aw": -10,
+    "Fo": -10, "Fl": 0,
+    "ov": -7, "Ne": -5,
+    "ev": -4, "Me": -5,
+    "mo": -4, "or": -4,
+    "lo": -4, "tF": 30,
+    "et": -2, "ry": 1,
+    "of": -2, "er": -1.5
+  };
 
   function measure(arr){
     let tot=0;
@@ -211,32 +215,35 @@ function drawTitle(scrollY,revealZone){
     }
     return tot;
   }
-
   const total=measure(letters);
-  let x=(titleCanvas.width-total)/2, y=titleCanvas.height/2;
-
-  titleCtx.shadowColor = "rgba(0,0,0,0.15)";
-  titleCtx.shadowBlur  = 6;
-  titleCtx.strokeStyle = "rgba(0,0,0,0.35)";
+  let x=(titleCanvas.width-total)/2,y=titleCanvas.height/2;
 
   for(let i=0;i<letters.length;i++){
     const ch=letters[i],next=letters[i+1]||"";
-    titleCtx.strokeText(ch,x,y);
+    for(let j=0;j<5;j++){titleCtx.strokeStyle="rgba(0,0,0,0.15)";titleCtx.strokeText(ch,x,y);}
     const w=titleCtx.measureText(ch).width;
     x+=w+(kernLetter[ch]||0)+(kernPair[ch+next]||0);
   }
-  titleCtx.shadowBlur = 0;
 }
 
-/* ===== LOOP ===== */
 function animate(){
   time++;
-  const {cutY,parallax,scrollY,revealZone}=getCutAndParallax();
+  const {cutY,parallax,scrollY}=getCutAndParallax();
   drawMemoryGarden(cutY,parallax);
-  drawTitle(scrollY,revealZone);
-  document.getElementById("scroll-indicator").classList.toggle("hidden",scrollY>50);
+  drawTitle(scrollY);
+
+  // Hide the indicator once we've moved a bit
+  document.getElementById("scroll-indicator").classList.toggle("hidden",window.scrollY>50);
+
   requestAnimationFrame(animate);
 }
+
+// Prevent overscrolling past the morph end on momentum devices (iOS, touchpads)
+window.addEventListener('scroll', () => {
+  if (window.scrollY > MORPH_END) {
+    window.scrollTo(0, MORPH_END);
+  }
+}, { passive: true });
 
 resizeCanvas();
 animate();
