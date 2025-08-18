@@ -22,7 +22,7 @@ body {
 .left {
   position: fixed;
   top: 20px;
-  left: 20px;
+  left: 40px;
   width: 280px;
   line-height: 1.4;
   z-index: 1000;

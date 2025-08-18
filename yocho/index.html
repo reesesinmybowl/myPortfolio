@@ -15,6 +15,7 @@ body {
   font-family: 'Inter', sans-serif;
   position: relative;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
 /* === BACK BUTTON (desktop) === */
@@ -39,12 +40,41 @@ body {
 .hero-image { width: 100vw; height: 100vh; overflow: hidden; }
 .hero-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* === MOBILE LAYOUT: merge hero-image into carousel === */
+/* === MARQUEE FIXED BOTTOM === */
+.marquee {
+  position: fixed;
+  bottom: 0; left: 0;
+  width: 100%;
+  background: #000;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  z-index: 1000;
+  padding: 10px 0;
+}
+
+.marquee__inner {
+  display: flex;
+  width: max-content;
+  animation: scroll 35s linear infinite;
+}
+
+.marquee__inner span {
+  margin-right: 2rem;
+}
+
+/* smooth loop */
+@keyframes scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* === MOBILE LAYOUT === */
 @media (max-width: 768px) {
-  /* Hide back button */
   .back-button { display: none; }
 
-  /* Turn .hero into a full-height horizontal scroller containing all images */
   .hero {
     width: 100%;
     height: 100vh;
@@ -60,10 +90,7 @@ body {
     .hero { height: 100svh; }
   }
 
-  /* Flatten .hero-inner and .hero-image into same flex track */
-  .hero-inner {
-    display: contents; /* keep children but remove wrapper from layout */
-  }
+  .hero-inner { display: contents; }
 
   .hero-inner img,
   .hero-inner video,
@@ -72,7 +99,6 @@ body {
     width: auto;
     object-fit: contain;
     display: block;
-    border-radius: 0;
     background: #000;
     flex: 0 0 auto;
     scroll-snap-align: start;
@@ -83,8 +109,9 @@ body {
   .hero::-webkit-scrollbar { display: none; }
   .hero-inner, .hero { scrollbar-width: none; }
 
-  /* Remove separate hero-image block spacing */
   .hero-image { display: contents; height: auto; }
+
+  .marquee { font-size: 1.4rem; }
 }
 </style>
 </head>
@@ -95,7 +122,10 @@ body {
 <div class="hero">
   <div class="hero-inner">
     <img src="../Images/yocho2.png" alt="Mountain Stage Background" loading="lazy" decoding="async">
+    <img src="../Images/yocho-profile.png" alt="Tour de France Postcard" loading="lazy" decoding="async">
     <img src="../Images/yochopic1.png" alt="Tour de France Postcard" loading="lazy" decoding="async">
+    <img src="../Images/yocho-place.png" alt="Tour de France Postcard" loading="lazy" decoding="async">
+
   </div>
   <div class="hero-image">
     <img src="../Images/yocho_frontcover.png" alt="Hero Image" loading="lazy" decoding="async">
