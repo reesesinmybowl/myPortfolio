@@ -19,7 +19,6 @@
   #bgCanvas { z-index: 0; }
   #titleCanvas { z-index: 1; pointer-events: none; }
 
-  /* ===== Scroll indicator ===== */
   #scroll-indicator {
     position: fixed;
     bottom: 40px;
@@ -32,16 +31,11 @@
     z-index: 2;
     transition: opacity 0.6s;
   }
-
   @keyframes bounce {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(-10px); }
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50%     { transform: translateX(-50%) translateY(-10px); }
   }
-
-  #scroll-indicator.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
+  #scroll-indicator.hidden { opacity: 0; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -50,13 +44,13 @@
 <div id="scroll-indicator">scroll</div>
 
 <script>
-/* ===== Flower background ===== */
 const bgCanvas = document.getElementById("bgCanvas");
 const bgCtx = bgCanvas.getContext("2d");
+const titleCanvas = document.getElementById("titleCanvas");
+const titleCtx = titleCanvas.getContext("2d");
 
 let flowers = [];
 let time = 0;
-let smoothCutY = 0;
 
 function resizeCanvas() {
   bgCanvas.width = window.innerWidth;
@@ -70,161 +64,116 @@ window.addEventListener("resize", resizeCanvas);
 
 function adjustBodyHeight() {
   const revealZone = window.innerHeight * 2;
-  const pauseZone = 1200;
   const morphLength = 4000;
-  const fallZone = 2000;
-
-  const neededHeight = revealZone + pauseZone + morphLength + fallZone + window.innerHeight;
-  document.body.style.height = neededHeight + "px";
+  const fallZone = 6000;
+  document.body.style.height = (revealZone+morphLength+fallZone+window.innerHeight)+"px";
 }
 
-function noise(t, seed=0) {
-  return Math.sin(t*2.3 + seed*10) + Math.sin(t*0.7 + 1.5 + seed)*0.5;
-}
+function noise(t,seed=0){return Math.sin(t*2.3+seed*10)+Math.sin(t*0.7+1.5+seed)*0.5;}
 
-function makeFlower(cx, cy, R, petals, layersCount, seedOffset=0) {
-  let layers = [];
-  for (let layer=0; layer<layersCount; layer++) {
-    let path = [];
-    for (let a=0; a<=Math.PI*2; a+=0.05) {
-      let r = R * (0.65 + 0.35*Math.cos(petals*a));
-      r += noise(a*2 + seedOffset, layer) * (10 + layer*3);
-      let x = cx + r * Math.cos(a);
-      let y = cy + r * Math.sin(a);
-      path.push([x,y,a,layer]);
+function makeFlower(cx,cy,R,petals,layersCount,seedOffset=0){
+  let layers=[];
+  for(let layer=0;layer<layersCount;layer++){
+    let path=[];
+    for(let a=0;a<=Math.PI*2;a+=0.05){
+      let r=R*(0.65+0.35*Math.cos(petals*a));
+      r+=noise(a*2+seedOffset,layer)*(10+layer*3);
+      path.push([cx+r*Math.cos(a),cy+r*Math.sin(a),a,layer]);
     }
     layers.push(path);
   }
   return layers;
 }
 
-function generateFlowers() {
-  flowers = [];
-  const W = bgCanvas.width;
-  const H = bgCanvas.height;
-  const count = 25;
-  for (let i=0; i<count; i++) {
-    let cx = Math.random()*W;
-    let cy = Math.random()*H;
-    let R = 40 + Math.random()*Math.min(W,H)/4;
-    let petals = 4 + Math.floor(Math.random()*6);
-    let layersCount = 3 + Math.floor(Math.random()*3);
-    let depth = 0.3 + Math.random()*0.9;
-    flowers.push({ layers: makeFlower(cx, cy, R, petals, layersCount, i*0.77), depth });
+function generateFlowers(){
+  flowers=[];
+  const W=bgCanvas.width,H=bgCanvas.height;
+  for(let i=0;i<25;i++){
+    let cx=Math.random()*W,cy=Math.random()*H;
+    let R=40+Math.random()*Math.min(W,H)/4;
+    let petals=4+Math.floor(Math.random()*6);
+    let layersCount=3+Math.floor(Math.random()*3);
+    let depth=0.3+Math.random()*0.9;
+    flowers.push({layers:makeFlower(cx,cy,R,petals,layersCount,i*0.77),depth});
   }
 }
 
-function drawMemoryGarden(cutY, extraScroll) {
-  const W = bgCanvas.width;
-  const H = bgCanvas.height;
+function drawMemoryGarden(cutY,parallaxY){
+  const W=bgCanvas.width,H=bgCanvas.height;
   bgCtx.clearRect(0,0,W,H);
-
-  flowers.forEach((flower, fIndex) => {
-    let { layers, depth } = flower;
-    let offsetY = extraScroll * depth * 0.3;
-    let offsetX = Math.sin(fIndex) * extraScroll * 0.05 * depth;
-
-    layers.forEach((layer, lIndex) => {
+  flowers.forEach((flower,fIndex)=>{
+    let {layers,depth}=flower;
+    let offsetY=parallaxY*depth*0.5; // parallax on reveal too
+    let offsetX=Math.sin(fIndex)*parallaxY*0.05*depth;
+    layers.forEach((layer,lIndex)=>{
       bgCtx.beginPath();
-      let baseAlpha = 0.05 + (0.03*lIndex);
-      bgCtx.strokeStyle = `rgba(0,0,0,${baseAlpha})`;
-      bgCtx.lineWidth = 1;
-      let started = false;
-      for (let [baseX, baseY, a, layerIndex] of layer) {
-        if (baseY > cutY) continue;
-        let jitter = Math.sin(time*0.002 + a*5 + layerIndex*10) * 2;
-        let x = baseX + Math.cos(a) * jitter + offsetX;
-        let y = baseY + Math.sin(a) * jitter + offsetY;
-        if (Math.random() < 0.01) { started = false; continue; }
-        if (!started) { bgCtx.moveTo(x,y); started = true; }
-        else bgCtx.lineTo(x,y);
+      bgCtx.strokeStyle=`rgba(0,0,0,${0.05+0.03*lIndex})`;
+      let started=false;
+      for(let [bx,by,a,li] of layer){
+        if(by>cutY) continue;
+        let jitter=Math.sin(time*0.002+a*5+li*10)*2;
+        let x=bx+Math.cos(a)*jitter+offsetX;
+        let y=by+Math.sin(a)*jitter+offsetY;
+        if(Math.random()<0.01){started=false;continue;}
+        if(!started){bgCtx.moveTo(x,y);started=true;}else{bgCtx.lineTo(x,y);}
       }
       bgCtx.stroke();
     });
   });
 }
 
-function getCutAndExtra() {
-  const H = bgCanvas.height;
-  const revealZone = window.innerHeight * 2;
-  const pauseZone = 1200; 
-  let scrollY = window.scrollY;
+function getCutAndParallax(){
+  const H=bgCanvas.height;
+  const revealZone=window.innerHeight*2;
+  const scrollY=window.scrollY;
+  let cutY,parallax=0;
 
-  let targetCutY, extra;
-
-  if (scrollY < revealZone) {
-    let progress = scrollY / revealZone;
-    targetCutY = H * progress;
-    extra = 0;
-  } else if (scrollY < revealZone + pauseZone) {
-    targetCutY = H;
-    extra = 0;
-  } else {
-    targetCutY = H;
-    extra = scrollY - (revealZone + pauseZone);
+  if(scrollY<revealZone){
+    cutY=H*(scrollY/revealZone);
+    parallax=scrollY; // apply parallax already during reveal
+  }else{
+    cutY=H;
+    parallax=scrollY;
   }
 
-  const maxStep = 20;
-  let diff = targetCutY - smoothCutY;
-  if (Math.abs(diff) > maxStep) {
-    smoothCutY += Math.sign(diff) * maxStep;
-  } else {
-    smoothCutY = targetCutY;
+  // extra fall-out section
+  const fallZone=6000;
+  let maxScroll=document.body.scrollHeight-window.innerHeight;
+  let fallStart=maxScroll-fallZone;
+  if(scrollY>fallStart){
+    let fallProgress=Math.min((scrollY-fallStart)/fallZone,1);
+    parallax+=(fallProgress*window.innerHeight*2);
   }
 
-  const fallZone = 2000;
-  let maxScroll = document.body.scrollHeight - window.innerHeight;
-  let fallStart = maxScroll - fallZone;
-  if (scrollY > fallStart) {
-    let fallProgress = Math.min((scrollY - fallStart) / fallZone, 1);
-    extra += fallProgress * window.innerHeight * 2;
-  }
-
-  return { cutY: smoothCutY, extra, scrollY, revealZone, pauseZone };
+  return {cutY,parallax,scrollY,revealZone};
 }
 
-/* ===== Title text morph ===== */
-const titleCanvas = document.getElementById("titleCanvas");
-const titleCtx = titleCanvas.getContext("2d");
-
-const initialText = "Memory of a Flower";
-const newText = "Never Forget Love";
-
-function getMorphText(progress) {
-  const from = initialText.split("");
-  const to = newText.split("");
-  const maxLen = Math.max(from.length, to.length);
-  const changeCount = Math.floor(progress * maxLen);
-  let result = [];
-
-  for (let i=0; i<maxLen; i++) {
-    if (i < changeCount && i < to.length) {
-      result.push(to[i]);
-    } else if (i < from.length && i >= changeCount) {
-      result.push(from[i]);
-    } else if (i < to.length) {
-      result.push(to[i]);
-    }
+/* === title morph === */
+const fromText="Memory of a Flower";
+const toText="Never Forget Love";
+function morphText(p){
+  const from=fromText.split(""),to=toText.split("");
+  const maxLen=Math.max(from.length,to.length);
+  const changeCount=Math.floor(p*maxLen);
+  let result=[];
+  for(let i=0;i<maxLen;i++){
+    if(i<changeCount && i<to.length) result.push(to[i]);
+    else if(i<from.length && i>=changeCount) result.push(from[i]);
+    else if(i<to.length) result.push(to[i]);
   }
   return result.join("");
 }
 
-function drawTitle(scrollY, revealZone, pauseZone) {
+function drawTitle(scrollY,revealZone){
   titleCtx.clearRect(0,0,titleCanvas.width,titleCanvas.height);
-
-  const morphStart = revealZone + pauseZone;
-  const morphLength = 4000;
-  let progress = 0;
-  if (scrollY > morphStart) progress = Math.min((scrollY - morphStart) / morphLength, 1);
-
-  const displayText = getMorphText(progress);
-  const letters = displayText.split("");
-
-  titleCtx.font = "bold 100px serif";
-  titleCtx.textBaseline = "middle";
-  titleCtx.textAlign = "left";
-  titleCtx.lineWidth = 1;
-
+  const morphStart=revealZone,morphLength=4000;
+  let progress=0;
+  if(scrollY>morphStart) progress=Math.min((scrollY-morphStart)/morphLength,1);
+  const txt=morphText(progress);
+  const letters=txt.split("");
+  titleCtx.font="bold 100px serif";
+  titleCtx.textBaseline="middle";
+  titleCtx.textAlign="left";
   const kernLetter = {
     "w": -6, "v": -6, "y": -8, "t": -6,
     "W": -30, "V": -12, "Y": -8, "T": -6,
@@ -242,49 +191,32 @@ function drawTitle(scrollY, revealZone, pauseZone) {
     "et": -2, "ry": 1,
     "of": -2, "er": -1.5
   };
-
-  function measureWithKerning(arr) {
-    let total = 0;
-    for (let i = 0; i < arr.length; i++) {
-      const ch   = arr[i];
-      const next = arr[i+1] || "";
-      const w    = titleCtx.measureText(ch).width;
-      const adj  = (kernLetter[ch] || 0) + (kernPair[ch + next] || 0);
-      total += w + adj;
+  function measure(arr){
+    let tot=0;
+    for(let i=0;i<arr.length;i++){
+      const ch=arr[i],next=arr[i+1]||"";
+      const w=titleCtx.measureText(ch).width;
+      const adj=(kernLetter[ch]||0)+(kernPair[ch+next]||0);
+      tot+=w+adj;
     }
-    return total;
+    return tot;
   }
-
-  const totalWidth = measureWithKerning(letters);
-  let x = (titleCanvas.width - totalWidth) / 2;
-  const y = titleCanvas.height / 2;
-
-  for (let i = 0; i < letters.length; i++) {
-    const ch   = letters[i];
-    const next = letters[i+1] || "";
-    for (let j = 0; j < 5; j++) {
-      titleCtx.strokeStyle = "rgba(0,0,0,0.15)";
-      titleCtx.strokeText(ch, x, y);
-    }
-    const w   = titleCtx.measureText(ch).width;
-    const adj = (kernLetter[ch] || 0) + (kernPair[ch + next] || 0);
-    x += w + adj;
+  const total=measure(letters);
+  let x=(titleCanvas.width-total)/2,y=titleCanvas.height/2;
+  for(let i=0;i<letters.length;i++){
+    const ch=letters[i],next=letters[i+1]||"";
+    for(let j=0;j<5;j++){titleCtx.strokeStyle="rgba(0,0,0,0.15)";titleCtx.strokeText(ch,x,y);}
+    const w=titleCtx.measureText(ch).width;
+    x+=w+(kernLetter[ch]||0)+(kernPair[ch+next]||0);
   }
 }
 
-/* ===== Animate ===== */
-function animate() {
+function animate(){
   time++;
-  let { cutY, extra, scrollY, revealZone, pauseZone } = getCutAndExtra();
-  drawMemoryGarden(cutY, extra);
-  drawTitle(scrollY, revealZone, pauseZone);
-
-  if (scrollY > 50) {
-    document.getElementById("scroll-indicator").classList.add("hidden");
-  } else {
-    document.getElementById("scroll-indicator").classList.remove("hidden");
-  }
-
+  let {cutY,parallax,scrollY,revealZone}=getCutAndParallax();
+  drawMemoryGarden(cutY,parallax);
+  drawTitle(scrollY,revealZone);
+  document.getElementById("scroll-indicator").classList.toggle("hidden",scrollY>50);
   requestAnimationFrame(animate);
 }
 
