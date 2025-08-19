@@ -1,340 +1,272 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Memory of a Flower</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Berries & Dairies</title>
 <style>
-  /* --- Base --- */
-  :root { --experienceLen: 4000px; } /* JS sets reveal + morph */
-  html, body { height: 100%; }
-  body {
-    margin: 0;
-    background: #fafafa;
-    color: #111;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    overflow-x: hidden;
-  }
+:root{
+  --bg0:#8DB2FF;
+  --bg-dyn: var(--bg0);
 
-  /* --- Fixed overlay for FLOWERS ONLY (persists over normal page) --- */
-  #flowers-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 0;           /* under any future UI if needed */
-    pointer-events: none; /* purely visual */
-    /* no opacity transitions; no fade-out */
-  }
+  --ink:#ffffff;
+  --gap:0.3em;
 
-  /* Canvases */
-  canvas {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100vw;
-    height: 100vh;
-  }
-  #bgCanvas { z-index: 0; }            /* lives in overlay */
-  #titleCanvas { z-index: 1; }         /* lives in sticky section */
+  --region-eu:#2456d6;
+  --region-asia:#0f996e;
+  --region-amer:#a33bd4;
+  --region-arctic:#b8561a;
+  --region-africa:#d18f0a;
+  --region-oce:#0a7bd1;
+}
 
-  /* --- Sticky scrollytelling section (text + reveal) --- */
-  section#experience {
-    position: relative;
-    height: calc(100vh + var(--experienceLen)); /* gives scroll length */
-    z-index: 1;  /* above flowers so the text sits on top during the scene */
-  }
-  .experience-sticky {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-  }
+*{box-sizing:border-box;}
+html,body{
+  height:100%;
+  margin:0;
+  font-family: Helvetica, Arial, sans-serif;
+  color:var(--ink);
+  display:flex;
+  flex-direction:column;
+  background:var(--bg-dyn);
+  transition: background-color .4s ease, background .4s ease;
+  width:100%;
+  overflow-x:hidden;           /* ✅ kill horizontal scroll */
+}
 
-  /* Scroll hint (during scene only) */
-  #scroll-indicator {
-    position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: serif;
-    font-size: 18px;
-    color: rgba(0,0,0,0.5);
-    animation: bounce 1.5s infinite;
-    z-index: 2;
-    transition: opacity .6s ease;
-  }
-  @keyframes bounce {
-    0%,100% { transform: translateX(-50%) translateY(0); }
-    50%     { transform: translateX(-50%) translateY(-10px); }
-  }
-  #scroll-indicator.hidden { opacity: 0; pointer-events: none; }
+img,video,svg{max-width:100%; height:auto;} /* ✅ media never overflow */
 
-  /* Minimal normal page to demonstrate handoff (just blank height) */
-  #page-spacer { height: 3000px; } /* adjust if you want longer page */
+/* ===== Header / Footer ===== */
+header, footer{
+  padding:1rem;
+  font-size:1rem;
+  font-weight:500;
+  flex-shrink:0;
+  background:var(--bg-dyn);
+  transition: background-color .4s ease, background .4s ease;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+footer {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 1rem;
+  font-weight: 400;
+  max-width: 800px;
+  margin-left: 5px; /* match .text-block */
+  padding: 1rem 0;
+  line-height: 1.1;
+}
+
+/* ===== Region nav ===== */
+.region-nav{
+  display:flex; 
+  gap:1rem;
+  flex-wrap:wrap;         /* ✅ wrap on small screens */
+  max-width:100%;         /* ✅ never exceed viewport */
+}
+.region-nav button{
+  background:none; border:none; color:#fff;
+  font-size:1rem; cursor:pointer;
+  padding:.3em .6em; border-radius:4px;
+  transition:background .25s ease;
+  min-width:0;            /* ✅ allow shrink */
+}
+.region-nav button:hover{ background:rgba(255,255,255,.2) }
+.region-nav button.active{ background:rgba(255,255,255,.4) }
+
+/* ===== Main ===== */
+main{
+  flex:1;
+  padding:2rem 0;
+}
+
+.text-block{
+  font-size:clamp(2rem,5vw,6rem);
+  font-weight:400;
+  line-height:0.9em;
+  letter-spacing:-0.04em;
+  text-align:justify;
+  word-spacing:var(--gap);
+  hyphens:auto;
+  overflow-wrap:anywhere;  /* ✅ break long words */
+  margin: 0 5px;
+}
+
+.berry{
+  display:inline-block;
+  margin-right:0.05em;
+  position:relative;
+  transition: opacity .35s ease, transform .35s ease, color .25s ease;
+  will-change: opacity, transform;
+}
+
+.berry.hide{
+  opacity:0;
+  transform:translateY(10px);
+  pointer-events:none;
+}
+
+/* ===== Mobile tweaks ===== */
+@media (max-width: 768px){
+  header{ padding:.75rem .5rem; }
+  .region-nav{ gap:.5rem; }
+  .region-nav button{ font-size:.9rem; padding:.25em .5em; }
+  main{ padding:1rem 0; }
+  .text-block{
+    font-size: clamp(1.6rem, 9vw, 3.2rem); /* ✅ safer size on phone */
+    margin: 0 .5rem;                       /* ✅ tiny gutter */
+  }
+  footer{
+    max-width:none; 
+    margin: 0 .5rem; 
+    padding: .8rem 0;
+    line-height:1.3;
+  }
+}
 </style>
 </head>
 <body>
-
-<!-- Flowers stay here so they can continue OVER the normal page -->
-<div id="flowers-overlay">
-  <canvas id="bgCanvas"></canvas>
-</div>
-
-<!-- Sticky scene: title and reveal live here; this part hands off to normal page -->
-<section id="experience">
-  <div class="experience-sticky">
-    <canvas id="titleCanvas"></canvas>
-    <div id="scroll-indicator">scroll</div>
+<header>
+  <div>Berries & Dairies ✦</div>
+  <div class="region-nav">
+    <button data-filter="all" class="active">All</button>
+    <button data-filter="Europe">Europe</button>
+    <button data-filter="Asia">Asia</button>
+    <button data-filter="Americas">Americas</button>
+    <button data-filter="Arctic">Arctic</button>
+    <button data-filter="Africa">Africa</button>
+    <button data-filter="Oceania">Oceania</button>
   </div>
-</section>
+</header>
 
-<!-- Normal page content (minimal, just gives you room to see the handoff) -->
-<div id="page-spacer" aria-hidden="true"></div>
+<main>
+  <div class="text-block">
+    <!-- Europe -->
+    <span class="berry" data-region="Europe">Lingonberry</span>
+    <span class="berry" data-region="Europe">Bilberry</span>
+    <span class="berry" data-region="Europe">Sea Buckthorn</span>
+    <span class="berry" data-region="Europe">Blackcurrant</span>
+    <span class="berry" data-region="Europe">Rowan Berry</span>
+    <span class="berry" data-region="Europe">Gooseberry</span>
+    <span class="berry" data-region="Europe">Elderberry</span>
+    <span class="berry" data-region="Europe">Redcurrant</span>
+    <span class="berry" data-region="Europe">Whitecurrant</span>
+    <span class="berry" data-region="Europe">Sloe</span>
+    <span class="berry" data-region="Europe">Barberry</span>
+
+    <!-- Arctic -->
+    <span class="berry" data-region="Arctic">Cloudberry</span>
+    <span class="berry" data-region="Arctic">Crowberry</span>
+    <span class="berry" data-region="Arctic">Bearberry</span>
+    <span class="berry" data-region="Arctic">Bog Bilberry</span>
+    <span class="berry" data-region="Arctic">Alpine Bearberry</span>
+
+    <!-- Asia -->
+    <span class="berry" data-region="Asia">Goji</span>
+    <span class="berry" data-region="Asia">Mulberry</span>
+    <span class="berry" data-region="Asia">Japanese Wineberry</span>
+    <span class="berry" data-region="Asia">Nanking Cherry</span>
+    <span class="berry" data-region="Asia">Hawthorn Berry</span>
+    <span class="berry" data-region="Asia">Schisandra</span>
+    <span class="berry" data-region="Asia">Indian Gooseberry</span>
+    <span class="berry" data-region="Asia">Bayberry</span>
+    <span class="berry" data-region="Asia">Chinese Wolfberry</span>
+
+    <!-- Americas -->
+    <span class="berry" data-region="Americas">Blueberry</span>
+    <span class="berry" data-region="Americas">Cranberry</span>
+    <span class="berry" data-region="Americas">Huckleberry</span>
+    <span class="berry" data-region="Americas">Boysenberry</span>
+    <span class="berry" data-region="Americas">Blackberry</span>
+    <span class="berry" data-region="Americas">Salmonberry</span>
+    <span class="berry" data-region="Americas">Serviceberry</span>
+    <span class="berry" data-region="Americas">Thimbleberry</span>
+    <span class="berry" data-region="Americas">American Elderberry</span>
+    <span class="berry" data-region="Americas">Buffaloberry</span>
+
+    <!-- Africa -->
+    <span class="berry" data-region="Africa">Marula</span>
+    <span class="berry" data-region="Africa">African Medlar</span>
+    <span class="berry" data-region="Africa">Kei Apple</span>
+    <span class="berry" data-region="Africa">Num Num Berry</span>
+    <span class="berry" data-region="Africa">Wild Medlar</span>
+
+    <!-- Oceania -->
+    <span class="berry" data-region="Oceania">Finger Lime</span>
+    <span class="berry" data-region="Oceania">Lilly Pilly</span>
+    <span class="berry" data-region="Oceania">Muntrie</span>
+    <span class="berry" data-region="Oceania">Davidson Plum</span>
+    <span class="berry" data-region="Oceania">Kakadu Plum</span>
+    <span class="berry" data-region="Oceania">Quandong</span>
+  </div>
+</main>
+
+<footer contenteditable="true">
+  This website was inspired by bonking out on a supposed quiet zone 2 ride and then stumbling upon some berries on the side of the road. I started seeing all kinds of crazy colors everywhere. The berries were not erotic, but the idea of erotic berries was born. Don't worry I was totally fine, just a little dizzy hehe =) <br>
+</footer>
 
 <script>
-/* ================== CONFIG ================== */
-/* Reveal → Morph (sticky) → Carry flowers over normal page (NO FADE on flowers) */
-const CONFIG = {
-  REVEAL_MULT: 2.0,   // reveal distance = viewport * this
-  MORPH_LEN: 2800,    // px of scroll for the title morph
-  CARRY_LEN: 2000,    // px AFTER morph where flowers keep flowing over page
-  FLOW_STRENGTH: 0.2, // vertical follow strength (0..1)
-  FLOW_X_SWAY: 0.05,  // horizontal sway factor
-
-  /* Title fade controls (faster visual fade) */
-  TITLE_FADE_LEN: 200,  // fade "duration" in scroll px (smaller = faster)
-  TITLE_FADE_POWER: 2   // easing power: 1=linear, 2=fast start, 3+=snappier
+const REGION_COLOR = {
+  Europe:   getComputedStyle(document.documentElement).getPropertyValue('--region-eu').trim(),
+  Asia:     getComputedStyle(document.documentElement).getPropertyValue('--region-asia').trim(),
+  Americas: getComputedStyle(document.documentElement).getPropertyValue('--region-amer').trim(),
+  Arctic:   getComputedStyle(document.documentElement).getPropertyValue('--region-arctic').trim(),
+  Africa:   getComputedStyle(document.documentElement).getPropertyValue('--region-africa').trim(),
+  Oceania:  getComputedStyle(document.documentElement).getPropertyValue('--region-oce').trim(),
+  all:      getComputedStyle(document.documentElement).getPropertyValue('--bg0').trim()
 };
 
-/* =============== DOM & STATE =============== */
-const flowersOverlay = document.getElementById('flowers-overlay');
-const experience = document.getElementById('experience');
-const bgCanvas = document.getElementById('bgCanvas');
-const bgCtx = bgCanvas.getContext('2d');
-const titleCanvas = document.getElementById('titleCanvas');
-const titleCtx = titleCanvas.getContext('2d');
-const hint = document.getElementById('scroll-indicator');
+let currentFilter = 'all';
 
-let flowers = [];
-let time = 0;
+// hover tilt + bg fade to hovered berry's region
+document.querySelectorAll('.berry').forEach(berry => {
+  berry.addEventListener('mouseenter', () => {
+    const randomAngle = (Math.random() * 8 - 4).toFixed(2);
+    const randomScale = 1 + Math.random() * 0.1;
+    berry.style.transform = `rotate(${randomAngle}deg) scale(${randomScale})`;
+    berry.style.color = 'black';
+    const col = REGION_COLOR[berry.dataset.region] || REGION_COLOR.all;
+    document.documentElement.style.setProperty('--bg-dyn', col);
+  });
 
-// Global layout refs
-let sectionTop = 0;        // absolute Y of the experience section
-let revealZone = 0;        // scroll length for reveal curtain
-let morphEndGlobal = 0;    // absolute scrollY where morph ends
-let carryEndGlobal = 0;    // absolute scrollY where overlay (flowers) finish
-
-/* =============== Layout / Sizing =============== */
-function setExperienceLength(){
-  revealZone = window.innerHeight * CONFIG.REVEAL_MULT;
-  const sceneTotal = Math.max(0, revealZone + CONFIG.MORPH_LEN);
-  document.documentElement.style.setProperty('--experienceLen', sceneTotal + 'px');
-
-  // Absolute positions for transitions
-  sectionTop = experience.offsetTop;
-  morphEndGlobal = sectionTop + sceneTotal;
-  carryEndGlobal = morphEndGlobal + CONFIG.CARRY_LEN;
-}
-
-function resizeCanvas() {
-  // Canvas sizes
-  bgCanvas.width = window.innerWidth;
-  bgCanvas.height = window.innerHeight;
-  titleCanvas.width = window.innerWidth;
-  titleCanvas.height = window.innerHeight;
-
-  // (Re)create flowers and compute heights
-  generateFlowers();
-  setExperienceLength();
-}
-
-window.addEventListener('resize', () => {
-  // Let layout settle before sampling offsets
-  requestAnimationFrame(resizeCanvas);
+  berry.addEventListener('mouseleave', () => {
+    berry.style.transform = '';
+    berry.style.color = '';
+    const col = REGION_COLOR[currentFilter] || REGION_COLOR.all;
+    document.documentElement.style.setProperty('--bg-dyn', col);
+  });
 });
 
-/* =============== Flowers geometry =============== */
-function noise(t,seed=0){
-  return Math.sin(t*2.3+seed*10)+Math.sin(t*0.7+1.5+seed)*0.5;
-}
-function makeFlower(cx,cy,R,petals,layersCount,seedOffset=0){
-  let layers=[];
-  for(let layer=0;layer<layersCount;layer++){
-    let path=[];
-    for(let a=0;a<=Math.PI*2;a+=0.05){
-      let r=R*(0.65+0.35*Math.cos(petals*a));
-      r+=noise(a*2+seedOffset,layer)*(10+layer*3);
-      path.push([cx+r*Math.cos(a),cy+r*Math.sin(a),a,layer]);
-    }
-    layers.push(path);
-  }
-  return layers;
-}
-function generateFlowers(){
-  flowers=[];
-  const W=bgCanvas.width,H=bgCanvas.height;
-  for(let i=0;i<25;i++){
-    let cx=Math.random()*W,cy=Math.random()*H;
-    let R=40+Math.random()*Math.min(W,H)/4;
-    let petals=4+Math.floor(Math.random()*6);
-    let layersCount=3+Math.floor(Math.random()*3);
-    let depth=0.3+Math.random()*0.9;
-    flowers.push({layers:makeFlower(cx,cy,R,petals,layersCount,i*0.77),depth,seed:i});
-  }
-}
+const buttons = document.querySelectorAll('.region-nav button');
+const berries = Array.from(document.querySelectorAll('.berry'));
 
-/* =============== Scroll mapping =============== */
-/* Returns: cutY (reveal curtain), parallax (follow amount), sectionScroll (0..sceneTotal) */
-function mapScroll(){
-  const H = bgCanvas.height;
-  const scrollY = window.scrollY;
+// smooth trickle filter
+buttons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    buttons.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
 
-  const sceneTotal = revealZone + CONFIG.MORPH_LEN; // sticky portion height
-  const sectionScroll = Math.max(0, Math.min(scrollY - sectionTop, sceneTotal));
+    currentFilter = btn.getAttribute('data-filter');
+    document.documentElement.style.setProperty('--bg-dyn', REGION_COLOR[currentFilter] || REGION_COLOR.all);
 
-  // Reveal curtain (only affects drawing mask)
-  const cutY = (sectionScroll < revealZone)
-    ? H * (sectionScroll / revealZone)
-    : H;
-
-  // Default parallax follows sectionScroll (reveal + morph)
-  let parallax = sectionScroll;
-
-  // After morph completes (normal page scroll now), keep flowers flowing for CARRY_LEN
-  if (scrollY > morphEndGlobal) {
-    const carry = Math.max(0, Math.min(scrollY - morphEndGlobal, CONFIG.CARRY_LEN));
-    parallax = sceneTotal + carry; // keep moving as you scroll the page
-  }
-
-  // Hide hint after a nudge or after morph
-  hint.classList.toggle('hidden', sectionScroll > 50 || scrollY > morphEndGlobal);
-
-  return {cutY, parallax, sectionScroll};
-}
-
-/* =============== Drawing =============== */
-function drawFlowers(cutY, parallax){
-  const W=bgCanvas.width,H=bgCanvas.height;
-  bgCtx.clearRect(0,0,W,H);
-
-  flowers.forEach((flower,fIndex)=>{
-    const {layers,depth,seed} = flower;
-    const swayX = Math.sin(fIndex) * parallax * CONFIG.FLOW_X_SWAY * depth;
-    const offsetY = parallax * depth * CONFIG.FLOW_STRENGTH;
-
-    layers.forEach((layer,lIndex)=>{
-      bgCtx.beginPath();
-      bgCtx.strokeStyle=`rgba(0,0,0,${0.05+0.03*lIndex})`;
-      let started=false;
-      for (let [bx,by,a,li] of layer){
-        if(by>cutY) continue; // masked by reveal
-        const jitter = Math.sin(time*0.002 + a*5 + li*10 + seed)*2;
-        const x = bx + Math.cos(a)*jitter + swayX;
-        const y = by + Math.sin(a)*jitter + offsetY;
-        if(Math.random()<0.01){ started=false; continue; }
-        if(!started){ bgCtx.moveTo(x,y); started=true; } else { bgCtx.lineTo(x,y); }
-      }
-      bgCtx.stroke();
+    let delay = 0;
+    berries.forEach(b=>{
+      const show = (currentFilter === 'all') || (b.dataset.region === currentFilter);
+      setTimeout(()=> b.classList.toggle('hide', !show), delay*25);
+      delay++;
     });
   });
-}
-
-/* === Title morph (sticky only) — with FAST fade near the end === */
-const fromText="Memory of a Flower";
-const toText="Never Forget Love";
-function morphText(p){
-  const from=fromText.split(""),to=toText.split("");
-  const maxLen=Math.max(from.length,to.length);
-  const changeCount=Math.floor(p*maxLen);
-  let result=[];
-  for(let i=0;i<maxLen;i++){
-    if(i<changeCount && i<to.length) result.push(to[i]);
-    else if(i<from.length && i>=changeCount) result.push(from[i]);
-    else if(i<to.length) result.push(to[i]);
-  }
-  return result.join("");
-}
-function drawTitle(sectionScroll){
-  titleCtx.clearRect(0,0,titleCanvas.width,titleCanvas.height);
-
-  // Morph progress
-  const morphStart = revealZone * 0.1;
-  const morphLength = CONFIG.MORPH_LEN;
-  let progress = 0;
-  if(sectionScroll > morphStart){
-    progress = Math.min((sectionScroll - morphStart) / morphLength, 1);
-  }
-
-  // Fast fade as the scene ends (starts right when it begins to scroll out)
-  const sceneTotal = revealZone + CONFIG.MORPH_LEN;
-  const fadeLen = Math.max(1, CONFIG.TITLE_FADE_LEN); // avoid divide-by-zero
-  const fadeStart = Math.max(0, sceneTotal - fadeLen);
-
-  let alpha = 1;
-  if (sectionScroll > fadeStart) {
-    let t = (sectionScroll - fadeStart) / fadeLen; // 0..1 across the fade zone
-    t = Math.min(Math.max(t, 0), 1);
-    // Ease the fade to make it feel faster (power > 1 makes it snappier)
-    const eased = Math.pow(t, CONFIG.TITLE_FADE_POWER);
-    alpha = 1 - eased;
-  }
-
-  const txt = morphText(progress);
-  const letters = txt.split("");
-
-  titleCtx.save();
-  titleCtx.globalAlpha = alpha; // apply fast fade
-  titleCtx.font = "bold 100px serif";
-  titleCtx.textBaseline = "middle";
-  titleCtx.textAlign = "left";
-
-  const kernLetter = {"w":-6,"v":-6,"y":-8,"t":-6,"W":-30,"V":-12,"Y":-8,"T":-6,"g":-4,"r":-2," ":-2};
-  const kernPair   = {"wo":-16,"wa":-14,"ow":-7,"aw":-10,"Fo":-10,"Fl":0,"ov":-7,"Ne":-5,"ev":-4,"Me":-5,"mo":-4,"or":-4,"lo":-4,"tF":30,"et":-2,"ry":1,"of":-2,"er":-1.5};
-
-  function measure(arr){
-    let tot=0;
-    for(let i=0;i<arr.length;i++){
-      const ch=arr[i],next=arr[i+1]||"";
-      const w=titleCtx.measureText(ch).width;
-      const adj=(kernLetter[ch]||0)+(kernPair[ch+next]||0);
-      tot+=w+adj;
-    }
-    return tot;
-  }
-
-  const total=measure(letters);
-  let x=(titleCanvas.width-total)/2, y=titleCanvas.height/2;
-
-  for(let i=0;i<letters.length;i++){
-    const ch=letters[i],next=letters[i+1]||"";
-    for(let j=0;j<5;j++){
-      titleCtx.strokeStyle="rgba(0,0,0,0.15)";
-      titleCtx.strokeText(ch,x,y);
-    }
-    const w=titleCtx.measureText(ch).width;
-    x+=w+(kernLetter[ch]||0)+(kernPair[ch+next]||0);
-  }
-  titleCtx.restore();
-}
-
-/* =============== Main loop =============== */
-function animate(){
-  time++;
-  const {cutY, parallax, sectionScroll} = mapScroll();
-  drawFlowers(cutY, parallax);    // flowers never fade
-  drawTitle(sectionScroll);       // title fades quickly near sticky end
-  requestAnimationFrame(animate);
-}
-
-/* =============== Init =============== */
-function init(){
-  resizeCanvas();
-  requestAnimationFrame(() => {
-    setExperienceLength();
-    animate();
-  });
-}
-init();
+});
 </script>
 </body>
 </html>
+
+this is my exisitng code
