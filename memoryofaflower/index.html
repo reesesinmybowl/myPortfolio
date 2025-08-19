@@ -1,26 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Memory of a Flower</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <style>
+  /* --- Base --- */
+  :root { --experienceLen: 4000px; } /* JS sets reveal + morph */
+  html, body { height: 100%; }
   body {
     margin: 0;
     background: #fafafa;
+    color: #111;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     overflow-x: hidden;
   }
-  canvas {
+
+  /* --- Fixed overlay for FLOWERS ONLY (persists over normal page) --- */
+  #flowers-overlay {
     position: fixed;
-    top: 0; left: 0;
+    inset: 0;
+    z-index: 0;           /* under any future UI if needed */
+    pointer-events: none; /* purely visual */
+    /* no opacity transitions; no fade-out */
+  }
+
+  /* Canvases */
+  canvas {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100vw;
     height: 100vh;
   }
-  #bgCanvas { z-index: 0; }
-  #titleCanvas { z-index: 1; pointer-events: none; }
+  #bgCanvas { z-index: 0; }            /* lives in overlay */
+  #titleCanvas { z-index: 1; }         /* lives in sticky section */
 
+  /* --- Sticky scrollytelling section (text + reveal) --- */
+  section#experience {
+    position: relative;
+    height: calc(100vh + var(--experienceLen)); /* gives scroll length */
+    z-index: 1;  /* above flowers so the text sits on top during the scene */
+  }
+  .experience-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  /* Scroll hint (during scene only) */
   #scroll-indicator {
-    position: fixed;
+    position: absolute;
     bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
@@ -29,66 +61,102 @@
     color: rgba(0,0,0,0.5);
     animation: bounce 1.5s infinite;
     z-index: 2;
-    transition: opacity 0.6s;
+    transition: opacity .6s ease;
   }
   @keyframes bounce {
     0%,100% { transform: translateX(-50%) translateY(0); }
     50%     { transform: translateX(-50%) translateY(-10px); }
   }
   #scroll-indicator.hidden { opacity: 0; pointer-events: none; }
+
+  /* Minimal normal page to demonstrate handoff (just blank height) */
+  #page-spacer { height: 3000px; } /* adjust if you want longer page */
 </style>
 </head>
 <body>
-<canvas id="bgCanvas"></canvas>
-<canvas id="titleCanvas"></canvas>
-<div id="scroll-indicator">scroll</div>
+
+<!-- Flowers stay here so they can continue OVER the normal page -->
+<div id="flowers-overlay">
+  <canvas id="bgCanvas"></canvas>
+</div>
+
+<!-- Sticky scene: title and reveal live here; this part hands off to normal page -->
+<section id="experience">
+  <div class="experience-sticky">
+    <canvas id="titleCanvas"></canvas>
+    <div id="scroll-indicator">scroll</div>
+  </div>
+</section>
+
+<!-- Normal page content (minimal, just gives you room to see the handoff) -->
+<div id="page-spacer" aria-hidden="true"></div>
 
 <script>
-const bgCanvas = document.getElementById("bgCanvas");
-const bgCtx = bgCanvas.getContext("2d");
-const titleCanvas = document.getElementById("titleCanvas");
-const titleCtx = titleCanvas.getContext("2d");
-
-// --- timings / layout control (only tweak here) ---
+/* ================== CONFIG ================== */
+/* Reveal → Morph (sticky) → Carry flowers over normal page (NO FADE on flowers) */
 const CONFIG = {
-  revealZoneMult: 2,     // how many viewheights to reveal the garden
-  morphStartFrac: 0.10,  // fraction into reveal where the morph begins
-  morphLength: 4000      // px of scroll for the morph itself
+  REVEAL_MULT: 2.0,   // reveal distance = viewport * this
+  MORPH_LEN: 2800,    // px of scroll for the title morph
+  CARRY_LEN: 2000,    // px AFTER morph where flowers keep flowing over page
+  FLOW_STRENGTH: 0.2, // vertical follow strength (0..1)
+  FLOW_X_SWAY: 0.05,  // horizontal sway factor
+
+  /* Title fade controls (faster visual fade) */
+  TITLE_FADE_LEN: 2000,  // fade "duration" in scroll px (smaller = faster)
+  TITLE_FADE_POWER: 1   // easing power: 1=linear, 2=fast start, 3+=snappier
 };
+
+/* =============== DOM & STATE =============== */
+const flowersOverlay = document.getElementById('flowers-overlay');
+const experience = document.getElementById('experience');
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+const titleCanvas = document.getElementById('titleCanvas');
+const titleCtx = titleCanvas.getContext('2d');
+const hint = document.getElementById('scroll-indicator');
 
 let flowers = [];
 let time = 0;
 
-// Derived scroll landmarks (recomputed on resize)
-let REVEAL_ZONE = 0;
-let MORPH_START = 0;
-let MORPH_END = 0;
+// Global layout refs
+let sectionTop = 0;        // absolute Y of the experience section
+let revealZone = 0;        // scroll length for reveal curtain
+let morphEndGlobal = 0;    // absolute scrollY where morph ends
+let carryEndGlobal = 0;    // absolute scrollY where overlay (flowers) finish
 
-function recomputeScrollLandmarks() {
-  REVEAL_ZONE = window.innerHeight * CONFIG.revealZoneMult;
-  MORPH_START = REVEAL_ZONE * CONFIG.morphStartFrac;
-  MORPH_END   = MORPH_START + CONFIG.morphLength;
+/* =============== Layout / Sizing =============== */
+function setExperienceLength(){
+  revealZone = window.innerHeight * CONFIG.REVEAL_MULT;
+  const sceneTotal = Math.max(0, revealZone + CONFIG.MORPH_LEN);
+  document.documentElement.style.setProperty('--experienceLen', sceneTotal + 'px');
+
+  // Absolute positions for transitions
+  sectionTop = experience.offsetTop;
+  morphEndGlobal = sectionTop + sceneTotal;
+  carryEndGlobal = morphEndGlobal + CONFIG.CARRY_LEN;
 }
 
 function resizeCanvas() {
+  // Canvas sizes
   bgCanvas.width = window.innerWidth;
   bgCanvas.height = window.innerHeight;
   titleCanvas.width = window.innerWidth;
   titleCanvas.height = window.innerHeight;
-  recomputeScrollLandmarks();
+
+  // (Re)create flowers and compute heights
   generateFlowers();
-  adjustBodyHeight();
-}
-window.addEventListener("resize", resizeCanvas);
-
-function adjustBodyHeight() {
-  // Hard stop exactly when morph completes (+ one viewport so it can rest there)
-  const totalScrollable = Math.max(REVEAL_ZONE, MORPH_END);
-  document.body.style.height = (totalScrollable + window.innerHeight) + "px";
+  setExperienceLength();
 }
 
-function noise(t,seed=0){return Math.sin(t*2.3+seed*10)+Math.sin(t*0.7+1.5+seed)*0.5;}
+window.addEventListener('resize', () => {
+  // Let layout settle before sampling offsets
+  requestAnimationFrame(resizeCanvas);
+});
 
+/* =============== Flowers geometry =============== */
+function noise(t,seed=0){
+  return Math.sin(t*2.3+seed*10)+Math.sin(t*0.7+1.5+seed)*0.5;
+}
 function makeFlower(cx,cy,R,petals,layersCount,seedOffset=0){
   let layers=[];
   for(let layer=0;layer<layersCount;layer++){
@@ -102,7 +170,6 @@ function makeFlower(cx,cy,R,petals,layersCount,seedOffset=0){
   }
   return layers;
 }
-
 function generateFlowers(){
   flowers=[];
   const W=bgCanvas.width,H=bgCanvas.height;
@@ -112,54 +179,67 @@ function generateFlowers(){
     let petals=4+Math.floor(Math.random()*6);
     let layersCount=3+Math.floor(Math.random()*3);
     let depth=0.3+Math.random()*0.9;
-    flowers.push({layers:makeFlower(cx,cy,R,petals,layersCount,i*0.77),depth});
+    flowers.push({layers:makeFlower(cx,cy,R,petals,layersCount,i*0.77),depth,seed:i});
   }
 }
 
-function drawMemoryGarden(cutY,parallaxY){
+/* =============== Scroll mapping =============== */
+/* Returns: cutY (reveal curtain), parallax (follow amount), sectionScroll (0..sceneTotal) */
+function mapScroll(){
+  const H = bgCanvas.height;
+  const scrollY = window.scrollY;
+
+  const sceneTotal = revealZone + CONFIG.MORPH_LEN; // sticky portion height
+  const sectionScroll = Math.max(0, Math.min(scrollY - sectionTop, sceneTotal));
+
+  // Reveal curtain (only affects drawing mask)
+  const cutY = (sectionScroll < revealZone)
+    ? H * (sectionScroll / revealZone)
+    : H;
+
+  // Default parallax follows sectionScroll (reveal + morph)
+  let parallax = sectionScroll;
+
+  // After morph completes (normal page scroll now), keep flowers flowing for CARRY_LEN
+  if (scrollY > morphEndGlobal) {
+    const carry = Math.max(0, Math.min(scrollY - morphEndGlobal, CONFIG.CARRY_LEN));
+    parallax = sceneTotal + carry; // keep moving as you scroll the page
+  }
+
+  // Hide hint after a nudge or after morph
+  hint.classList.toggle('hidden', sectionScroll > 50 || scrollY > morphEndGlobal);
+
+  return {cutY, parallax, sectionScroll};
+}
+
+/* =============== Drawing =============== */
+function drawFlowers(cutY, parallax){
   const W=bgCanvas.width,H=bgCanvas.height;
   bgCtx.clearRect(0,0,W,H);
+
   flowers.forEach((flower,fIndex)=>{
-    let {layers,depth}=flower;
-    let offsetY=parallaxY*depth*0.5;
-    let offsetX=Math.sin(fIndex)*parallaxY*0.05*depth;
+    const {layers,depth,seed} = flower;
+    const swayX = Math.sin(fIndex) * parallax * CONFIG.FLOW_X_SWAY * depth;
+    const offsetY = parallax * depth * CONFIG.FLOW_STRENGTH;
+
     layers.forEach((layer,lIndex)=>{
       bgCtx.beginPath();
       bgCtx.strokeStyle=`rgba(0,0,0,${0.05+0.03*lIndex})`;
       let started=false;
-      for(let [bx,by,a,li] of layer){
-        if(by>cutY) continue;
-        let jitter=Math.sin(time*0.002+a*5+li*10)*2;
-        let x=bx+Math.cos(a)*jitter+offsetX;
-        let y=by+Math.sin(a)*jitter+offsetY;
-        if(Math.random()<0.01){started=false;continue;}
-        if(!started){bgCtx.moveTo(x,y);started=true;}else{bgCtx.lineTo(x,y);}
+      for (let [bx,by,a,li] of layer){
+        if(by>cutY) continue; // masked by reveal
+        const jitter = Math.sin(time*0.002 + a*5 + li*10 + seed)*2;
+        const x = bx + Math.cos(a)*jitter + swayX;
+        const y = by + Math.sin(a)*jitter + offsetY;
+        if(Math.random()<0.01){ started=false; continue; }
+        if(!started){ bgCtx.moveTo(x,y); started=true; } else { bgCtx.lineTo(x,y); }
       }
       bgCtx.stroke();
     });
   });
 }
 
-function getCutAndParallax(){
-  const H=bgCanvas.height;
-  const rawScroll = window.scrollY;
-  // Clamp all rendering past the morph end so visuals don't "creep"
-  const scrollY = Math.min(rawScroll, MORPH_END);
-
-  let cutY, parallax = 0;
-
-  if(scrollY < REVEAL_ZONE){
-    cutY = H * (scrollY / REVEAL_ZONE);
-    parallax = scrollY;
-  }else{
-    cutY = H;
-    parallax = scrollY;
-  }
-
-  return {cutY,parallax,scrollY};
-}
-
-/* === title morph === */
+/* === Title morph (sticky only) — with FAST fade near the end === */
 const fromText="Memory of a Flower";
 const toText="Never Forget Love";
 function morphText(p){
@@ -174,36 +254,42 @@ function morphText(p){
   }
   return result.join("");
 }
-
-function drawTitle(scrollY){
+function drawTitle(sectionScroll){
   titleCtx.clearRect(0,0,titleCanvas.width,titleCanvas.height);
 
+  // Morph progress
+  const morphStart = revealZone * 0.1;
+  const morphLength = CONFIG.MORPH_LEN;
   let progress = 0;
-  if(scrollY > MORPH_START) {
-    progress = Math.min((scrollY - MORPH_START) / (MORPH_END - MORPH_START), 1);
+  if(sectionScroll > morphStart){
+    progress = Math.min((sectionScroll - morphStart) / morphLength, 1);
+  }
+
+  // Fast fade as the scene ends (starts right when it begins to scroll out)
+  const sceneTotal = revealZone + CONFIG.MORPH_LEN;
+  const fadeLen = Math.max(1, CONFIG.TITLE_FADE_LEN); // avoid divide-by-zero
+  const fadeStart = Math.max(0, sceneTotal - fadeLen);
+
+  let alpha = 1;
+  if (sectionScroll > fadeStart) {
+    let t = (sectionScroll - fadeStart) / fadeLen; // 0..1 across the fade zone
+    t = Math.min(Math.max(t, 0), 1);
+    // Ease the fade to make it feel faster (power > 1 makes it snappier)
+    const eased = Math.pow(t, CONFIG.TITLE_FADE_POWER);
+    alpha = 1 - eased;
   }
 
   const txt = morphText(progress);
-  const letters=txt.split("");
-  titleCtx.font="bold 100px serif";
-  titleCtx.textBaseline="middle";
-  titleCtx.textAlign="left";
-  const kernLetter = {
-    "w": -6, "v": -6, "y": -8, "t": -6,
-    "W": -30, "V": -12, "Y": -8, "T": -6,
-    "g": -4, "r": -2, " ": -2
-  };
-  const kernPair = {
-    "wo": -16, "wa": -14,
-    "ow": -7, "aw": -10,
-    "Fo": -10, "Fl": 0,
-    "ov": -7, "Ne": -5,
-    "ev": -4, "Me": -5,
-    "mo": -4, "or": -4,
-    "lo": -4, "tF": 30,
-    "et": -2, "ry": 1,
-    "of": -2, "er": -1.5
-  };
+  const letters = txt.split("");
+
+  titleCtx.save();
+  titleCtx.globalAlpha = alpha; // apply fast fade
+  titleCtx.font = "bold 100px serif";
+  titleCtx.textBaseline = "middle";
+  titleCtx.textAlign = "left";
+
+  const kernLetter = {"w":-6,"v":-6,"y":-8,"t":-6,"W":-30,"V":-12,"Y":-8,"T":-6,"g":-4,"r":-2," ":-2};
+  const kernPair   = {"wo":-16,"wa":-14,"ow":-7,"aw":-10,"Fo":-10,"Fl":0,"ov":-7,"Ne":-5,"ev":-4,"Me":-5,"mo":-4,"or":-4,"lo":-4,"tF":30,"et":-2,"ry":1,"of":-2,"er":-1.5};
 
   function measure(arr){
     let tot=0;
@@ -215,38 +301,40 @@ function drawTitle(scrollY){
     }
     return tot;
   }
+
   const total=measure(letters);
-  let x=(titleCanvas.width-total)/2,y=titleCanvas.height/2;
+  let x=(titleCanvas.width-total)/2, y=titleCanvas.height/2;
 
   for(let i=0;i<letters.length;i++){
     const ch=letters[i],next=letters[i+1]||"";
-    for(let j=0;j<5;j++){titleCtx.strokeStyle="rgba(0,0,0,0.15)";titleCtx.strokeText(ch,x,y);}
+    for(let j=0;j<5;j++){
+      titleCtx.strokeStyle="rgba(0,0,0,0.15)";
+      titleCtx.strokeText(ch,x,y);
+    }
     const w=titleCtx.measureText(ch).width;
     x+=w+(kernLetter[ch]||0)+(kernPair[ch+next]||0);
   }
+  titleCtx.restore();
 }
 
+/* =============== Main loop =============== */
 function animate(){
   time++;
-  const {cutY,parallax,scrollY}=getCutAndParallax();
-  drawMemoryGarden(cutY,parallax);
-  drawTitle(scrollY);
-
-  // Hide the indicator once we've moved a bit
-  document.getElementById("scroll-indicator").classList.toggle("hidden",window.scrollY>50);
-
+  const {cutY, parallax, sectionScroll} = mapScroll();
+  drawFlowers(cutY, parallax);    // flowers never fade
+  drawTitle(sectionScroll);       // title fades quickly near sticky end
   requestAnimationFrame(animate);
 }
 
-// Prevent overscrolling past the morph end on momentum devices (iOS, touchpads)
-window.addEventListener('scroll', () => {
-  if (window.scrollY > MORPH_END) {
-    window.scrollTo(0, MORPH_END);
-  }
-}, { passive: true });
-
-resizeCanvas();
-animate();
+/* =============== Init =============== */
+function init(){
+  resizeCanvas();
+  requestAnimationFrame(() => {
+    setExperienceLength();
+    animate();
+  });
+}
+init();
 </script>
 </body>
 </html>
