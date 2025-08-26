@@ -8,10 +8,13 @@
 :root{
   --bg0:#8DB2FF;
   --bg-dyn: var(--bg0);
-
   --ink:#ffffff;
-  --gap:0.3em;
+  --gap:.4em;
 
+  --stick-top: 0px;   /* header height for panel top */
+  --panel-w: 0px;     /* animated width for panel + content padding */
+
+  /* region colors */
   --region-eu:#2456d6;
   --region-asia:#0f996e;
   --region-amer:#a33bd4;
@@ -20,72 +23,205 @@
   --region-oce:#0a7bd1;
 }
 
-*{box-sizing:border-box;}
+html { font-kerning: normal; font-feature-settings: "kern"; text-rendering: optimizeLegibility; }
+*{ box-sizing:border-box; }
+
+/* ===== Page base ===== */
 html,body{
-  height:100%;
-  margin:0;
+  min-height: 100vh;
+  margin: 0;
   font-family: Helvetica, Arial, sans-serif;
-  color:var(--ink);
-  display:flex;
-  flex-direction:column;
-  background:var(--bg-dyn);
+  color: var(--ink);
+  background: var(--bg-dyn);
   transition: background-color .4s ease, background .4s ease;
-  width:100%;
-  overflow-x:hidden;           /* ✅ kill horizontal scroll */
+  width: 100%;
+  overflow-x: hidden;
 }
 
-img,video,svg{max-width:100%; height:auto;} /* ✅ media never overflow */
+body { padding-top: var(--stick-top); }
 
-/* ===== Header / Footer ===== */
-header, footer{
-  padding:1rem;
-  font-size:1rem;
-  font-weight:500;
-  flex-shrink:0;
-  background:var(--bg-dyn);
-  transition: background-color .4s ease, background .4s ease;
-}
+/* ===== Header (glassy, matches footer; no border line) ===== */
 header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  position:sticky;
-  top:0;
-  z-index:10;
-}
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
 
-footer {
-  display: flex;
-  justify-content: flex-start;
+  padding: 1rem;
+  background: rgba(0,0,0,.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
   font-size: 1rem;
-  font-weight: 400;
-  max-width: 800px;
-  margin-left: 5px; /* match .text-block */
-  padding: 1rem 0;
-  line-height: 1.1;
+  font-weight: 500;
+
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.header-left{ flex:0 0 auto; }
+.header-right{
+  flex:1 1 auto;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:1rem;
 }
 
-/* ===== Region nav ===== */
-.region-nav{
-  display:flex; 
-  gap:1rem;
-  flex-wrap:wrap;         /* ✅ wrap on small screens */
-  max-width:100%;         /* ✅ never exceed viewport */
-}
+/* region nav */
+.region-nav{ display:flex; gap:0.6rem; flex-wrap:wrap; }
 .region-nav button{
   background:none; border:none; color:#fff;
   font-size:1rem; cursor:pointer;
-  padding:.3em .6em; border-radius:4px;
+  padding:.3em .6em; border-radius:4px; letter-spacing:.01em;
   transition:background .25s ease;
-  min-width:0;            /* ✅ allow shrink */
 }
 .region-nav button:hover{ background:rgba(255,255,255,.2) }
 .region-nav button.active{ background:rgba(255,255,255,.4) }
 
+/* ===== Search: morphing circle -> bar (toggle absolutely positioned) ===== */
+.search-wrap{
+  position: relative;                   /* NEW: anchor for absolute toggle */
+  display:flex; align-items:center; gap:.5rem;
+  height:1.8rem; width:1.8rem;
+  padding:0;
+  border:2px solid rgba(255,255,255,.85);
+  border-radius:999px;
+  background:transparent;
+  overflow:hidden;
+
+  transition:
+    width .36s cubic-bezier(.4,0,.2,1),
+    padding .36s cubic-bezier(.4,0,.2,1),
+    border-radius .36s cubic-bezier(.4,0,.2,1),
+    background .2s ease,
+    border-color .2s ease;
+}
+.search-wrap.open{
+  width: clamp(200px, 32vw, 420px);
+  padding:.25rem .6rem;
+  background: rgba(255,255,255,.12);
+}
+
+#searchToggle{
+  position:absolute;                    /* NEW: stop eating flex space */
+  left:.4rem;                           /* NEW */
+  top:50%; transform:translateY(-50%);  /* NEW */
+  width:1.8rem; height:1.8rem;
+  background:transparent; border:0; border-radius:999px;
+  cursor:pointer; 
+  transition: transform .2s ease, opacity .18s ease;
+}
+#searchToggle:hover{ transform: translateY(-50%) scale(1.05); }
+.search-wrap.open #searchToggle{ transform: translateY(-50%) scale(.9); opacity:.75; }
+.search-wrap.open #searchClear{
+  opacity:.75;
+  pointer-events:auto;
+  transform:scale(1);
+}
+
+#searchInput{
+  background:transparent; border:none; outline:none; color:#fff;
+  font-size:1rem; min-width:0; width:0; opacity:0; flex:1 1 auto;
+  padding:.2rem .25rem;                 /* keeps top/bottom & right padding */
+  transition: width .28s cubic-bezier(.4,0,.2,1), opacity .18s ease, padding .18s ease;
+}
+.search-wrap.open #searchInput{
+  width:100%; opacity:1;
+  padding-left:.5rem;                  /* NEW: room for the circle button */
+}
+
+#searchInput::placeholder{ color:rgba(255,255,255,.78); }
+
+#searchClear {
+  all: unset;                 /* reset button ugliness */
+  cursor: pointer;
+  font-size: 1.2rem;           /* adjust size of the X */
+  line-height: 1;
+  color: #fff;
+  opacity: 0;                  /* hidden until open */
+  pointer-events: none;
+  transform: scale(.9);
+  transition: opacity .2s ease, transform .2s ease, color .2s ease;
+  margin-left: auto;           /* push to right */
+}
+#searchClear:hover{ opacity:1; transform:scale(1.05); }
+
+/* ===== Story footer ===== */
+footer {
+  margin: 0 0 1rem 10px !important;
+  padding: 0 !important;
+  max-width: 600px;
+  padding-right: var(--panel-w);
+  transition: padding-right .45s cubic-bezier(.77, 0, .18, 1);
+  will-change: padding-right;
+}
+
+/* ===== Layout ===== */
+.shell {}
+
+/* ===== Fixed right info panel (opaque, pushes layout) ===== */
+#infoPanel{
+  position: fixed;
+  top: var(--stick-top);
+  right: 0;
+  height: calc(100dvh - var(--stick-top));
+  width: 0;
+  overflow: hidden;
+  z-index: 25;
+  background:#0f172a;
+  border-left:1px solid rgba(255,255,255,.18);
+  transition: width .45s cubic-bezier(.77, 0, .18, 1);
+  pointer-events:none;
+  will-change: width;
+}
+#infoPanel.show{
+  width: clamp(280px, 28vw, 440px);
+  border-left-color:rgba(255,255,255,.28);
+  pointer-events:auto;
+}
+.info-scroll{ height:100%; overflow-y:auto; padding:1rem 1rem 1.2rem; background:#0f172a; }
+
+/* Sticky header/actions inside the panel */
+.info-head{
+  position: sticky; top: 0; z-index: 2;
+  display:flex; align-items:center; gap:.5rem;
+  padding-bottom:.6rem; margin-bottom:.6rem;
+  background:linear-gradient(to bottom,#0f172a,rgba(15,23,42,0));
+  border-bottom:1px solid rgba(255,255,255,.25);
+}
+.info-title{ font-weight:800; font-size:1.2rem; margin-right:auto; }
+.region-chip{
+  display:inline-flex; align-items:center; gap:.5ch;
+  padding:.25rem .6rem; border-radius:999px; font-weight:700; font-size:.85rem;
+  border:2px solid #fff; color:#fff; background:transparent;
+}
+#infoClose { background: transparent; border: none; color: #fff; font-size: 1.4rem; font-weight: 700; cursor: pointer; line-height: 1; padding: .2rem .4rem; opacity: .8; transition: opacity .2s ease; }
+#infoClose:hover { opacity: 1; }
+
+.info-body{ display:flex; flex-direction:column; gap:.8rem; padding-right:.25rem; }
+.info-note{ font-size:.95rem; line-height:1.35; opacity:.95; }
+.info-meta{ display:grid; grid-template-columns: auto 1fr; gap:.35rem .75rem; font-size:.9rem; opacity:.9; }
+.info-actions{
+  position: sticky; bottom: 0; z-index: 2;
+  margin-top: 1rem; padding-top: .8rem;
+  background:linear-gradient(to top,#0f172a,rgba(15,23,42,0));
+  border-top:1px solid rgba(255,255,255,.25);
+  display:flex; gap:.6rem; align-items:center;
+}
+#infoToggleBtn{
+  background:transparent; color:#fff; border:3px solid #fff;
+  border-radius:999px; padding:.55rem 1.1rem; font-weight:800; cursor:pointer;
+  transition:transform .2s ease, box-shadow .2s ease;
+  text-shadow:0 0 6px rgba(255,255,255,.8); box-shadow:0 0 14px rgba(255,255,255,.4);
+}
+#infoToggleBtn:hover{ transform:scale(1.06); box-shadow:0 0 24px rgba(255,255,255,.85); }
+
 /* ===== Main ===== */
 main{
-  flex:1;
-  padding:2rem 0;
+  padding: 2rem 0 2rem !important;
+  padding-right: var(--panel-w) !important;    /* push content with panel */
+  transition: padding-right .45s cubic-bezier(.77, 0, .18, 1);
+  will-change: padding-right;
 }
 
 .text-block{
@@ -96,175 +232,638 @@ main{
   text-align:justify;
   word-spacing:var(--gap);
   hyphens:auto;
-  overflow-wrap:anywhere;  /* ✅ break long words */
+  overflow-wrap:anywhere;
   margin: 0 5px;
 }
 
+/* tracking utilities */
+.track-tight    { letter-spacing: -0.03em; }
+.track-tighter  { letter-spacing: -0.05em; }
+.track-normal   { letter-spacing:  0; }
+.track-wide     { letter-spacing:  0.02em; }
+.track-wider    { letter-spacing:  0.05em; }
+
+/* recommended defaults for your setup */
+.text-block { letter-spacing: -10em; }
+.berry      { word-spacing: .4em; }
+.all-caps   { text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* optional: ease up tracking on very large viewports */
+@media (min-width: 1200px){
+  .text-block { letter-spacing: -0.03em; }
+}
+
+/* original show/hide feel (fade + slight drop) */
 .berry{
   display:inline-block;
   margin-right:0.05em;
-  position:relative;
   transition: opacity .35s ease, transform .35s ease, color .25s ease;
-  will-change: opacity, transform;
+  word-spacing: .01em;
+}
+.berry.hide{ opacity:0; transform:translateY(10px); pointer-events:none; }
+.berry.locked{ color:#000 !important; }
+
+/* subtle "picked" look */
+.berry.picked {
+  visibility: visible;
+  color: rgb(28, 28, 28);
+  font-style: italic;
+  border-bottom: 2px dotted rgba(70, 70, 70, 0.4);
+  transform: translateY(2px);
+  opacity: 0.6;
+  pointer-events: none;
 }
 
-.berry.hide{
-  opacity:0;
-  transform:translateY(10px);
-  pointer-events:none;
+/* ===== Footer selection bar (glassy) ===== */
+#selectionBar{
+  position:fixed; left:0; right:0; bottom:0;
+  z-index:30; padding:1.2rem 1rem;
+  display:flex; align-items:center; gap:.8rem; flex-wrap:wrap;
+  background:rgba(0,0,0,.25);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-top:2px solid rgba(255,255,255,.35);
+  transform:translateY(100%); transition:transform .4s ease;
 }
+#selectionBar.show{ transform:translateY(0); }
+.pill-list{ display:flex; gap:.9rem; flex:1 1 auto; flex-wrap:wrap; min-height:2.6rem; }
+.pill{
+  display:inline-flex; align-items:center; gap:.6em;
+  padding:.6em 1.0em .6em 1.2em; border-radius:999px;
+  font-size:1.2rem; font-weight:700; background:transparent; color:#fff;
+  border:3px solid #fff; cursor:pointer;
+  text-shadow:none; box-shadow:none;
+  transition: box-shadow .15s ease, text-shadow .15s ease;
+}
+.pill:hover{ box-shadow:0 0 24px rgba(255,255,255,.85); text-shadow:0 0 6px rgba(255,255,255,.8); }
+.pill-label{ pointer-events:none; }
+.pill-x{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:1.4em; height:1.4em; font-weight:900; font-size:1rem; line-height:1;
+  background:rgba(255,255,255,.12); color:#fff; border:2px solid #fff; border-radius:999px; cursor:pointer;
+  box-shadow:none; transition: background .15s ease, box-shadow .15s ease;
+}
+.pill-x:hover{ background:rgba(255,255,255,.25); box-shadow:0 0 12px rgba(255,255,255,.85); }
+.pill-x:focus{ outline:none; box-shadow:0 0 0 3px rgba(255,255,255,.5); }
 
-/* ===== Mobile tweaks ===== */
-@media (max-width: 768px){
-  header{ padding:.75rem .5rem; }
-  .region-nav{ gap:.5rem; }
-  .region-nav button{ font-size:.9rem; padding:.25em .5em; }
-  main{ padding:1rem 0; }
-  .text-block{
-    font-size: clamp(1.6rem, 9vw, 3.2rem); /* ✅ safer size on phone */
-    margin: 0 .5rem;                       /* ✅ tiny gutter */
-  }
-  footer{
-    max-width:none; 
-    margin: 0 .5rem; 
-    padding: .8rem 0;
-    line-height:1.3;
-  }
+#clearSel{
+  background:rgba(255,255,255,.15); border:2px solid rgba(255,255,255,.6);
+  color:#fff; border-radius:12px; padding:.65rem 1rem; cursor:pointer;
+  font-size:1rem; font-weight:600;
+}
+#clearSel:hover{ background:rgba(255,255,255,.28); }
+
+/* mobile panel width matches JS calc (76vw) */
+@media(max-width:768px){
+  main{ padding:1rem 0 10rem; padding-right: var(--panel-w) !important; }
+  .pill{ font-size:1rem; }
+  #infoPanel.show{ width:76vw; }
 }
 </style>
 </head>
 <body>
 <header>
-  <div>Berries & Dairies ✦</div>
-  <div class="region-nav">
-    <button data-filter="all" class="active">All</button>
-    <button data-filter="Europe">Europe</button>
-    <button data-filter="Asia">Asia</button>
-    <button data-filter="Americas">Americas</button>
-    <button data-filter="Arctic">Arctic</button>
-    <button data-filter="Africa">Africa</button>
-    <button data-filter="Oceania">Oceania</button>
+  <div class="header-left">Berries & Dairies ✦</div>
+  <div class="header-right">
+    <div class="region-nav" aria-label="Region filter">
+      <button data-filter="all" class="active">All</button>
+      <button data-filter="Europe">Europe</button>
+      <button data-filter="Asia">Asia</button>
+      <button data-filter="Americas">Americas</button>
+      <button data-filter="Arctic">Arctic</button>
+      <button data-filter="Africa">Africa</button>
+      <button data-filter="Oceania">Oceania</button>
+    </div>
+
+    <!-- Search morph control -->
+    <div class="search-wrap" id="searchWrap" aria-expanded="false">
+      <button id="searchToggle" type="button" aria-label="Open search"></button>
+      <input id="searchInput" type="text" placeholder="Search berries…" autocomplete="off" aria-label="Search berries" />
+      <button id="searchClear" type="button" aria-label="Clear and close">×</button>
+    </div>
   </div>
 </header>
 
-<main>
-  <div class="text-block">
-    <!-- Europe -->
-    <span class="berry" data-region="Europe">Lingonberry</span>
-    <span class="berry" data-region="Europe">Bilberry</span>
-    <span class="berry" data-region="Europe">Sea Buckthorn</span>
-    <span class="berry" data-region="Europe">Blackcurrant</span>
-    <span class="berry" data-region="Europe">Rowan Berry</span>
-    <span class="berry" data-region="Europe">Gooseberry</span>
-    <span class="berry" data-region="Europe">Elderberry</span>
-    <span class="berry" data-region="Europe">Redcurrant</span>
-    <span class="berry" data-region="Europe">Whitecurrant</span>
-    <span class="berry" data-region="Europe">Sloe</span>
-    <span class="berry" data-region="Europe">Barberry</span>
+<div class="shell">
+  <main>
+    <div class="text-block" id="berryBlock">
+      <!-- Europe -->
+      <span class="berry" data-region="Europe">Lingonberry</span>
+      <span class="berry" data-region="Europe">Redcurrant</span>
+      <span class="berry" data-region="Europe">Bilberry</span>
+      <span class="berry" data-region="Europe">Sea Buckthorn</span>
+      <span class="berry" data-region="Europe">Blackcurrant</span>
+      <span class="berry" data-region="Europe">Rowan Berry</span>
+      <span class="berry" data-region="Europe">Elderberry</span>
+      <span class="berry" data-region="Europe">Gooseberry</span>
+      <span class="berry" data-region="Europe">Sloe</span>
+      <span class="berry" data-region="Europe">Whitecurrant</span>
+      <span class="berry" data-region="Europe">Barberry</span>
 
-    <!-- Arctic -->
-    <span class="berry" data-region="Arctic">Cloudberry</span>
-    <span class="berry" data-region="Arctic">Crowberry</span>
-    <span class="berry" data-region="Arctic">Bearberry</span>
-    <span class="berry" data-region="Arctic">Bog Bilberry</span>
-    <span class="berry" data-region="Arctic">Alpine Bearberry</span>
+      <!-- Asia -->
+      <span class="berry" data-region="Asia">Goji</span>
+      <span class="berry" data-region="Asia">Japanese Wineberry</span>
+      <span class="berry" data-region="Asia">Mulberry</span>
+      <span class="berry" data-region="Asia">Hawthorn Berry</span>
+      <span class="berry" data-region="Asia">Nanking Cherry</span>
+      <span class="berry" data-region="Asia">Schisandra</span>
+      <span class="berry" data-region="Asia">Indian Gooseberry</span>
+      <span class="berry" data-region="Asia">Bayberry</span>
+      <span class="berry" data-region="Asia">Chinese Wolfberry</span>
 
-    <!-- Asia -->
-    <span class="berry" data-region="Asia">Goji</span>
-    <span class="berry" data-region="Asia">Mulberry</span>
-    <span class="berry" data-region="Asia">Japanese Wineberry</span>
-    <span class="berry" data-region="Asia">Nanking Cherry</span>
-    <span class="berry" data-region="Asia">Hawthorn Berry</span>
-    <span class="berry" data-region="Asia">Schisandra</span>
-    <span class="berry" data-region="Asia">Indian Gooseberry</span>
-    <span class="berry" data-region="Asia">Bayberry</span>
-    <span class="berry" data-region="Asia">Chinese Wolfberry</span>
+      <!-- Americas -->
+      <span class="berry" data-region="Americas">Cranberry</span>
+      <span class="berry" data-region="Americas">Huckleberry</span>
+      <span class="berry" data-region="Americas">Boysenberry</span>
+      <span class="berry" data-region="Americas">Blackberry</span>
+      <span class="berry" data-region="Americas">Serviceberry</span>
+      <span class="berry" data-region="Americas">Thimbleberry</span>
+      <span class="berry" data-region="Americas">Salmonberry</span>
+      <span class="berry" data-region="Americas">Blueberry</span>
+      <span class="berry" data-region="Americas">American Elderberry</span>
+      <span class="berry" data-region="Americas">Buffaloberry</span>
 
-    <!-- Americas -->
-    <span class="berry" data-region="Americas">Blueberry</span>
-    <span class="berry" data-region="Americas">Cranberry</span>
-    <span class="berry" data-region="Americas">Huckleberry</span>
-    <span class="berry" data-region="Americas">Boysenberry</span>
-    <span class="berry" data-region="Americas">Blackberry</span>
-    <span class="berry" data-region="Americas">Salmonberry</span>
-    <span class="berry" data-region="Americas">Serviceberry</span>
-    <span class="berry" data-region="Americas">Thimbleberry</span>
-    <span class="berry" data-region="Americas">American Elderberry</span>
-    <span class="berry" data-region="Americas">Buffaloberry</span>
+      <!-- Arctic -->
+      <span class="berry" data-region="Arctic">Cloudberry</span>
+      <span class="berry" data-region="Arctic">Crowberry</span>
+      <span class="berry" data-region="Arctic">Alpine Bearberry</span>
+      <span class="berry" data-region="Arctic">Bearberry</span>
 
-    <!-- Africa -->
-    <span class="berry" data-region="Africa">Marula</span>
-    <span class="berry" data-region="Africa">African Medlar</span>
-    <span class="berry" data-region="Africa">Kei Apple</span>
-    <span class="berry" data-region="Africa">Num Num Berry</span>
-    <span class="berry" data-region="Africa">Wild Medlar</span>
+      <!-- Africa -->
+      <span class="berry" data-region="Africa">Marula</span>
+      <span class="berry" data-region="Africa">African Medlar</span>
+      <span class="berry" data-region="Africa">Kei Apple</span>
+      <span class="berry" data-region="Africa">Num Num Berry</span>
+      <span class="berry" data-region="Africa">Wild Medlar</span>
 
-    <!-- Oceania -->
-    <span class="berry" data-region="Oceania">Finger Lime</span>
-    <span class="berry" data-region="Oceania">Lilly Pilly</span>
-    <span class="berry" data-region="Oceania">Muntrie</span>
-    <span class="berry" data-region="Oceania">Davidson Plum</span>
-    <span class="berry" data-region="Oceania">Kakadu Plum</span>
-    <span class="berry" data-region="Oceania">Quandong</span>
-  </div>
-</main>
+      <!-- Oceania -->
+      <span class="berry" data-region="Oceania">Finger Lime</span>
+      <span class="berry" data-region="Oceania">Muntrie</span>
+      <span class="berry" data-region="Oceania">Lilly Pilly</span>
+      <span class="berry" data-region="Oceania">Davidson Plum</span>
+      <span class="berry" data-region="Oceania">Kakadu Plum</span>
+      <span class="berry" data-region="Oceania">Quandong</span>
+    </div>
+  </main>
 
+  <!-- Fixed right info panel -->
+  <aside id="infoPanel" aria-live="polite" aria-label="Berry info">
+    <div class="info-scroll">
+      <div class="info-head">
+        <div class="info-title" id="infoTitle">Pick a berry</div>
+        <span class="region-chip" id="infoRegion" style="display:none;">
+          <span id="infoRegionDot" style="width:.7em;height:.7em;border-radius:50%;background:#fff;display:inline-block;"></span>
+          <span id="infoRegionText"></span>
+        </span>
+        <button id="infoClose" aria-label="Close info panel">×</button>
+      </div>
+      <div class="info-body" id="infoBody" style="display:none;">
+        <div class="info-note" id="infoNote"></div>
+        <div class="info-meta">
+          <div>Also called</div><div id="infoAlias">—</div>
+          <div>Flavor</div><div id="infoFlavor">—</div>
+          <div>Season</div><div id="infoSeason">—</div>
+          <div>Great for</div><div id="infoUse">—</div>
+        </div>
+      </div>
+      <div class="info-actions">
+        <button id="infoToggleBtn" type="button">Add to selection</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- Story footer -->
 <footer contenteditable="true">
-  This website was inspired by bonking out on a supposed quiet zone 2 ride and then stumbling upon some berries on the side of the road. I started seeing all kinds of crazy colors everywhere. The berries were not erotic, but the idea of erotic berries was born. Don't worry I was totally fine, just a little dizzy hehe =) <br>
+  This website was inspired by bonking out on a supposed quiet zone 2 ride and then stumbling upon some berries on the side of the road. I started seeing all kinds of crazy colors everywhere. The berries were not erotic, but the idea of erotic berries was born. Don't worry I was totally fine, just a little dizzy hehe =)
 </footer>
 
+<!-- Sticky footer selection pills -->
+<div id="selectionBar" role="region" aria-label="Selected berries">
+  <div class="pill-list" id="pillList" aria-live="polite"></div>
+  <button id="clearSel" type="button" title="Clear all selections">Clear</button>
+</div>
+
 <script>
+/* ===== Layout metrics ===== */
+function setStickTop(){
+  const head = document.querySelector('header');
+  const h = head ? head.offsetHeight : 0;
+  document.documentElement.style.setProperty('--stick-top', h + 'px');
+}
+setStickTop();
+window.addEventListener('resize', setStickTop);
+
+/* ===== Panel width variable (set target instantly) ===== */
+const infoPanel = document.getElementById('infoPanel');
+
+function getPanelTargetWidthPx(){
+  const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    return Math.round(vw * 0.76); // matches CSS 76vw
+  }
+  // matches CSS clamp(280px, 28vw, 440px)
+  return Math.round(Math.max(280, Math.min(vw * 0.28, 440)));
+}
+function setPanelVarOpen(){
+  document.documentElement.style.setProperty('--panel-w', getPanelTargetWidthPx() + 'px');
+}
+function setPanelVarClosed(){
+  document.documentElement.style.setProperty('--panel-w', '0px');
+}
+window.addEventListener('resize', () => {
+  if (infoPanel.classList.contains('show')) setPanelVarOpen();
+});
+
+/* ===== Colors ===== */
 const REGION_COLOR = {
-  Europe:   getComputedStyle(document.documentElement).getPropertyValue('--region-eu').trim(),
-  Asia:     getComputedStyle(document.documentElement).getPropertyValue('--region-asia').trim(),
-  Americas: getComputedStyle(document.documentElement).getPropertyValue('--region-amer').trim(),
-  Arctic:   getComputedStyle(document.documentElement).getPropertyValue('--region-arctic').trim(),
-  Africa:   getComputedStyle(document.documentElement).getPropertyValue('--region-africa').trim(),
-  Oceania:  getComputedStyle(document.documentElement).getPropertyValue('--region-oce').trim(),
-  all:      getComputedStyle(document.documentElement).getPropertyValue('--bg0').trim()
+  Europe:getComputedStyle(document.documentElement).getPropertyValue('--region-eu').trim(),
+  Asia:getComputedStyle(document.documentElement).getPropertyValue('--region-asia').trim(),
+  Americas:getComputedStyle(document.documentElement).getPropertyValue('--region-amer').trim(),
+  Arctic:getComputedStyle(document.documentElement).getPropertyValue('--region-arctic').trim(),
+  Africa:getComputedStyle(document.documentElement).getPropertyValue('--region-africa').trim(),
+  Oceania:getComputedStyle(document.documentElement).getPropertyValue('--region-oce').trim(),
+  all:getComputedStyle(document.documentElement).getPropertyValue('--bg0').trim()
 };
 
-let currentFilter = 'all';
+/* ===== Refs ===== */
+let currentFilter='all';
+let searchQuery='';
+const berries=[...document.querySelectorAll('.berry')];
+const buttons=[...document.querySelectorAll('.region-nav button')];
 
-// hover tilt + bg fade to hovered berry's region
-document.querySelectorAll('.berry').forEach(berry => {
-  berry.addEventListener('mouseenter', () => {
-    const randomAngle = (Math.random() * 8 - 4).toFixed(2);
-    const randomScale = 1 + Math.random() * 0.1;
-    berry.style.transform = `rotate(${randomAngle}deg) scale(${randomScale})`;
-    berry.style.color = 'black';
-    const col = REGION_COLOR[berry.dataset.region] || REGION_COLOR.all;
-    document.documentElement.style.setProperty('--bg-dyn', col);
+const pillList=document.getElementById('pillList');
+const clearBtn=document.getElementById('clearSel');
+const selectionBar=document.getElementById('selectionBar');
+
+const infoTitle=document.getElementById('infoTitle');
+const infoRegion=document.getElementById('infoRegion');
+const infoRegionDot=document.getElementById('infoRegionDot');
+const infoRegionText=document.getElementById('infoRegionText');
+const infoBody=document.getElementById('infoBody');
+const infoNote=document.getElementById('infoNote');
+const infoAlias=document.getElementById('infoAlias');
+const infoFlavor=document.getElementById('infoFlavor');
+const infoSeason=document.getElementById('infoSeason');
+const infoUse=document.getElementById('infoUse');
+const infoToggleBtn=document.getElementById('infoToggleBtn');
+
+/* ===== Search controls (morphing) ===== */
+const searchWrap  = document.getElementById('searchWrap');
+const searchToggle= document.getElementById('searchToggle');
+const searchInput = document.getElementById('searchInput');
+const searchClear = document.getElementById('searchClear');
+
+function applySearchFilter(){
+  const hasSearch = searchQuery.trim().length>0;
+  berries.forEach(b=>{
+    const match = b.textContent.toLowerCase().includes(searchQuery);
+    b.classList.toggle('hide', hasSearch && !match);
+  });
+}
+
+function openSearch(){
+  searchWrap.classList.add('open');
+  searchWrap.setAttribute('aria-expanded','true');
+  requestAnimationFrame(()=>searchInput.focus());
+}
+function closeSearch(reset=true){
+  searchWrap.classList.remove('open');
+  searchWrap.setAttribute('aria-expanded','false');
+  searchInput.blur();
+  if(reset){
+    searchInput.value='';
+    searchQuery='';
+    applySearchFilter();   // reset results to default view
+  }
+}
+
+searchToggle.addEventListener('click', ()=>{
+  const open = searchWrap.classList.contains('open');
+  if(open){ closeSearch(true); } else { openSearch(); }
+});
+
+searchClear.addEventListener('click', ()=>{
+  closeSearch(true);
+});
+
+/* Typing anywhere opens search (letters/digits/backspace/space) */
+window.addEventListener('keydown', (e)=>{
+  const meta = e.ctrlKey || e.metaKey || e.altKey;
+  if(meta) return;
+  const inTextField = ['INPUT','TEXTAREA'].includes(document.activeElement?.tagName);
+  const printable = e.key.length === 1 || e.key === 'Backspace' || e.key === ' ';
+  if(!inTextField && printable){
+    if(!searchWrap.classList.contains('open')) openSearch();
+    if(e.key.length === 1 || e.key === ' '){
+      // seed first char
+      if(e.key === ' '){
+        if(searchInput.value) searchInput.value += ' ';
+      } else {
+        searchInput.value = (searchInput.value || '') + e.key;
+      }
+      searchQuery = searchInput.value.toLowerCase();
+      applySearchFilter();
+      e.preventDefault();
+    }
+  }
+  if(e.key === 'Escape'){
+    closeSearch(true);
+  }
+});
+
+/* Live search filter */
+searchInput.addEventListener('input', ()=>{
+  searchQuery = searchInput.value.toLowerCase();
+  applySearchFilter();
+});
+
+/* ===== Info DB (sample) ===== */
+const BERRY_INFO = {
+  "Bilberry|Europe":{alias:"Vaccinium myrtillus",flavor:"Deep, winey, mildly tart",season:"Summer",use:"Pies, jams, Nordic pancakes",note:"A close cousin of the blueberry, but darker flesh."},
+  "Lingonberry|Europe":{alias:"Cowberry",flavor:"Bright tart, slight bitter",season:"Late summer–autumn",use:"Sauces, compotes",note:"Scandi staple; punchy and tart."},
+  "Blueberry|Americas":{alias:"Vaccinium corymbosum",flavor:"Sweet, gently floral",season:"Summer",use:"Muffins, smoothies, handfuls",note:"The crowd-pleaser."},
+  "Blackberry|Americas":{alias:"Rubus fruticosus",flavor:"Jammy-sweet, slight bite",season:"Late summer",use:"Crumble, cordial",note:"Brambles that fight back—and worth it."},
+  "Goji|Asia":{alias:"Wolfberry",flavor:"Sweet-tart, herby",season:"Summer–autumn",use:"Teas, trail mixes",note:"Tiny orange-red power packets."},
+  "Cloudberry|Arctic":{alias:"Rubus chamaemorus",flavor:"Honey–apricot",season:"Short Arctic summer",use:"Desserts, liqueur",note:"Elusive gold of the north."},
+  "Marula|Africa":{alias:"Sclerocarya birrea",flavor:"Tropical, guava-pear",season:"Late summer",use:"Ferments, liqueur",note:"Elephants allegedly approve."},
+  "Finger Lime|Oceania":{alias:"Citrus australasica",flavor:"Zesty citrus pearls",season:"Late winter–spring",use:"Garnish",note:"Tiny lime caviar."}
+};
+
+/* ===== Selection state ===== */
+const selected=new Map();
+let lastSelectedKey=null;
+let currentBerryEl=null;
+function keyFor(el){ return el.textContent.trim()+"|"+el.dataset.region; }
+
+/* Tilt helpers */
+function applyLockedTilt(el){
+  if(!el) return;
+  if(!el.dataset.lockTf){
+    const a=(Math.random()*8-4).toFixed(2);
+    const s=(1+Math.random()*0.08).toFixed(3);
+    el.dataset.lockTf=`rotate(${a}deg) scale(${s})`;
+  }
+  el.style.transform=el.dataset.lockTf;
+  el.style.color='black';
+}
+function clearLockedTilt(el){ if(!el) return; el.style.transform=''; el.style.color=''; }
+
+/* Selection ops */
+function addSelectionByKey(k){
+  if(selected.has(k)) return;
+  const el = berries.find(b=>keyFor(b)===k);
+  if(el){
+    el.classList.remove('picked');
+    el.classList.add('locked');
+    applyLockedTilt(el);
+  }
+  selected.set(k,{el});
+  renderUI();
+  renderInfo(k);
+}
+function removeSelectionByKey(k){
+  const e=selected.get(k);
+  if(e && e.el){
+    e.el.classList.remove('locked');
+    clearLockedTilt(e.el);
+    if(currentBerryEl===e.el){ e.el.classList.add('picked'); } else { e.el.classList.remove('picked'); }
+  }
+  selected.delete(k);
+  renderUI();
+  renderInfo(lastSelectedKey);
+}
+function clearSelections(){
+  [...selected.keys()].forEach(k=>{
+    const e=selected.get(k);
+    if(e && e.el){
+      e.el.classList.remove('locked');
+      clearLockedTilt(e.el);
+      if(currentBerryEl===e.el) e.el.classList.add('picked'); else e.el.classList.remove('picked');
+    }
+  });
+  selected.clear();
+  renderUI();
+  renderInfo(lastSelectedKey);
+}
+
+/* Info rendering */
+function renderInfo(key){
+  if(!key){
+    infoTitle.textContent="Pick a berry";
+    infoBody.style.display='none';
+    infoRegion.style.display='none';
+    infoPanel.classList.remove('show');
+    setPanelVarClosed();  // instant target -> animates back via CSS
+    return;
+  }
+  const [name,region]=key.split('|');
+  infoTitle.textContent=name;
+  infoRegion.style.display='inline-flex';
+  infoRegionText.textContent=region;
+  infoRegionDot.style.background=REGION_COLOR[region]||'#fff';
+
+  const data=BERRY_INFO[key]||{alias:"—",flavor:"—",season:"—",use:"—",note:"(Coming soon) This berry hasn’t got notes yet."};
+  infoAlias.textContent=data.alias;
+  infoFlavor.textContent=data.flavor;
+  infoSeason.textContent=data.season;
+  infoUse.textContent=data.use;
+  infoNote.textContent=data.note;
+
+  const inFooter=selected.has(key);
+  infoToggleBtn.textContent=inFooter?"Remove from footer":"Add to selection";
+  infoToggleBtn.setAttribute('aria-pressed', String(inFooter));
+
+  infoBody.style.display='block';
+
+  // set target width first so content starts moving this frame
+  setPanelVarOpen();
+  infoPanel.classList.add('show');
+}
+
+/* Footer UI */
+function renderUI(){
+  pillList.innerHTML='';
+  for(const [k, entry] of selected){
+    const [name]=k.split('|');
+
+    const pill=document.createElement('div');
+    pill.className='pill';
+    pill.setAttribute('role','button');
+    pill.tabIndex=0;
+
+    const label=document.createElement('span');
+    label.className='pill-label';
+    label.textContent=name;
+
+    const close=document.createElement('button');
+    close.type='button';
+    close.className='pill-x';
+    close.setAttribute('aria-label',`Remove ${name}`);
+    close.textContent='×';
+
+    pill.addEventListener('click',()=>{
+      const el = entry.el || berries.find(b=>keyFor(b)===k);
+      if(el) openInfoForEl(el);
+    });
+    pill.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' '){
+        e.preventDefault();
+        const el = entry.el || berries.find(b=>keyFor(b)===k);
+        if(el) openInfoForEl(el);
+      }
+    });
+
+    close.addEventListener('click',(e)=>{ e.stopPropagation(); removeSelectionByKey(k); });
+
+    pill.append(label, close);
+    pillList.appendChild(pill);
+  }
+  if(selected.size>0) selectionBar.classList.add('show'); else selectionBar.classList.remove('show');
+  clearBtn.style.opacity=selected.size?1:.4;
+  clearBtn.style.pointerEvents=selected.size?'auto':'none';
+}
+
+/* Open info (click berry) */
+function openInfoForEl(el){
+  const k=keyFor(el);
+  if(currentBerryEl && currentBerryEl!==el && !selected.has(keyFor(currentBerryEl))){
+    currentBerryEl.classList.remove('picked');
+  }
+  if(!el.classList.contains('locked')) el.classList.add('picked');
+  currentBerryEl=el;
+  lastSelectedKey=k;
+  renderInfo(k);
+}
+
+/* Hover effects + dynamic bg */
+berries.forEach(berry=>{
+  berry.addEventListener('mouseenter', ()=>{
+    if(berry.classList.contains('locked')) return;
+    const a=(Math.random()*8-4).toFixed(2);
+    const s=(1+Math.random()*0.08).toFixed(3);
+    berry.style.transform=`rotate(${a}deg) scale(${s})`;
+    berry.style.color='black';
+    const col=REGION_COLOR[berry.dataset.region]||REGION_COLOR.all;
+    document.documentElement.style.setProperty('--bg-dyn',col);
+  });
+  berry.addEventListener('mouseleave', ()=>{
+    if(berry.classList.contains('locked')) return;
+    berry.style.transform='';
+    berry.style.color='';
+    const col=REGION_COLOR[currentFilter]||REGION_COLOR.all;
+    document.documentElement.style.setProperty('--bg-dyn',col);
   });
 
-  berry.addEventListener('mouseleave', () => {
-    berry.style.transform = '';
-    berry.style.color = '';
-    const col = REGION_COLOR[currentFilter] || REGION_COLOR.all;
-    document.documentElement.style.setProperty('--bg-dyn', col);
+  const open=()=>openInfoForEl(berry);
+  berry.addEventListener('click', open);
+  berry.setAttribute('role','button');
+  berry.setAttribute('tabindex','0');
+  berry.addEventListener('keydown', e=>{
+    if(e.key==='Enter' || e.key===' '){ e.preventDefault(); open(); }
   });
 });
 
-const buttons = document.querySelectorAll('.region-nav button');
-const berries = Array.from(document.querySelectorAll('.berry'));
+/* ===== Visibility (search vs region) ===== */
+function updateVisibility(){
+  const hasSearch = searchQuery && searchQuery.trim().length>0;
+  const baseColor = hasSearch ? getComputedStyle(document.documentElement).getPropertyValue('--bg0').trim()
+                              : (REGION_COLOR[currentFilter]||getComputedStyle(document.documentElement).getPropertyValue('--bg0').trim());
+  document.documentElement.style.setProperty('--bg-dyn', baseColor);
 
-// smooth trickle filter
+  let delay = 0;
+  berries.forEach(b=>{
+    const name = b.textContent.toLowerCase();
+    const inRegion = (currentFilter==='all' || b.dataset.region===currentFilter);
+    const inSearch = (!hasSearch) || name.includes(searchQuery);
+    const show = hasSearch ? inSearch : inRegion;
+    setTimeout(()=> b.classList.toggle('hide', !show), delay*10);
+    delay++;
+  });
+}
+
+/* ===== Region filter ===== */
 buttons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     buttons.forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
 
-    currentFilter = btn.getAttribute('data-filter');
-    document.documentElement.style.setProperty('--bg-dyn', REGION_COLOR[currentFilter] || REGION_COLOR.all);
-
-    let delay = 0;
-    berries.forEach(b=>{
-      const show = (currentFilter === 'all') || (b.dataset.region === currentFilter);
-      setTimeout(()=> b.classList.toggle('hide', !show), delay*25);
-      delay++;
-    });
+    currentFilter=btn.dataset.filter;
+    if(!(searchQuery && searchQuery.trim())){
+      document.documentElement.style.setProperty('--bg-dyn', REGION_COLOR[currentFilter]||getComputedStyle(document.documentElement).getPropertyValue('--bg0').trim());
+    }
+    updateVisibility();
   });
 });
+
+/* ===== Add/Remove from footer via panel button ===== */
+infoToggleBtn.addEventListener('click',()=>{
+  if(!lastSelectedKey) return;
+  if(selected.has(lastSelectedKey)) removeSelectionByKey(lastSelectedKey);
+  else addSelectionByKey(lastSelectedKey);
+});
+
+/* ===== Close the info panel on outside click (but keep search behavior) ===== */
+document.addEventListener('click', (e)=>{
+  const insidePanel   = e.target.closest && e.target.closest('#infoPanel');
+  const clickedBerry  = e.target.closest && e.target.closest('.berry');
+  const inSelection   = e.target.closest && e.target.closest('#selectionBar');
+  const inRegionNav   = e.target.closest && e.target.closest('.region-nav');
+  const inSearchWrap  = e.target.closest && e.target.closest('#searchWrap');
+  if(
+    infoPanel.classList.contains('show') &&
+    !insidePanel && !clickedBerry && !inSelection && !inRegionNav && !inSearchWrap
+  ){
+    // click somewhere neutral -> close just the info panel
+    infoPanel.classList.remove('show');
+    setPanelVarClosed();
+    if(currentBerryEl && !currentBerryEl.classList.contains('locked')){
+      currentBerryEl.classList.remove('picked');
+      currentBerryEl=null;
+      lastSelectedKey=null;
+    }
+    infoTitle.textContent="Pick a berry";
+    infoBody.style.display='none';
+    infoRegion.style.display='none';
+  }
+});
+
+/* Per-pair kerning tweaks (lightweight) */
+(function(){
+  const pairOverridePx = new Map([ ["ry", 4 ] ]);
+  const seg = (Intl.Segmenter) ? new Intl.Segmenter("en",{granularity:"grapheme"}) : null;
+  const split = s => seg ? Array.from(seg.segment(s), t=>t.segment) : [...s];
+
+  document.querySelectorAll(".berry").forEach(el=>{
+    if (el.dataset.kernApplied === "simple") return;
+    const letters = split(el.textContent);
+    const frag = document.createDocumentFragment();
+
+    for (let i=0;i<letters.length;i++){
+      const ch = letters[i];
+      if (ch === " ") { frag.appendChild(document.createTextNode(" ")); continue; }
+      const span = document.createElement("span");
+      span.style.display = "inline-block";
+      span.textContent = ch;
+      if (i>0 && letters[i-1] !== " ") {
+        const pair = letters[i-1] + ch;
+        const tweak = pairOverridePx.get(pair);
+        if (tweak) span.style.transform = `translateX(${tweak}px)`;
+      }
+      frag.appendChild(span);
+    }
+    el.textContent = "";
+    el.appendChild(frag);
+    el.dataset.kernApplied = "simple";
+  });
+})();
+
+/* Clear footer */
+clearBtn.addEventListener('click', clearSelections);
+
+/* Initial render */
+renderUI();
+updateVisibility();
 </script>
 </body>
 </html>
