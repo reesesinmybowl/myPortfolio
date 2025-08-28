@@ -13,7 +13,6 @@
     gtag('js', new Date());
     gtag('config', 'G-BN9QSX45R8', {
       page_path: location.pathname + location.search
-      // send_page_view: true
     });
   </script>
 
@@ -38,12 +37,11 @@
     <!-- RIGHT SECTION -->
     <div class="right">
       <div class="blob-cursor"></div>
-      <p>
+      <p class="intro-text">
         Hi there! My name is Niklas. I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics. I'm currently studying at DMJX and previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
       </p>
 
       <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img">
-
     </div>
   </div>
 
@@ -74,6 +72,16 @@
         }, 1200);
       });
     }
+
+    // === PAGE LOAD ANIMATIONS (snappy + clean) ===
+    window.addEventListener("load", () => {
+      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+      tl.from(".left", { x: -40, opacity: 0, duration: 0.4 })
+        .from(".intro-text", { y: 30, opacity: 0, duration: 0.35 }, "-=0.2")
+        .from(".text-behind-img", { scale: 0.9, opacity: 0, duration: 0.45, ease: "back.out(1.8)" }, "-=0.25")
+        .from(".bottom", { y: 20, opacity: 0, duration: 0.35 }, "-=0.25");
+    });
   </script>
 
   <script src="index_script.js"></script>
