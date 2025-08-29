@@ -84,32 +84,15 @@ body {
 }
 
 /* === ANIMATED TEXT === */
-.animated-text {
-  position: relative;
-  display: inline-block;
-  vertical-align: top;
-  overflow: hidden;
-  transition: width 0.1s ease-out;
-  min-width: 5px;
-  min-height: 1em;
-  white-space: nowrap;
-  margin-right: -4px;
-}
-
-.animated-word-inner {
-  display: inline-block;
-  transition: none;
-}
-
+.animated-text { position: relative; display: inline-block; white-space: nowrap; }
+.animated-word-inner { display: inline-block; }
 .animated-word-inner::after {
   content: '|';
   display: inline-block;
-  color: #111;
+  color: #111;            /* keep page’s dark theme */
   margin-left: -1.5px;
-  margin-right: 0;
+  animation: blink-caret .75s step-end infinite;
   vertical-align: top;
-  opacity: 1;
-  animation: blink-caret 0.75s step-end infinite;
 }
 
 .animated-text.is-deleting .animated-word-inner::after,

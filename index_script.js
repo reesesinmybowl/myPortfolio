@@ -95,17 +95,17 @@ document.addEventListener('DOMContentLoaded', () => {
   ============================ */
   const paragraphs = document.querySelectorAll('.right p');
   paragraphs.forEach(p => {
+    if (p.dataset.splitDone === '1') return; // guard if rerun
     const wrappedContent = p.innerText.split(' ').map(word => {
       const charSpans = [...word].map(char => `<span class="char">${char}</span>`).join('');
       return `<span class="word">${charSpans}</span>`;
     }).join(' ');
     p.innerHTML = wrappedContent;
+    p.dataset.splitDone = '1';
   });
 
   const allChars = document.querySelectorAll('.right p .char');
   const blob = document.querySelector('.blob-cursor');
-
-
 
   /* ===========================
      EMAIL CLICK FUNCTIONALITY
@@ -127,5 +127,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1200);
       });
     });
+  }
+
+  /* ===========================
+     GSAP LOAD-IN ANIMATION
+     (respects prefers-reduced-motion)
+  ============================ */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasGSAP = typeof window.gsap !== 'undefined';
+
+  if (!reduceMotion && hasGSAP) {
+    // Start state (no FOUC)
+    gsap.set(['.left', '.bottom'], { opacity: 0, y: 20 });
+    gsap.set('.text-behind-img', { opacity: 0, scale: 0.92, transformOrigin: '50% 50%' });
+    gsap.set('.right p .char', { opacity: 0, y: 14 });
+
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    tl.to('.left', { opacity: 1, y: 0, duration: 0.8 })
+      .to('.right p .char', {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: {
+          each: 0.008,
+          from: 'start'
+        }
+      }, '-=0.45')
+      .to('.text-behind-img', { opacity: 1, scale: 1, duration: 0.9 }, '-=0.45')
+      .to('.bottom', { opacity: 1, y: 0, duration: 0.7 }, '-=0.55');
+
+    // Optional: softly fade in blob on desktop when user moves mouse
+    const showBlob = () => {
+      if (!blob) return;
+      blob.style.opacity = '1';
+      window.removeEventListener('mousemove', showBlob);
+    };
+    window.addEventListener('mousemove', showBlob, { once: true });
   }
 });

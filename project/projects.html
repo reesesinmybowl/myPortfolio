@@ -7,6 +7,7 @@
   <meta name="description" content="Niklas Tsalkos – Interactive Design, Motion, Type, and more. Based in Copenhagen.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
+  <script>document.documentElement.classList.add('js');</script>
   <style>
     /* ===== Base ===== */
     * { box-sizing: border-box; }
@@ -130,6 +131,23 @@
       transition: opacity .25s ease, transform .1s linear;
     }
 
+    /* ===== Trickle-down load-in ===== */
+    @keyframes dropIn {
+      0%   { opacity: 0; transform: translateY(-32px); filter: drop-shadow(0 8px 0 rgba(0,0,0,0)); }
+      60%  { opacity: 1; transform: translateY(2px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    /* Start hidden only when JS is present */
+    .js .grid .project-row { opacity: 0; transform: translateY(-32px); will-change: transform, opacity; }
+    .js .grid .project-row.reveal-in {
+      animation: dropIn .8s cubic-bezier(.2,.8,.2,1) forwards;
+      animation-delay: var(--stagger, 0ms);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .js .grid .project-row { opacity: 1; transform: none; }
+      .js .grid .project-row.reveal-in { animation: none !important; }
+    }
+
     /* MOBILE */
     @media (max-width:900px){
       html{height:auto; overflow-y:auto;}
@@ -139,7 +157,7 @@
       .left-top{padding-top:0;}
       .grid{align-items:stretch;padding:0 16px 16px;}
       .project-row{position:static;flex-direction:column;}
-      .meta{display:none;}   /* hides descriptions on phone */
+      .meta{display:none;}
       .card{width:100%;align-items:center;}
     }
     @media (max-width:360px){.name{font-size:1em;}}
@@ -176,7 +194,7 @@
         </a>
       </section>
 
-            <section id="proj0" class="project-row">
+      <section id="proj0" class="project-row">
         <div class="meta">
           <h3>Beries & Dairies<span class="year">2025</span></h3>
           <p>Berries & Dairies is an editorial style web experiment combining typography and motion, exploring how identity shifts dynamically across geographies.</p>
@@ -206,7 +224,7 @@
         </a>
       </section>
 
-            <section id="proj4" class="project-row">
+      <section id="proj4" class="project-row">
         <div class="meta">
           <h3>Yocho <span class="year">2025</span></h3>
           <p>Yocho is a playful identity experiment where bold modular shapes, oversized type, and simple interactions create a distinct front cover feel with strong character.</p>
@@ -230,7 +248,7 @@
       <section id="proj3" class="project-row">
         <div class="meta">
           <h3>Ekko Film Magazine <span class="year">2024</span></h3>
-          <p>Redesign of the renowned Ekko Film Magazine. Responsive editorial design built around using fluid grids and minimal type to create a magazine-like reading experience in motion.</p>
+          <p>Redesign of the renowned Ekko Film Magazine. Responsive editorial design built around using fluid grids and minimal type to create a magazine like reading experience in motion.</p>
         </div>
         <a href="../ekko-website/" class="card website ekko">
           <video src="../Videos/ekko front video.mp4" muted loop playsinline autoplay></video>
@@ -272,9 +290,10 @@
     <div class="blob-cursor"></div>
   </div>
 
-  <!-- Typewriter JS -->
+  <!-- Typewriter JS + Trickle-down reveal -->
   <script>
     document.addEventListener('DOMContentLoaded',()=>{
+      /* ===== Typewriter (unchanged) ===== */
       const animatedTextContainer=document.querySelector('.animated-text');
       const animatedWordInner=document.querySelector('.animated-word-inner');
       const words=['Interactive','Graphic','Motion'];
@@ -343,6 +362,49 @@
         loop();
       }
       setupTypewriter();
+
+      /* ===== Trickle-down project reveal on scroll ===== */
+      const rows = Array.from(document.querySelectorAll('.grid .project-row'));
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!rows.length) return;
+
+      // If reduced motion, ensure visible without animation
+      if (prefersReduced) {
+        rows.forEach(el => el.classList.add('reveal-in'));
+        return;
+      }
+
+      // IntersectionObserver to reveal rows when they enter viewport
+      const baseDelay = 140; // ms between items within a batch
+      const io = new IntersectionObserver((entries) => {
+        // sort entries in DOM order for top-to-bottom cascade
+        const intersecting = entries
+          .filter(e => e.isIntersecting && !e.target.classList.contains('reveal-in'))
+          .sort((a,b) => rows.indexOf(a.target) - rows.indexOf(b.target));
+
+        intersecting.forEach((entry, idx) => {
+          const el = entry.target;
+          el.style.setProperty('--stagger', `${idx * baseDelay}ms`);
+          // next frame to ensure styles applied before animation starts
+          requestAnimationFrame(() => el.classList.add('reveal-in'));
+          io.unobserve(el);
+        });
+      }, {
+        root: null,
+        rootMargin: '0px 0px -20% 0px', // trigger a bit later (deeper in viewport)
+        threshold: 0.2
+      });
+
+      // Immediately animate the first N rows on load (typically visible on first screen)
+      const initialCount = Math.min(3, rows.length);
+      rows.slice(0, initialCount).forEach((el, i) => {
+        el.style.setProperty('--stagger', `${i * baseDelay}ms`);
+        requestAnimationFrame(() => el.classList.add('reveal-in'));
+      });
+
+      // Observe the remaining rows for scroll-triggered reveal
+      rows.slice(initialCount).forEach(el => io.observe(el));
     });
   </script>
 </body>

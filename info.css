@@ -79,6 +79,10 @@ body {
   z-index: 1;
 }
 
+/* Keep layout stable when JS wraps text */
+.right p .word { display: inline-block; white-space: nowrap; }
+.right p .char { display: inline-block; }
+
 /* ===== Image behind text (desktop position unchanged) ===== */
 .text-behind-img {
   position: absolute;
@@ -138,6 +142,11 @@ body {
 }
 .email-popup.visible { opacity: 1; }
 
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 1024px) {
   .page { padding-left: 240px; }
@@ -158,15 +167,18 @@ body {
     margin-left: 0;
     padding: 0px 16px 80px;
   }
-    .text-behind-img {
+
+  .text-behind-img {
     top: 360px; /* move image further down for mobile */
   }
+
   .bottom {
     position: static;
     mix-blend-mode: normal;
     color: #000;
     padding: 0 16px 24px;
   }
+
   .blob-cursor {
     display: none !important;
   }

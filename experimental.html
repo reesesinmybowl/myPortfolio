@@ -7,6 +7,7 @@
   <meta name="description" content="Experimental projects by Niklas Tsalkos – Interactive Design, Motion, Type, and more.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style_exp.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body>
 
@@ -84,7 +85,102 @@
     </a>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    // Typewriter for the "Designer" label (same behavior as other pages)
+    document.addEventListener('DOMContentLoaded', () => {
+      const animatedTextContainer = document.querySelector('.animated-text');
+      const animatedWordInner = document.querySelector('.animated-word-inner');
+      const words = ['Interactive', 'Graphic', 'Motion'];
+      let currentIndex = 0;
+      const typingSpeed = 70, deletingSpeed = 40, wordDisplayTime = 3000, pauseBeforeTyping = 300;
+
+      if (animatedTextContainer && animatedWordInner) {
+        const measuringDiv = document.createElement('div');
+        Object.assign(measuringDiv.style, { position:'absolute', visibility:'hidden', whiteSpace:'nowrap', zIndex:'-1' });
+        document.body.appendChild(measuringDiv);
+
+        const computedStyle = getComputedStyle(animatedWordInner);
+        Object.assign(measuringDiv.style, {
+          fontFamily: computedStyle.fontFamily,
+          fontSize: computedStyle.fontSize,
+          fontWeight: computedStyle.fontWeight,
+          letterSpacing: computedStyle.letterSpacing,
+          lineHeight: computedStyle.lineHeight,
+          textTransform: computedStyle.textTransform
+        });
+
+        const getTextWidth = (text) => { measuringDiv.textContent = text; return measuringDiv.offsetWidth; };
+
+        const typeWord = (word, done) => {
+          let i = 0;
+          animatedTextContainer.classList.remove('is-deleting', 'is-empty');
+          animatedWordInner.textContent = '';
+          const iv = setInterval(() => {
+            if (i < word.length) {
+              animatedWordInner.textContent += word[i++];
+              animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+            } else { clearInterval(iv); done && done(); }
+          }, typingSpeed);
+        };
+
+        const deleteWord = (done) => {
+          let text = animatedWordInner.textContent;
+          animatedTextContainer.classList.add('is-deleting');
+          const iv = setInterval(() => {
+            if (text.length) {
+              text = text.slice(0, -1);
+              animatedWordInner.textContent = text;
+              animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+            } else {
+              clearInterval(iv);
+              animatedTextContainer.classList.add('is-empty');
+              animatedTextContainer.style.width = '0px';
+              done && done();
+            }
+          }, deletingSpeed);
+        };
+
+        const loop = () => {
+          const currentWord = words[currentIndex];
+          typeWord(currentWord, () => {
+            setTimeout(() => {
+              deleteWord(() => {
+                setTimeout(() => {
+                  currentIndex = (currentIndex + 1) % words.length;
+                  loop();
+                }, pauseBeforeTyping);
+              });
+            }, wordDisplayTime);
+          });
+        };
+
+        loop();
+      }
+    });
+
+    // Snappy load-in for media tiles (images + videos)
+    window.addEventListener('load', () => {
+      if (!window.gsap) return;
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      const mediaNodes = Array.from(document.querySelectorAll('.experimental-grid .media-wrapper img, .experimental-grid .media-wrapper video'));
+      if (!mediaNodes.length) return;
+
+      // initial state
+      gsap.set(mediaNodes, { opacity: 0, y: 18, scale: 0.98, transformOrigin: '50% 50%' });
+
+      // animate in with light stagger
+      gsap.to(mediaNodes, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: 'power3.out',
+        stagger: { each: 0.06, from: 'start' }
+      });
+    });
+  </script>
 
 </body>
 </html>
