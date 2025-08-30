@@ -110,7 +110,7 @@
     }
 
     /* Keep layout stable when JS wraps text */
-    .right p .word { display: inline-block; white-space: nowrap; }
+    .right p .word { display: inline-block; white-space: nowrap; will-change: transform; }
     .right p .char { display: inline-block; will-change: transform; }
 
     /* Optional tracking for split text (kerning-like) */
@@ -503,15 +503,91 @@
         return;
       }
 
+      // Detect if arriving from a subpage (e.g., /project or /experimental)
+      let SKIP_SIDE_UI = false;
+      try {
+        const ref = document.referrer ? new URL(document.referrer) : null;
+        if (ref && ref.origin === location.origin) {
+          const p = ref.pathname || '';
+          if (/^\/project(\/|$)/.test(p) || /^\/experimental(\/|$)/.test(p)) {
+            SKIP_SIDE_UI = true;
+          }
+        }
+      } catch(_) {}
+
       // Set initial states BEFORE revealing content
-      // Left starts slightly above (from top), others below
-      gsap.set('.left', { opacity: 0, y: -24 });
-      gsap.set(['.bottom', '.corner-year'], { opacity: 0, y: 20 });
+      // Left starts slightly above (from top), others below, unless skipping side UI
+      if (SKIP_SIDE_UI) {
+        gsap.set('.left', { opacity: 1, y: 0 });
+        gsap.set(['.bottom', '.corner-year'], { opacity: 1, y: 0 });
+      } else {
+        gsap.set('.left', { opacity: 0, y: -24 });
+        gsap.set(['.bottom', '.corner-year'], { opacity: 0, y: 20 });
+      }
       // Sharp reveal: mask-wipe from right to left (no fade/scale)
       gsap.set('.text-behind-img', { clipPath: 'inset(0% 100% 0% 0%)' });
 
-      const hasChars = document.querySelector('.intro-text .char');
-      if (hasChars) gsap.set('.intro-text .char', { opacity: 0, y: 12 });
+      // Choose alternative intro animations: 'chars-slide-up' (default), 'words-slide-up',
+      // 'words-wipe', 'blur-fade', 'tracking-in', 'skew-reveal', 'mono-pop'
+      const INTRO_MODE = 'mono-pop';
+
+      function createTextAnimation(mode){
+        const tl = gsap.timeline();
+        switch (mode) {
+          case 'words-slide-up': {
+            gsap.set('.intro-text .word', { opacity: 0, y: 18 });
+            tl.to('.intro-text .word', { opacity: 1, y: 0, duration: 0.5, stagger: { each: 0.05, from: 'start' }, ease: 'power3.out' });
+            break;
+          }
+          case 'words-wipe': {
+            // Editorial-style mask reveal per word
+            gsap.set('.intro-text .word', { clipPath: 'inset(0% 100% 0% 0%)', y: 2 });
+            tl.to('.intro-text .word', {
+              clipPath: 'inset(0% 0% 0% 0%)',
+              y: 0,
+              duration: 0.6,
+              stagger: { each: 0.08, from: 'start' },
+              ease: 'power3.out'
+            });
+            break;
+          }
+          case 'blur-fade': {
+            gsap.set('.intro-text .char', { opacity: 0, y: 8, filter: 'blur(6px)' });
+            tl.to('.intro-text .char', { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.5, stagger: { each: 0.006, from: 'start' }, ease: 'power3.out' });
+            break;
+          }
+          case 'tracking-in': {
+            gsap.set('.intro-text', { opacity: 0 });
+            gsap.set('.intro-text', { '--track': '0.12em' });
+            tl.to('.intro-text', { opacity: 1, duration: 0.2, ease: 'power1.out' })
+              .to('.intro-text', { '--track': '0em', duration: 0.65, ease: 'power2.out' }, '<');
+            break;
+          }
+          case 'skew-reveal': {
+            gsap.set('.intro-text .word', { opacity: 0, y: 20, skewY: 6, transformOrigin: '0% 100%' });
+            tl.to('.intro-text .word', { opacity: 1, y: 0, skewY: 0, duration: 0.5, stagger: { each: 0.05, from: 'start' }, ease: 'power3.out' });
+            break;
+          }
+          case 'mono-pop': {
+            // Dialed-down pop: subtle lift + tiny overshoot
+            gsap.set('.intro-text .word', { opacity: 0, y: 8, scale: 0.99, transformOrigin: '0% 80%' });
+            tl.to('.intro-text .word', {
+              keyframes: [
+                { opacity: 1, y: 0, scale: 1.015, duration: 0.28, ease: 'power2.out' },
+                { scale: 1.0, duration: 0.12, ease: 'power1.out' }
+              ],
+              stagger: { each: 0.06, from: 'start' }
+            });
+            break;
+          }
+          case 'chars-slide-up':
+          default: {
+            gsap.set('.intro-text .char', { opacity: 0, y: 12 });
+            tl.to('.intro-text .char', { opacity: 1, y: 0, duration: 0.45, stagger: { each: 0.006, from: 'start' }, ease: 'power4.out' });
+          }
+        }
+        return tl;
+      }
 
       // Reveal content by fading out the white overlay, then animate in
       requestAnimationFrame(() => {
@@ -520,19 +596,17 @@
       });
 
       const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-      const textTarget = hasChars ? '.intro-text .char' : '.intro-text';
-      // Descriptive text animates in first
-      tl.to(textTarget, {
-          opacity: 1,
-          y: 0,
-          duration: 0.45,
-          stagger: hasChars ? { each: 0.006, from: 'start' } : 0
-        })
-        // Image wipe slightly overlaps the end of text for a seamless handoff
-        .addLabel('imageStart', '-=0.47')
+      const supportsClip = (window.CSS && CSS.supports && CSS.supports('clip-path', 'inset(0% 0% 0% 0%)'));
+      const requiresClip = INTRO_MODE === 'words-wipe';
+      const mode = (!requiresClip || supportsClip) ? INTRO_MODE : 'words-slide-up';
+      const textTl = createTextAnimation(mode);
+      tl.add(textTl)
+        // Image starts 0.47s before text timeline completes
+        .addLabel('imageStart', '>-0.47')
         .to('.text-behind-img', { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'power3.out' }, 'imageStart')
-        // Left title, bottom links and year jump in 0.5s after image starts
-        .to(['.left', '.bottom', '.corner-year'], { opacity: 1, y: 0, duration: 0.45 }, 'imageStart+=0.5');
+      if (!SKIP_SIDE_UI) {
+        tl.to(['.left', '.bottom', '.corner-year'], { opacity: 1, y: 0, duration: 0.45 }, 'imageStart+=0.5');
+      }
     });
   </script>
 </body>
