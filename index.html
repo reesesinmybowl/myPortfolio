@@ -31,6 +31,19 @@
       overflow-x: hidden;
     }
 
+    /* ===== Preloader (white screen until ready) ===== */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      background: #fff; /* keep page white before first paint */
+      z-index: 9999;
+    }
+    .preloader.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s ease;
+    }
+
     /* ===== Layout wrapper — reserve room for fixed left on desktop ===== */
     .page { padding-left: 280px; padding-right: 20px; }
 
@@ -235,6 +248,9 @@
   </style>
 </head>
 <body>
+  <!-- White preloader overlay to avoid janky first paint -->
+  <div class="preloader" id="preloader" aria-hidden="true"></div>
+  <noscript><style>.preloader{display:none}</style></noscript>
   <div class="page">
     <!-- LEFT SIDEBAR -->
     <div class="left">
@@ -464,15 +480,34 @@
       window.addEventListener('mousemove', onMove, { passive: true });
     })();
 
-    /* ===== GSAP Load-in animation (snappier) ===== */
-    window.addEventListener('load', () => {
-      if (!window.gsap) return;
+    /* ===== GSAP Load-in animation (with preloader) ===== */
+    window.addEventListener('load', async () => {
+      const preloader = document.getElementById('preloader');
 
+      // Prefer to wait for web fonts to avoid reflow during intro
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (e) {}
+      }
+
+      if (!window.gsap) {
+        // If GSAP failed to load, just remove preloader
+        preloader?.classList.add('is-hidden');
+        setTimeout(() => preloader?.remove(), 600);
+        return;
+      }
+
+      // Set initial states BEFORE revealing content
       gsap.set(['.left', '.bottom', '.corner-year'], { opacity: 0, y: 20 });
       gsap.set('.text-behind-img', { opacity: 0, scale: 0.95, transformOrigin: '50% 50%' });
 
       const hasChars = document.querySelector('.intro-text .char');
       if (hasChars) gsap.set('.intro-text .char', { opacity: 0, y: 12 });
+
+      // Reveal content by fading out the white overlay, then animate in
+      requestAnimationFrame(() => {
+        preloader?.classList.add('is-hidden');
+        setTimeout(() => preloader?.remove(), 800);
+      });
 
       const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
       tl.to('.left', { opacity: 1, y: 0, duration: 0.5 })
