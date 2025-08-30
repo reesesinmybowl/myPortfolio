@@ -94,7 +94,7 @@
     /* ===== Right column ===== */
     .right {
       position: relative;
-      max-width: 1450px;
+      max-width: 1400px;
       padding: 220px 24px 120px; /* original desktop spacing */
       margin-left: auto;
     }
@@ -104,7 +104,7 @@
       font-size: clamp(28px, 6vw, 60px);
       line-height: 1.05;
       margin: 4px 0 0 0;
-      letter-spacing: -1.5px;
+      letter-spacing: -3px;
       position: relative;
       z-index: 1;
     }
@@ -112,6 +112,12 @@
     /* Keep layout stable when JS wraps text */
     .right p .word { display: inline-block; white-space: nowrap; }
     .right p .char { display: inline-block; will-change: transform; }
+
+    /* Optional tracking for split text (kerning-like) */
+    .intro-text { --track: 0em; }
+    .intro-text .char { margin-right: var(--track); }
+    /* avoid extra margin at the very end */
+    .intro-text .word:last-child .char:last-child { margin-right: 0; }
 
     /* ===== Image behind text (desktop position unchanged) ===== */
     .text-behind-img {
@@ -123,6 +129,7 @@
       z-index: 0;
       pointer-events: none;
       user-select: none;
+      will-change: clip-path, transform;
     }
 
     /* ===== Bottom footer ===== */
@@ -144,7 +151,7 @@
     .corner-year {
       position: fixed;
       bottom: 40px;
-      right: 40px;
+      right: 60px;
       font-size: 0.9rem;
       color: #fff;
       mix-blend-mode: difference;
@@ -252,7 +259,7 @@
   <div class="preloader" id="preloader" aria-hidden="true"></div>
   <noscript><style>.preloader{display:none}</style></noscript>
   <div class="page">
-    <!-- LEFT SIDEBAR -->
+    <!-- LEFT SIDEBAR --> 
     <div class="left">
       <p>
         <a href="/" class="unstyled-link"><span class="name">Niklas Tsalkos</span></a><br>
@@ -497,8 +504,11 @@
       }
 
       // Set initial states BEFORE revealing content
-      gsap.set(['.left', '.bottom', '.corner-year'], { opacity: 0, y: 20 });
-      gsap.set('.text-behind-img', { opacity: 0, scale: 0.95, transformOrigin: '50% 50%' });
+      // Left starts slightly above (from top), others below
+      gsap.set('.left', { opacity: 0, y: -24 });
+      gsap.set(['.bottom', '.corner-year'], { opacity: 0, y: 20 });
+      // Sharp reveal: mask-wipe from right to left (no fade/scale)
+      gsap.set('.text-behind-img', { clipPath: 'inset(0% 100% 0% 0%)' });
 
       const hasChars = document.querySelector('.intro-text .char');
       if (hasChars) gsap.set('.intro-text .char', { opacity: 0, y: 12 });
@@ -510,15 +520,19 @@
       });
 
       const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-      tl.to('.left', { opacity: 1, y: 0, duration: 0.5 })
-        .to(hasChars ? '.intro-text .char' : '.intro-text', {
+      const textTarget = hasChars ? '.intro-text .char' : '.intro-text';
+      // Descriptive text animates in first
+      tl.to(textTarget, {
           opacity: 1,
           y: 0,
           duration: 0.45,
           stagger: hasChars ? { each: 0.006, from: 'start' } : 0
-        }, '-=0.30')
-        .to('.text-behind-img', { opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(1.6)' }, '-=0.30')
-        .to(['.bottom', '.corner-year'], { opacity: 1, y: 0, duration: 0.45 }, '-=0.45');
+        })
+        // Image wipe slightly overlaps the end of text for a seamless handoff
+        .addLabel('imageStart', '-=0.47')
+        .to('.text-behind-img', { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'power3.out' }, 'imageStart')
+        // Left title, bottom links and year jump in 0.5s after image starts
+        .to(['.left', '.bottom', '.corner-year'], { opacity: 1, y: 0, duration: 0.45 }, 'imageStart+=0.5');
     });
   </script>
 </body>
