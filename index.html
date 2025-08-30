@@ -193,11 +193,13 @@
 
       .right {
         margin-left: 0;
-        padding: 0px 16px 80px;
+        /* Add safe-area padding to avoid iPhone bottom overlap */
+        padding: 0px 16px calc(80px + env(safe-area-inset-bottom));
       }
 
-      /* Move image up a bit on mobile to avoid scroll */
-      .text-behind-img { top: 250px; right: 35px; }
+      /* Mobile: set image layering above footer, keep text on top */
+      .text-behind-img { top: 250px; right: 35px; z-index: 5; }
+      .right p { z-index: 10; }
 
       .bottom {
         position: static;
