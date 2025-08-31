@@ -219,7 +219,11 @@
 
       /* Mobile: set image layering above footer, keep text on top */
       .text-behind-img { top: 250px; right: 35px; z-index: 5; }
-      .right p { z-index: 10; }
+      .right p {
+        z-index: 10;
+        /* Loosen tracking on mobile for readability */
+        letter-spacing: -1px;
+      }
 
       .bottom {
         position: static;
