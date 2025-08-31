@@ -14,7 +14,7 @@
     gtag('config', 'G-BN9QSX45R8', { page_path: location.pathname + location.search });
   </script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
@@ -60,12 +60,37 @@
       color: #fff;
     }
     .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
-    .name { font-weight: 900; font-size: 1.1em; letter-spacing: -0.02em; }
+    .name { font-weight: 700; font-size: 1.1em; letter-spacing: -0.02em; }
 
     /* Links */
-    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight .2s ease; }
+    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; }
     .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+
+    /* Left links: smooth hover for Projects/Experimental only */
+    .left .unstyled-link:not(.no-hover-link) {
+      font-weight: 400;
+      font-variation-settings: 'wght' 400;
+      transition: font-variation-settings .28s ease-in-out;
+    }
+    .left .unstyled-link:not(.no-hover-link):hover {
+      font-weight: 400; /* prevent abrupt jump from base hover rule */
+      font-variation-settings: 'wght' 700;
+    }
+
+    /* Ensure name is always bold and unaffected by hover */
+    .left .name { font-weight: 700; font-variation-settings: 'wght' 700; }
     .no-hover-link { all: unset; cursor: pointer; color: inherit; }
+
+    /* Bottom links: smooth hover (excludes corner year which is separate) */
+    .bottom .unstyled-link:not(.no-hover-link) {
+      font-weight: 400;
+      font-variation-settings: 'wght' 400;
+      transition: font-variation-settings .28s ease-in-out;
+    }
+    .bottom .unstyled-link:not(.no-hover-link):hover {
+      font-weight: 400; /* avoid jump from global hover rule */
+      font-variation-settings: 'wght' 700;
+    }
 
     /* Contact link — hide email by default */
     .contact-swap .hover-text { display: none; }
@@ -111,7 +136,17 @@
 
     /* Keep layout stable when JS wraps text */
     .right p .word { display: inline-block; white-space: nowrap; will-change: transform; }
-    .right p .char { display: inline-block; will-change: transform; }
+    .right p .char {
+      display: inline-block;
+      will-change: transform;
+      transform:
+        translate(var(--bx, 0px), var(--by, 0px))
+        rotate(var(--br, 0deg))
+        scale(var(--bs, 1))
+        translate(var(--hx, 0px), var(--hy, 0px))
+        rotate(var(--hr, 0deg))
+        scale(var(--hs, 1));
+    }
 
     /* Optional tracking for split text (kerning-like) */
     .intro-text { --track: 0em; }
@@ -190,6 +225,16 @@
     }
     .email-popup.visible { opacity: 1; }
 
+    /* ===== Post-morph lines (staggered reveal) ===== */
+    .post-morph-lines { /* keep in normal flow; adjust spacing only */ margin-top: -180px; }
+    .post-morph-lines p {
+      margin: 4px 0;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .post-morph-lines p.on { opacity: 1; transform: translateY(0); }
+
     /* ===== Reduced motion ===== */
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
@@ -266,7 +311,7 @@
     <!-- LEFT SIDEBAR --> 
     <div class="left">
       <p>
-        <a href="/" class="unstyled-link"><span class="name">Niklas Tsalkos</span></a><br>
+        <a href="/" class="unstyled-link no-hover-link"><span class="name">Niklas Tsalkos</span></a><br>
         <span class="animated-text"><span class="animated-word-inner"></span></span> Designer
       </p>
       <p>
@@ -278,11 +323,18 @@
     <!-- RIGHT SECTION -->
     <div class="right">
       <div class="blob-cursor" id="blob"></div>
-      <p class="intro-text">
+      <p class="intro-text" data-scramble-target="Accomplishments">
         Hi there! My name is Niklas. I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics. I'm currently studying at DMJX and previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
       </p>
 
       <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img">
+      <!-- Lines that fade in once morph completes -->
+      <div class="post-morph-lines" id="postLines">
+        <p>Awards: 0</p>
+        <p>Publications: 0</p>
+        <p>Collaborations: 4</p>
+        <p>"that's so sick" to myself in silence: 412</p>
+      </div>
     </div>
   </div>
 
@@ -377,27 +429,297 @@
       }
 
       /* ===== Split ONLY the intro text into words/chars ===== */
+      let IS_SCRAMBLING = false; // used to pause hover-repel during scramble
       const intro = document.querySelector('.intro-text');
       if (intro && intro.dataset.splitDone !== '1') {
         const wrapped = intro.innerText.split(' ').map(word => {
-          const chars = [...word].map(ch => `<span class="char" data-tx="0" data-ty="0" data-gx="0" data-gy="0">${ch}</span>`).join('');
+          const chars = [...word].map(ch => `<span class="char" data-tx="0" data-ty="0" data-gx="0" data-gy="0" data-r="0" data-rg="0">${ch}</span>`).join('');
           return `<span class="word">${chars}</span>`;
         }).join(' ');
         intro.innerHTML = wrapped;
         intro.dataset.splitDone = '1';
       }
 
-      /* ===== Dramatic + smooth hover repel (disabled on touch) ===== */
-      const chars = intro ? Array.from(intro.querySelectorAll('.char')) : [];
-      if (!IS_TOUCH && intro && chars.length) {
-        const radius = 220;      // larger influence
-        const maxOffset = 28;    // bigger displacement
-        const lerp = 0.22;       // faster glide to target
+      // Split the post-morph lines into per-character spans so hover works there too
+      const postLinesEl = document.getElementById('postLines');
+      if (postLinesEl) {
+        postLinesEl.querySelectorAll('p').forEach(p => {
+          if (p.dataset.splitDone === '1') return;
+          const text = p.textContent || '';
+          const frag = document.createDocumentFragment();
+          for (const ch of text) {
+            const s = document.createElement('span');
+            s.className = (ch === ' ') ? 'char space' : 'char';
+            s.dataset.tx='0'; s.dataset.ty='0'; s.dataset.gx='0'; s.dataset.gy='0';
+            s.dataset.r='0'; s.dataset.rg='0'; s.dataset.gs='0';
+            // Use NBSP for spaces so they don't collapse when wrapped in spans
+            s.textContent = (ch === ' ') ? '\u00A0' : ch;
+            frag.appendChild(s);
+          }
+          p.textContent = '';
+          p.appendChild(frag);
+          p.dataset.splitDone = '1';
+        });
+      }
+
+      /* ===== Wheel-driven reorder morph (calm, puzzle-like) ===== */
+      (function wheelReorderMorph(){
+        if (!intro) return;
+        const TARGET_TEXT = (intro.dataset.scrambleTarget || '').replace(/\\n/g, '\n');
+        if (!TARGET_TEXT) return;
+
+        // Source spans (already split earlier into .char inside words)
+        const srcSpans = Array.from(intro.querySelectorAll('.char'));
+        if (!srcSpans.length) return;
+
+        // Build hidden ghost with target text for measurement (wrap non-space chars)
+        const ghost = document.createElement('p');
+        const cs = getComputedStyle(intro);
+        Object.assign(ghost.style, {
+          position: 'absolute',
+          visibility: 'hidden',
+          pointerEvents: 'none',
+          left: '50%',
+          top: '30%',
+          transform: 'translate(-50%, -50%)',
+          margin: '0',
+          fontFamily: cs.fontFamily,
+          fontSize: cs.fontSize,
+          fontWeight: cs.fontWeight,
+          letterSpacing: cs.letterSpacing,
+          lineHeight: cs.lineHeight
+        });
+        ghost.className = 'intro-ghost';
+        const ghostChars = [];
+        for (const ch of TARGET_TEXT) {
+          if (ch === '\n') { ghost.appendChild(document.createElement('br')); continue; }
+          if (ch === ' ')  { ghost.appendChild(document.createTextNode(' ')); continue; }
+          const s = document.createElement('span');
+          s.className = 'char'; s.textContent = ch;
+          ghost.appendChild(s); ghostChars.push(s);
+        }
+        // also keep spaces in layout via a trailing text node if needed
+        intro.parentElement?.appendChild(ghost);
+
+        // Build mapping from source letters -> target positions
+        const srcText = srcSpans.map(s => s.textContent || '').join('');
+        const srcIndices = new Map();
+        for (let i=0;i<srcSpans.length;i++){
+          const c = srcSpans[i].textContent || '';
+          if (c === ' ') continue; // shouldn't occur in .char
+          if (!srcIndices.has(c)) srcIndices.set(c, []);
+          srcIndices.get(c).push(i);
+        }
+        for (const [k,arr] of srcIndices) arr.sort((a,b)=>a-b); // ensure ascending
+
+        const mapS2T = new Array(srcSpans.length).fill(-1);
+        const extraT = []; // target indices with no source
+        for (let j=0, tj=0; j<TARGET_TEXT.length; j++){
+          const c = TARGET_TEXT[j];
+          if (c === ' ' || c === '\n') continue; // not represented as .char
+          const queue = srcIndices.get(c);
+          if (queue && queue.length){
+            const i = queue.shift();
+            mapS2T[i] = tj; // map to ghostChars index
+          } else {
+            extraT.push(tj);
+          }
+          tj++;
+        }
+
+        // Create visible extra spans for unmatched target chars
+        const extraSpans = [];
+        for (const tj of extraT){
+          const c = ghostChars[tj].textContent || ' ';
+          const s = document.createElement('span');
+          s.className = 'char extra'; s.textContent = c;
+          s.style.opacity = '0';
+          intro.appendChild(s);
+          extraSpans.push({ tj, span: s });
+        }
+
+        // Seeds for extras to fly in from outside toward their target
+        const extraSeeds = extraSpans.map(() => {
+          const a = Math.random() * Math.PI * 2;
+          return { rx: Math.cos(a), ry: Math.sin(a) };
+        });
+
+        // Seeds for leftover letters to fly off radially
+        const flySeeds = srcSpans.map(() => {
+          const a = Math.random() * Math.PI * 2;
+          return { rx: Math.cos(a), ry: Math.sin(a) };
+        });
+
+        function centers(elems){
+          return elems.map(el=>{ const r = el.getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; });
+        }
+
+        let dx = [], dy = [], dxExtra = [], dyExtra = [];
+        let BASE_SHIFT = -window.innerHeight * 1.0; // move intro up nearly a viewport
+        let FLY_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.5; // reduce overall spread
+        let FLY_IN_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.8; // how far extras fly in from
+        const H_SPREAD = 0.28;  // limit sideways spread (0..1)
+        const V_SPREAD = 0.85;  // emphasize upward drift (0..1)
+        const IMG_MULT = 2.0;        // image moves 2x the intro (stronger parallax)
+        const IMG_FADE_BOOST = 1.8;  // fade image faster (stronger)
+        function measure(){
+          const sC = centers(srcSpans);
+          const tC = centers(ghostChars);
+          dx = new Array(srcSpans.length).fill(0);
+          dy = new Array(srcSpans.length).fill(0);
+          for (let i=0;i<srcSpans.length;i++){
+            const tj = mapS2T[i];
+            if (tj >= 0){ dx[i] = (tC[tj].x - sC[i].x); dy[i] = (tC[tj].y - sC[i].y); }
+          }
+          dxExtra = []; dyExtra = [];
+          for (let k=0;k<extraSpans.length;k++){
+            const sEl = extraSpans[k].span;
+            const tj = extraSpans[k].tj;
+            const sR = sEl.getBoundingClientRect();
+            const sc = { x: sR.left + sR.width/2, y: sR.top + sR.height/2 };
+            const tc = tC[tj];
+            dxExtra[k] = (tc.x - sc.x);
+            dyExtra[k] = (tc.y - sc.y);
+          }
+          BASE_SHIFT = -window.innerHeight * 1.0; // how far the default moves up (full viewport)
+          FLY_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.5; // tighter fly radius
+          FLY_IN_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.8;
+        }
+
+        let p = 0; // 0..1 progress (displayed)
+        let targetP = 0; // eased destination progress
+        let animRAF = null;
+        const clamp01 = v=> v<0?0:v>1?1:v;
+        const ease = v=> v*v*(3-2*v);
+        // Post-lines control: reveal/hide with stagger when bottom or morph complete
+        let postVisible = false;
+        let postTimers = [];
+        function clearPostTimers(){ while (postTimers.length) clearTimeout(postTimers.pop()); }
+        function revealPostLines(){
+          if (postVisible) return;
+          const post = document.getElementById('postLines');
+          if (!post) return;
+          clearPostTimers();
+          const lines = Array.from(post.querySelectorAll('p'));
+          lines.forEach((el, i) => postTimers.push(setTimeout(() => el.classList.add('on'), i * 140)));
+          postVisible = true;
+        }
+        function hidePostLines(){
+          if (!postVisible) return;
+          const post = document.getElementById('postLines');
+          if (!post) return;
+          clearPostTimers();
+          const lines = Array.from(post.querySelectorAll('p'));
+          // hide in reverse order for a neat fold-up
+          lines.slice().reverse().forEach((el, i) => postTimers.push(setTimeout(() => el.classList.remove('on'), i * 120)));
+          postVisible = false;
+        }
+        function checkBottom(){
+          const atBottom = (window.innerHeight + (window.scrollY || document.documentElement.scrollTop || 0)) >= (document.documentElement.scrollHeight - 2);
+          if (atBottom) revealPostLines(); else if ((window.MORPH_P || 0) < 0.98) hidePostLines();
+        }
+        window.addEventListener('scroll', checkBottom, { passive: true });
+
+        function render(){
+          const pe = ease(p);
+          // Move the entire intro up as progress increases
+          intro.style.transform = `translateY(${BASE_SHIFT*pe}px)`;
+
+          // Move image further up and out (stronger parallax) and fade
+          const img = document.querySelector('.text-behind-img');
+          if (img) {
+            img.style.transform = `translateY(${(BASE_SHIFT*IMG_MULT)*pe}px)`;
+            const fade = Math.min(1, pe * IMG_FADE_BOOST);
+            img.style.opacity = String(1 - fade);
+          }
+
+          for (let i=0;i<srcSpans.length;i++){
+            const tj = mapS2T[i];
+            if (tj >= 0){
+              // mapped letters glide to target; keep fully visible
+              const el = srcSpans[i];
+              el.style.opacity = '1';
+              // base (morph) transform via CSS variables
+              el.style.setProperty('--bx', `${dx[i]*pe}px`);
+              el.style.setProperty('--by', `${(dy[i] - BASE_SHIFT)*pe}px`);
+              el.style.setProperty('--br', `0deg`);
+              el.style.setProperty('--bs', `1`);
+            } else {
+              // leftover letters: fly off with limited sideways spread, mostly upward
+              const v = flySeeds[i];
+              const kfly = Math.pow(pe, 1.05); // gentle acceleration
+              const fx = (v.rx * H_SPREAD) * FLY_DIST * kfly;
+              const fy = (-Math.abs(v.ry) * V_SPREAD) * FLY_DIST * kfly; // force upward
+              const el = srcSpans[i];
+              el.style.setProperty('--bx', `${fx}px`);
+              el.style.setProperty('--by', `${fy}px`);
+              el.style.setProperty('--br', `0deg`);
+              el.style.setProperty('--bs', `1`);
+              // fade out faster for a cleaner exit
+              el.style.opacity = String(Math.max(0, 1 - 2.4*pe));
+            }
+          }
+          for (let k=0;k<extraSpans.length;k++){
+            const tdx = dxExtra[k], tdy = dyExtra[k];
+            const el = extraSpans[k].span;
+            const seed = extraSeeds[k];
+            // extras fly in from outside toward the target, while parent moves up
+            const inv = Math.pow(1 - pe, 1.15); // start far, ease into place
+            const sx = seed.rx * FLY_IN_DIST * inv * 0.35; // limit sideways
+            const sy = -Math.abs(seed.ry) * FLY_IN_DIST * inv; // mostly from above
+            el.style.setProperty('--bx', `${tdx + sx}px`);
+            el.style.setProperty('--by', `${(tdy - BASE_SHIFT*pe) + sy}px`);
+            el.style.setProperty('--br', `0deg`);
+            el.style.setProperty('--bs', `1`);
+            el.style.opacity = String(Math.min(1, pe * 1.25));
+          }
+
+          // Toggle post lines based on morph completion
+          if (pe >= 0.98) revealPostLines();
+          if (pe < 0.95) hidePostLines();
+        }
+
+        function step(){
+          animRAF = null;
+          const diff = targetP - p;
+          if (Math.abs(diff) < 0.006) {
+            p = targetP;
+          } else {
+            p += diff * 0.6; // much faster easing without changing scroll sensitivity
+          }
+          window.MORPH_P = p;
+          render();
+          if (p !== targetP) animRAF = requestAnimationFrame(step);
+        }
+
+        function onWheel(e){
+          targetP = clamp01(targetP + e.deltaY*0.0012); // keep scroll feel; finish faster via easing
+          if (!animRAF) animRAF = requestAnimationFrame(step);
+        }
+        window.addEventListener('wheel', onWheel, { passive: true });
+
+        // Initial measure + render; update on resize
+        measure(); render();
+        window.addEventListener('resize', ()=>{ measure(); render(); });
+      })();
+
+      /* ===== Hover repel with rotation (restored) ===== */
+      (function hoverRepel(){
+        if (IS_TOUCH) return;
+        const area = document.querySelector('.right');
+        if (!area) return;
+        const chars = Array.from(area.querySelectorAll('p .char'));
+        if (!chars.length) return;
+
+        const radius = 220;      // influence radius
+        const maxOffset = 28;    // displacement at full strength
+        const lerp = 0.22;       // position smoothing
+        const rLerp = 0.2;       // rotation smoothing
         let rafId = null;
 
-        chars.forEach(s => { s.dataset.tx='0'; s.dataset.ty='0'; s.dataset.gx='0'; s.dataset.gy='0'; });
+        chars.forEach(s => { s.dataset.tx='0'; s.dataset.ty='0'; s.dataset.gx='0'; s.dataset.gy='0'; s.dataset.r='0'; s.dataset.rg='0'; s.dataset.gs='0'; });
 
-        function onMove(e) {
+        function onMove(e){
           const mx = e.clientX, my = e.clientY;
           chars.forEach(span => {
             const r = span.getBoundingClientRect();
@@ -406,57 +728,65 @@
             const dist = Math.hypot(dx, dy);
 
             if (dist < radius) {
-              const strength = 1 - dist / radius;     // 0..1
+              const strength = 1 - dist / radius; // 0..1
               const offset = strength * maxOffset;
               const ux = dx / (dist || 1), uy = dy / (dist || 1);
               span.dataset.gx = (ux * offset).toFixed(3);
               span.dataset.gy = (uy * offset).toFixed(3);
-              // stash strength to scale a bit (for drama)
               span.dataset.gs = strength.toFixed(3);
+
+              const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+              const rot = Math.max(-14, Math.min(14, angleDeg * 0.18)) * strength;
+              span.dataset.rg = rot.toFixed(3);
             } else {
               span.dataset.gx = '0';
               span.dataset.gy = '0';
               span.dataset.gs = '0';
+              span.dataset.rg = '0';
             }
           });
-
           if (!rafId) rafId = requestAnimationFrame(applyForces);
         }
 
-        function applyForces() {
+        function applyForces(){
           rafId = null;
           let active = false;
-
           chars.forEach(span => {
             let tx = parseFloat(span.dataset.tx), ty = parseFloat(span.dataset.ty);
             const gx = parseFloat(span.dataset.gx), gy = parseFloat(span.dataset.gy);
             const gs = parseFloat(span.dataset.gs || '0');
+            let r = parseFloat(span.dataset.r || '0');
+            const rg = parseFloat(span.dataset.rg || '0');
 
             tx += (gx - tx) * lerp;
             ty += (gy - ty) * lerp;
+            r  += (rg - r) * rLerp;
 
             span.dataset.tx = tx.toFixed(3);
             span.dataset.ty = ty.toFixed(3);
+            span.dataset.r  = r.toFixed(3);
 
-            // slight scale for punch (max +6%)
             const scale = 1 + gs * 0.06;
-            span.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+            // Set hover deltas via CSS variables to compose with base morph
+            span.style.setProperty('--hx', `${tx}px`);
+            span.style.setProperty('--hy', `${ty}px`);
+            span.style.setProperty('--hr', `${r}deg`);
+            span.style.setProperty('--hs', `${scale}`);
 
-            if (Math.abs(gx - tx) > 0.15 || Math.abs(gy - ty) > 0.15) active = true;
+            if (Math.abs(gx - tx) > 0.15 || Math.abs(gy - ty) > 0.15 || Math.abs(rg - r) > 0.15) active = true;
           });
-
           if (active) rafId = requestAnimationFrame(applyForces);
         }
 
-        function onLeave() {
-          chars.forEach(s => { s.dataset.gx='0'; s.dataset.gy='0'; s.dataset.gs='0'; });
+        function onLeave(){
+          chars.forEach(s => { s.dataset.gx='0'; s.dataset.gy='0'; s.dataset.gs='0'; s.dataset.rg='0'; });
+          // Reset hover variables smoothly via applyForces loop
           if (!rafId) rafId = requestAnimationFrame(applyForces);
         }
 
-        const area = document.querySelector('.right') || intro;
         area.addEventListener('mousemove', onMove, { passive: true });
         area.addEventListener('mouseleave', onLeave, { passive: true });
-      }
+      })();
 
       /* ===== Contact / copy email ===== */
       const contactLink = document.getElementById('contactLink');
