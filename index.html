@@ -267,8 +267,10 @@
       .right p {
         z-index: 10;
         /* Loosen tracking on mobile for readability */
-        letter-spacing: -1px;
+        letter-spacing: 0px;
       }
+      /* Keep target on a single line on mobile */
+      .intro-ghost { white-space: nowrap; max-width: 100%; overflow-wrap: normal; word-break: normal; }
 
       .bottom {
         position: static;
@@ -489,6 +491,12 @@
           letterSpacing: cs.letterSpacing,
           lineHeight: cs.lineHeight
         });
+        // On narrow screens, reduce tight tracking for better legibility
+        try {
+          if (matchMedia('(max-width: 900px)').matches) {
+            ghost.style.letterSpacing = '0px';
+          }
+        } catch(_) {}
         ghost.className = 'intro-ghost';
         const ghostChars = [];
         for (const ch of TARGET_TEXT) {
@@ -698,6 +706,22 @@
         }
         window.addEventListener('wheel', onWheel, { passive: true });
 
+        // Mobile: drive progress from scroll position instead of wheel
+        try {
+          const IS_MOBILE_VIEW = matchMedia('(max-width: 900px)').matches || IS_TOUCH;
+          if (IS_MOBILE_VIEW) {
+            function onScrollMobile(){
+              const doc = document.documentElement;
+              const y = window.scrollY || doc.scrollTop || 0;
+              const max = Math.max(1, doc.scrollHeight - window.innerHeight);
+              targetP = clamp01(y / max);
+              if (!animRAF) animRAF = requestAnimationFrame(step);
+            }
+            window.addEventListener('scroll', onScrollMobile, { passive: true });
+            onScrollMobile();
+          }
+        } catch(_) {}
+
         // Initial measure + render; update on resize
         measure(); render();
         window.addEventListener('resize', ()=>{ measure(); render(); });
@@ -705,6 +729,8 @@
 
       /* ===== Hover repel with rotation (restored) ===== */
       (function hoverRepel(){
+        // Disable hover effects on phone view
+        try { if (matchMedia('(max-width: 900px)').matches) return; } catch(_) {}
         if (IS_TOUCH) return;
         const area = document.querySelector('.right');
         if (!area) return;
