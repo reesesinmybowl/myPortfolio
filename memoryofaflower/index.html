@@ -16,8 +16,8 @@
     width: 100vw;
     height: 100vh;
   }
-  #bgCanvas { z-index: 0; will-change: transform, opacity; }
-  #titleCanvas { z-index: 1; pointer-events: none; will-change: transform, opacity; }
+  #bgCanvas { z-index: 0; }
+  #titleCanvas { z-index: 1; pointer-events: none; }
 
   #scroll-indicator {
     position: fixed;
@@ -36,57 +36,12 @@
     50%     { transform: translateX(-50%) translateY(-10px); }
   }
   #scroll-indicator.hidden { opacity: 0; pointer-events: none; }
-  
-  /* Next page section that scrolls into view after the title morph */
-  #nextPage { position: relative; z-index: 3; background: #0b7d3b; color: #f5f5f5; }
-  #nextPage .page-inner {
-    max-width: 880px; margin: 0 auto; padding: 22vh 24px 24vh;
-    font-family: serif; font-size: 18px; line-height: 1.65;
-  }
-  /* Initially hidden; revealed via scroll */
-  #nextPage { opacity: 0; transform: translateY(64px); transition: opacity .45s ease, transform .45s ease; min-height: 120vh; }
-  #nextPage .page-fade { position:absolute; inset:0; pointer-events:none; background: linear-gradient(to top, #0b7d3b 0%, rgba(11,125,59,0) 28%); opacity:.0; transition: opacity .45s ease; }
-  /* Content blocks */
-  #nextPage h1 { font-size: clamp(28px, 5vw, 48px); margin: 0 0 16px; letter-spacing: -0.02em; }
-  #nextPage .lead { font-size: 20px; opacity: .9; }
-  #nextPage .img-wide { height: 46vh; border-radius: 8px; background: linear-gradient(135deg, #222 0%, #333 100%); margin: 28px 0; }
-  #nextPage .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0 12px; }
-  #nextPage .card { height: 28vh; border-radius: 8px; background: linear-gradient(135deg, #222 0%, #2a2a2a 100%); }
-  #nextPage .quote { margin: 22px 0; font-size: 22px; line-height: 1.5; opacity: .95; }
-  #nextPage .meta { display: flex; gap: 18px; opacity: .75; font-size: 14px; }
-  /* Reveal-on-scroll */
-  .reveal { opacity: 0; transform: translateY(22px); transition: opacity .5s ease, transform .5s ease; }
-  .reveal.in { opacity: 1; transform: translateY(0); }
-  @media (max-width: 900px) { #nextPage .grid { grid-template-columns: 1fr 1fr; } #nextPage .card { height: 22vh; } }
 </style>
 </head>
 <body>
 <canvas id="bgCanvas"></canvas>
 <canvas id="titleCanvas"></canvas>
 <div id="scroll-indicator">scroll</div>
-
-  <!-- New background/content section -->
-  <section id="nextPage">
-    <div class="page-inner">
-    <h1 class="reveal">Never Forget Love</h1>
-    <p class="lead reveal">Explorations in line, motion and memory — a garden rendered in time.</p>
-    <div class="img-wide reveal"></div>
-    <div class="grid">
-      <div class="card reveal"></div>
-      <div class="card reveal"></div>
-      <div class="card reveal"></div>
-      <div class="card reveal"></div>
-      <div class="card reveal"></div>
-      <div class="card reveal"></div>
-    </div>
-    <p class="reveal">This second act brings a quieter surface to rest the eye. The marks of the first section recede as new layers unfold in a more narrative cadence.</p>
-    <p class="reveal">Each card above can be replaced with stills, sketches, or short loops. The layout breathes by default and adapts across viewports.</p>
-    <p class="quote reveal">“Flowers are the music of the ground. From earth's lips spoken without sound.”</p>
-    <div class="meta reveal"><span>Process</span><span>Generative drawing</span><span>2025</span></div>
-    <div style="height: 80vh"></div>
-    </div>
-    <div class="page-fade"></div>
-  </section>
 
 <script>
 const bgCanvas = document.getElementById("bgCanvas");
@@ -111,9 +66,7 @@ function adjustBodyHeight() {
   const revealZone = window.innerHeight * 2;
   const morphLength = 2000;
   const fallZone = 500;
-  const next = document.getElementById('nextPage');
-  const nextH = next ? Math.max(next.offsetHeight, window.innerHeight * 1.4) : window.innerHeight * 1.4;
-  document.body.style.height = (revealZone + morphLength + fallZone + nextH + window.innerHeight) + "px";
+  document.body.style.height = (revealZone+morphLength+fallZone+window.innerHeight)+"px";
 }
 
 function noise(t,seed=0){return Math.sin(t*2.3+seed*10)+Math.sin(t*0.7+1.5+seed)*0.5;}
@@ -271,40 +224,6 @@ function animate(){
   drawMemoryGarden(cutY,parallax);
   drawTitle(scrollY,revealZone);
   document.getElementById("scroll-indicator").classList.toggle("hidden",scrollY>50);
-  
-  // Reveal the next background/content section near the end
-  const next = document.getElementById('nextPage');
-  if (next) {
-    // Start a bit after the reveal zone; tune length for feel
-    const transitionStart = revealZone + 1400;
-    const transitionLen   = Math.max(600, window.innerHeight * 0.6);
-    const t  = Math.max(0, Math.min(1, (scrollY - transitionStart) / transitionLen));
-    const te = t*t*(3-2*t); // smoothstep
-    next.style.opacity   = te.toFixed(3);
-    next.style.transform = `translateY(${(1-te)*64}px)`;
-    const fade = next.querySelector('.page-fade');
-    if (fade) fade.style.opacity = String(te * 0.7);
-    // Slide canvases up (so text "scrolls away") and dim slightly
-    const slide = te * window.innerHeight; // up to -100vh
-    titleCanvas.style.transform = `translateY(${-slide}px)`;
-    bgCanvas.style.transform    = `translateY(${-slide}px)`;
-    titleCanvas.style.opacity   = String(1 - te * 0.25);
-    bgCanvas.style.opacity      = String(1 - te * 0.10);
-  }
-
-  // Reveal-on-scroll for nextPage content
-  (function revealScroll(){
-    const root = document.getElementById('nextPage');
-    if (!root) return;
-    const targets = Array.from(root.querySelectorAll('.reveal'));
-    if (!('IntersectionObserver' in window) || !targets.length) {
-      targets.forEach(el => el.classList.add('in')); return;
-    }
-    const io = new IntersectionObserver((entries)=>{
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
-    }, { root: null, threshold: 0.12 });
-    targets.forEach(el => io.observe(el));
-  })();
   requestAnimationFrame(animate);
 }
 

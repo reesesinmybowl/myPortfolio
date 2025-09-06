@@ -234,6 +234,15 @@
       transition: opacity .35s ease, transform .35s ease;
     }
     .post-morph-lines p.on { opacity: 1; transform: translateY(0); }
+    /* Align numeric column across lines */
+    .post-morph-lines .num {
+      display: inline-flex;
+      justify-content: flex-end;
+      min-width: var(--num-col-w, 0px);
+      text-align: right;
+      margin-right: 8px;
+      font-variant-numeric: tabular-nums; /* equal digit widths */
+    }
 
     /* ===== Reduced motion ===== */
     @media (prefers-reduced-motion: reduce) {
@@ -462,6 +471,41 @@
           p.appendChild(frag);
           p.dataset.splitDone = '1';
         });
+
+        // Wrap leading digit sequences in a .num container for alignment
+        function wrapLeadingNumbers(p){
+          const nodes = Array.from(p.childNodes).filter(n => n.nodeType === 1 && n.classList.contains('char'));
+          if (!nodes.length) return null;
+          let i = 0;
+          // skip initial spaces
+          while (i < nodes.length && /\s/.test(nodes[i].textContent || '')) i++;
+          const start = i;
+          while (i < nodes.length && /[0-9]/.test(nodes[i].textContent || '')) i++;
+          const end = i; // exclusive
+          if (end > start) {
+            const wrapper = document.createElement('span');
+            wrapper.className = 'num';
+            // insert wrapper before first digit
+            p.insertBefore(wrapper, nodes[start]);
+            for (let k = start; k < end; k++) wrapper.appendChild(nodes[k]);
+            return wrapper;
+          }
+          return null;
+        }
+
+        function computeNumColumnWidth(){
+          const wrappers = [];
+          postLinesEl.querySelectorAll('p').forEach(p => {
+            let w = p.querySelector(':scope > .num');
+            if (!w) w = wrapLeadingNumbers(p);
+            if (w) wrappers.push(w);
+          });
+          let maxW = 0;
+          wrappers.forEach(w => { const r = w.getBoundingClientRect(); if (r.width > maxW) maxW = r.width; });
+          postLinesEl.style.setProperty('--num-col-w', `${Math.ceil(maxW)}px`);
+        }
+        computeNumColumnWidth();
+        window.addEventListener('resize', computeNumColumnWidth);
       }
 
       /* ===== Wheel-driven reorder morph (calm, puzzle-like) ===== */
@@ -630,8 +674,14 @@
 
         function render(){
           const pe = ease(p);
-          // Move the entire intro up as progress increases
-          intro.style.transform = `translateY(${BASE_SHIFT*pe}px)`;
+          // Move the entire intro up as progress increases (desktop only)
+          const MOBILE_VIEW = (window.matchMedia && matchMedia('(max-width: 900px)').matches) || IS_TOUCH;
+          if (!MOBILE_VIEW) {
+            intro.style.transform = `translateY(${BASE_SHIFT*pe}px)`;
+          } else {
+            // avoid scroll-jank on mobile by not translating the main text block
+            intro.style.transform = '';
+          }
 
           // Move image further up and out (stronger parallax) and fade
           const img = document.querySelector('.text-behind-img');
