@@ -541,6 +541,7 @@
       text-shadow: 0 1px 0 rgba(0,0,0,.35);
       background: linear-gradient(#5ea0ff,#2f62be);
       border-bottom: 1px solid rgba(0,0,0,.25);
+      position: relative; z-index: 5; /* ensure titlebar is above resize handles */
     }
     .notepad-titlebar[data-draggable="true"] { cursor: grab; }
     .notepad-titlebar[data-dragging="true"] { cursor: grabbing; }
@@ -665,7 +666,8 @@
     .resize-handle.right { right: 0; cursor: ew-resize; }
     /* Top/Bottom handles: full width, thin height (inside border) */
     .resize-handle.top, .resize-handle.bottom { left: 0; right: 0; height: 12px; }
-    .resize-handle.top { top: 0; cursor: ns-resize; }
+    /* Place the top resize handle below the titlebar so it doesn't block drag/controls */
+    .resize-handle.top { top: 30px; cursor: ns-resize; }
     .resize-handle.bottom { bottom: 0; cursor: ns-resize; }
     .notepad-window.maximized .resize-handle,
     .image-window.maximized .resize-handle { display: none; }
