@@ -151,7 +151,6 @@
     /* Optional tracking for split text (kerning-like) */
     .intro-text { --track: 0em; }
     .intro-text .char { margin-right: var(--track); }
-    /* avoid extra margin at the very end */
     .intro-text .word:last-child .char:last-child { margin-right: 0; }
 
     /* ===== Image behind text (desktop position unchanged) ===== */
@@ -166,6 +165,8 @@
       user-select: none;
       will-change: clip-path, transform;
     }
+    /* In XP mode, hide the original inline image (use the window instead) */
+    .xp-mode .text-behind-img { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
 
     /* ===== Bottom footer ===== */
     .bottom {
@@ -207,6 +208,8 @@
       opacity: 0;                 /* fades in on first move */
       transition: opacity .25s ease;
     }
+    /* Hide blob while XP mode is active */
+    .xp-mode .blob-cursor { display: none !important; }
 
     /* ===== Email popup ===== */
     .email-popup {
@@ -224,25 +227,6 @@
       z-index: 999;
     }
     .email-popup.visible { opacity: 1; }
-
-    /* ===== Post-morph lines (staggered reveal) ===== */
-    .post-morph-lines { /* keep in normal flow; adjust spacing only */ margin-top: -180px; }
-    .post-morph-lines p {
-      margin: 4px 0;
-      opacity: 0;
-      transform: translateY(12px);
-      transition: opacity .35s ease, transform .35s ease;
-    }
-    .post-morph-lines p.on { opacity: 1; transform: translateY(0); }
-    /* Align numeric column across lines */
-    .post-morph-lines .num {
-      display: inline-flex;
-      justify-content: flex-end;
-      min-width: var(--num-col-w, 0px);
-      text-align: right;
-      margin-right: 8px;
-      font-variant-numeric: tabular-nums; /* equal digit widths */
-    }
 
     /* ===== Reduced motion ===== */
     @media (prefers-reduced-motion: reduce) {
@@ -278,7 +262,6 @@
         /* Loosen tracking on mobile for readability */
         letter-spacing: 0px;
       }
-      /* Keep target on a single line on mobile */
       .intro-ghost { white-space: nowrap; max-width: 100%; overflow-wrap: normal; word-break: normal; }
 
       .bottom {
@@ -312,6 +295,400 @@
       }
       .text-behind-img { pointer-events: none; max-width: 100%; z-index: 0; }
     }
+
+    /* ===== Windows XP (Luna) — pixel-accurate styling ===== */
+    :root{
+      --xp-blue-1:#245edb;
+      --xp-blue-2:#3a6ea5;
+      --xp-blue-3:#4f8ad9;
+      --xp-blue-4:#1f4ea5;
+      --xp-gray-1:#dfe7f6;
+      --xp-gray-2:#f5f7fb;
+      --xp-gray-3:#c0d1f1;
+      --xp-gray-4:#9db7e3;
+      --xp-shadow:#0a246a;
+      --xp-line:#083a7a;
+      --xp-green-1:#3ed64a;
+      --xp-green-2:#1ba11f;
+      --xp-gold-1:#ffe8a3;
+      --xp-gold-2:#ffc957;
+    }
+
+    /* Taskbar */
+    .xp-toolbar{
+      position:fixed; left:0; right:0; bottom:0; height:44px;
+      display:flex; align-items:center; gap:8px; padding:0 6px 0 8px;
+      background:
+        linear-gradient(#7aa3e6,#5a87d8 40%,#396cc9 60%,#2c5eb8 85%,#204a9d);
+      border-top:1px solid rgba(255,255,255,.6);
+      box-shadow:
+        0 -1px 0 rgba(0,0,0,.15) inset,
+        0 -6px 18px rgba(0,0,0,.25) inset,
+        0 0 0 1px rgba(0,0,0,.25);
+      font: 11px Tahoma, Verdana, sans-serif;
+      color:#000;
+      transform:translateY(100%);
+      transition:transform .28s ease-out;
+      z-index:2000;
+      pointer-events:none;
+    }
+    .xp-toolbar.show{ transform:translateY(0); pointer-events:auto; }
+
+    /* Start button */
+    .xp-start{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 14px 7px 12px;
+      background: linear-gradient(var(--xp-green-1),var(--xp-green-2));
+      border:1px solid #0e5f12;
+      border-radius:18px;
+      color:#fff;
+      font-weight:700; letter-spacing:.2px; text-transform:lowercase;
+      text-shadow:0 1px 0 rgba(0,0,0,.35);
+      box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 1px 0 rgba(0,0,0,.15);
+      user-select:none; cursor:default;
+    }
+    .xp-start:active{ filter:brightness(.95); transform:translateY(1px); }
+
+    .xp-winicon{
+      width:16px; height:16px; position:relative; border-radius:2px; overflow:hidden;
+    }
+    .xp-winicon::before,
+    .xp-winicon::after{
+      content:""; position:absolute; inset:0;
+      background:
+        linear-gradient(90deg,#00a4ef 0 50%, #7fba00 50% 100%),
+        linear-gradient(#f25022 0 50%, #ffb900 50% 100%);
+      background-blend-mode:normal;
+      mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      padding:1px;
+    }
+
+    /* Separators */
+    .xp-sep{ width:2px; align-self:stretch;
+      background:
+        linear-gradient(#8bb0eb,#2a58b2);
+      box-shadow:1px 0 0 rgba(255,255,255,.45) inset;
+      opacity:.95;
+    }
+
+    /* Task area */
+    .xp-taskarea{ display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
+    .xp-taskarea .task{
+      display:inline-flex; align-items:center; gap:6px; min-width:120px; max-width:42vw;
+      padding:4px 12px 5px; border-radius:3px;
+      background:linear-gradient(#f7f8fb,#e4e8f3);
+      border:1px solid #7b90ba;
+      box-shadow:0 1px 0 rgba(255,255,255,.85) inset;
+      font: 11px Tahoma, Verdana, sans-serif; color:#000;
+      overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    }
+    .xp-taskarea .task:before{
+      content:""; width:14px; height:14px; border-radius:2px;
+      background:#2f62be; box-shadow:0 0 0 1px rgba(0,0,0,.25) inset;
+    }
+    .xp-taskarea .task.active{
+      background:linear-gradient(var(--xp-gold-1),var(--xp-gold-2));
+      border-color:#a5791b;
+    }
+
+    /* Tray */
+    .xp-tray{ display:inline-flex; align-items:center; gap:6px; }
+    .xp-tray .tray-icon{
+      width:12px; height:12px; border-radius:2px; background:rgba(255,255,255,.9);
+      box-shadow:0 0 0 1px rgba(0,0,0,.3);
+    }
+    .xp-tray .clock{
+      color:#fff; text-shadow:0 1px 0 rgba(0,0,0,.5);
+      font: 11px Tahoma, Verdana, sans-serif;
+    }
+
+    /* Start menu */
+    .xp-menu{
+      position:fixed; left:6px; bottom:44px; width:390px; height:380px;
+      border-radius:6px; overflow:hidden;
+      box-shadow: 0 18px 36px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.25);
+      opacity:0; transform:translateY(8px) scale(.985); transform-origin:0 100%;
+      transition:opacity .14s ease, transform .14s ease;
+      pointer-events:none; z-index:2100;
+    }
+    .xp-menu.open{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; z-index: 2200; }
+
+    /* Menu chrome: blue sidebar + right body */
+    .xp-menu .chrome{
+      display:grid; grid-template-columns:128px 1fr; height:100%;
+      background:var(--xp-gray-2);
+      border:1px solid var(--xp-line);
+    }
+
+    /* Left blue rail (user tile + shortcuts) */
+    .xp-menu .rail{
+      background:
+        linear-gradient(#3f76c2,#2458a8 70%, #1f4ea5);
+      color:#fff; padding:10px 8px;
+      box-shadow:inset -1px 0 0 rgba(255,255,255,.2);
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .xp-avatar{
+      height:64px; border-radius:6px;
+      background:
+        radial-gradient(ellipse at 30% 30%, #fff, #e8edf9 55%, #bfd3ff 70%);
+      border:1px solid rgba(255,255,255,.6);
+      box-shadow:0 0 0 1px rgba(0,0,0,.25) inset;
+    }
+    .xp-user{ font: 12px Tahoma, Verdana, sans-serif; font-weight:700; text-shadow:0 1px 0 rgba(0,0,0,.3); padding-top:4px; }
+    .xp-rail-links a{
+      display:flex; align-items:center; gap:6px;
+      padding:3px 4px; border-radius:3px; color:#fff; text-decoration:none;
+      font:11px Tahoma, Verdana, sans-serif;
+    }
+    .xp-rail-links a:hover{ background:rgba(255,255,255,.12); }
+
+    /* Right body */
+    .xp-menu .body{
+      display:grid; grid-template-rows:auto 1fr auto;
+      background:
+        linear-gradient(#fefefe,#f3f6fd);
+    }
+
+    /* Header (user name) */
+    .xp-menu .menu-header{
+      padding:8px 10px; color:#fff; font-weight:700;
+      background:linear-gradient(#5ea0ff,#2f62be);
+      text-shadow:0 1px 0 rgba(0,0,0,.4);
+      border-bottom:1px solid rgba(255,255,255,.4);
+    }
+
+    /* Items */
+    .xp-items{ padding:6px; display:grid; grid-template-columns:1fr 1fr; gap:2px 4px; }
+    .xp-item{
+      display:flex; align-items:center; gap:8px; padding:4px 6px;
+      border-radius:3px; color:#000; text-decoration:none; font:11px Tahoma, Verdana, sans-serif;
+    }
+    .xp-item:hover{
+      background:linear-gradient(#cfe3ff,#93bbff);
+      border:1px solid #6a8fd4;
+      margin:-1px; /* keep size while showing border */
+    }
+    .xp-ico{ width:16px; height:16px; border-radius:3px; background:#2f62be; box-shadow:0 0 0 1px rgba(0,0,0,.25) inset; }
+
+    /* Footer (Log Off / Shut Down) */
+    .xp-menu .footer{
+      display:flex; justify-content:flex-end; gap:8px; padding:8px;
+      background: #dbe6f6; border-top:1px solid #b8cbe6;
+    }
+    .xp-btn{
+      background:linear-gradient(#fff,#e7eefb);
+      border:1px solid #7b90ba; border-radius:3px; padding:5px 10px;
+      font:11px Tahoma, Verdana, sans-serif; color:#000; text-decoration:none;
+      box-shadow:0 1px 0 rgba(255,255,255,.8) inset;
+    }
+    .xp-btn.warn{
+      background:linear-gradient(#ffb77d,#ff7a2d);
+      border-color:#9f3b12; color:#fff; text-shadow:0 1px 0 rgba(0,0,0,.35);
+    }
+    .xp-btn.danger{
+      background:linear-gradient(#ff8a7c,#e34a3b);
+      border-color:#9f2a1b; color:#fff; text-shadow:0 1px 0 rgba(0,0,0,.35);
+    }
+
+    /* Reveal/hide interplay with your site UI */
+    .xp-mode .right{ padding-bottom: calc(160px + 44px); }
+    .xp-mode .bottom, .xp-mode .corner-year{ opacity:0; pointer-events:none; transition:opacity .18s ease; }
+
+    /* Hotspot for bottom-left reveal */
+    .xp-hotspot{ position:fixed; left:0; bottom:0; width:84px; height:6px; z-index:1999; }
+
+    /* ===== Notepad Window ===== */
+    .notepad-window {
+      position: fixed;
+      left: clamp(12px, 8vw, 40px);
+      top: clamp(220px, 24vh, 360px);
+      width: clamp(280px, 46vw, 720px);
+      min-width: 220px;
+      max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 32px);
+      display: flex; flex-direction: column;
+      background: #f2f2f2;
+      border: 1px solid #7b90ba;
+      border-radius: 5px;
+      box-shadow: 0 18px 36px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.18);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(16px) scale(.985);
+      transition: opacity .35s ease, transform .35s ease;
+      z-index: 2;
+    }
+    /* App windows are fixed-position overlays; hidden when minimized */
+    .notepad-window.active { z-index: 2105; }
+    .notepad-window.minimized { opacity: 0; pointer-events: none; transform: translateY(10px) scale(.98); }
+    .notepad-window.maximized {
+      left: 16px; right: 16px; top: 80px; width: auto;
+    }
+    .notepad-titlebar {
+      height: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      color: #fff;
+      font: 12px Tahoma, Verdana, sans-serif;
+      text-shadow: 0 1px 0 rgba(0,0,0,.35);
+      background: linear-gradient(#5ea0ff,#2f62be);
+      border-bottom: 1px solid rgba(0,0,0,.25);
+    }
+    .notepad-titlebar[data-draggable="true"] { cursor: grab; }
+    .notepad-titlebar[data-dragging="true"] { cursor: grabbing; }
+    .notepad-icon { width: 14px; height: 14px; background:#fff; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.25) inset; }
+    .notepad-titlebar .spacer { flex: 1; }
+    .notepad-controls { display:flex; gap:6px; }
+    .np-btn {
+      width: 14px; height: 14px; border-radius:2px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.3);
+      cursor: pointer;
+    }
+    /* XP window controls: min/max neutral, close colored */
+    .np-btn[data-action="min"],
+    .np-btn[data-action="max"] {
+      background: linear-gradient(#fff,#e7eefb);
+      box-shadow: 0 0 0 1px #7b90ba;
+      position: relative;
+    }
+    .np-btn[data-action="close"] {
+      background: linear-gradient(#ff9a8d, #e34a3b);
+      box-shadow: 0 0 0 1px rgba(159,42,27,.55);
+      position: relative;
+    }
+    /* Glyphs */
+    .np-btn::before, .np-btn::after { content: ""; position: absolute; }
+    /* Minimize: bar */
+    .np-btn[data-action="min"]::before {
+      left: 3px; right: 3px; height: 2px; bottom: 3px;
+      background: #083a7a; border-radius: 1px;
+    }
+    /* Maximize: square */
+    .np-btn[data-action="max"]::before {
+      width: 8px; height: 6px; top: 3px; left: 50%; transform: translateX(-50%);
+      border: 1px solid #083a7a; background: rgba(255,255,255,.6);
+    }
+    /* Close: X */
+    .np-btn[data-action="close"]::before,
+    .np-btn[data-action="close"]::after {
+      width: 8px; height: 2px; top: 6px; left: 50%; transform-origin: 50% 50%;
+      background: #5b0f0f; border-radius: 1px; transform: translateX(-50%) rotate(45deg);
+    }
+    .np-btn[data-action="close"]::after { transform: translateX(-50%) rotate(-45deg); }
+    .notepad-controls .np-btn:hover { filter: brightness(1.05); }
+    .notepad-controls .np-btn:active { filter: brightness(.92); }
+    .notepad-menu {
+      display: flex;
+      gap: 14px;
+      padding: 6px 10px;
+      background: linear-gradient(#fefefe,#f3f6fd);
+      border-bottom: 1px solid #d1dbef;
+      font: 11px Tahoma, Verdana, sans-serif;
+      color: #000;
+      user-select: none;
+    }
+    .notepad-body {
+      background: #fff;
+      padding: 2px 4px 12px;
+      font: 14px/1.35 "Lucida Console", "Lucida Sans Typewriter", "Courier New", monospace;
+      color: #000;
+      min-height: clamp(160px, 28vh, 420px);
+      flex: 1 1 auto;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+    /* When XP mode is active, show Notepad and fade the intro */
+    .xp-mode .notepad-window { opacity: 1; transform: translateY(0) scale(1); }
+    /* But allow Notepad to be minimized/closed while XP mode is active */
+    .xp-mode .notepad-window.minimized { opacity: 0 !important; pointer-events: none !important; transform: translateY(10px) scale(.98) !important; }
+    .xp-mode .right .intro-text { opacity: 0; transition: opacity .35s ease; }
+    @media (max-width: 900px) {
+      .notepad-window { left: 16px; right: 16px; top: 180px; width: auto; }
+      /* Keep notepad text size consistent */
+    }
+
+    /* ===== Image Preview Window ===== */
+    .image-window {
+      position: fixed;
+      left: clamp(12px, 8vw, 40px);
+      top: clamp(160px, 20vh, 320px);
+      width: clamp(220px, 38vw, 560px);
+      min-width: 180px;
+      max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 32px);
+      display: flex; flex-direction: column;
+      background: #f2f2f2;
+      border: 1px solid #7b90ba;
+      border-radius: 5px;
+      box-shadow: 0 18px 36px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.18);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(16px) scale(.985);
+      transition: opacity .35s ease, transform .35s ease;
+      z-index: 2;
+    }
+    /* Individual starting positions for each image window */
+    #imageWindow { left: clamp(12px, 12vw, 200px); top: clamp(140px, 16vh, 280px); }
+    #imageWindow2 { left: clamp(240px, 28vw, 520px); top: clamp(220px, 26vh, 380px); }
+    /* Make the third image window narrower by default */
+    #imageWindow3 { width: clamp(120px, 28vw, 420px); }
+    .image-window.visible { opacity: 1; transform: translateY(0) scale(1); }
+    .image-window.active { z-index: 2106; }
+    .image-window.minimized { opacity: 0; pointer-events: none; transform: translateY(10px) scale(.98); }
+    .image-window.maximized { left: 16px; right: 16px; top: 80px; width: auto; }
+    .image-body { background: #fff; flex: 1 1 auto; overflow: auto; }
+    .image-body img { display: block; width: 100%; height: auto; }
+    .nan-placeholder { display:flex; align-items:center; justify-content:center; min-height: 240px; color:#666; font: 18px/1 Tahoma, Verdana, sans-serif; }
+    @media (max-width: 900px) {
+      .image-window { left: 16px; right: 16px; top: 260px; width: auto; }
+    }
+
+    /* Hide XP UI completely on mobile view */
+    @media (max-width: 900px) {
+      .xp-toolbar, .xp-hotspot, .xp-menu { display: none !important; }
+    }
+
+    /* Resize handles for windows (left/right/top/bottom edges) */
+    .resize-handle { position: absolute; z-index: 3; pointer-events: auto; }
+    /* Left/Right handles: full height, thin width (inside border) */
+    .resize-handle.left, .resize-handle.right { top: 0; bottom: 0; width: 12px; }
+    .resize-handle.left { left: 0; cursor: ew-resize; }
+    .resize-handle.right { right: 0; cursor: ew-resize; }
+    /* Top/Bottom handles: full width, thin height (inside border) */
+    .resize-handle.top, .resize-handle.bottom { left: 0; right: 0; height: 12px; }
+    .resize-handle.top { top: 0; cursor: ns-resize; }
+    .resize-handle.bottom { bottom: 0; cursor: ns-resize; }
+    .notepad-window.maximized .resize-handle,
+    .image-window.maximized .resize-handle { display: none; }
+
+    /* ===== Shutdown Overlay ===== */
+    .shutdown-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      color: #fff;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000; /* Above preloader and XP UI */
+      pointer-events: auto;
+    }
+    .shutdown-overlay.show { display: flex; }
+    .shutdown-overlay .message {
+      font: 14px Tahoma, Verdana, sans-serif;
+      letter-spacing: 0.02em;
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+    .shutdown-overlay .message.visible { opacity: 1; }
   </style>
 </head>
 <body>
@@ -334,20 +711,158 @@
     <!-- RIGHT SECTION -->
     <div class="right">
       <div class="blob-cursor" id="blob"></div>
-      <p class="intro-text" data-scramble-target="Accomplishments">
+      <p class="intro-text">
         Hi there! My name is Niklas. I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics. I'm currently studying at DMJX and previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
       </p>
 
-      <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img">
-      <!-- Lines that fade in once morph completes -->
-      <div class="post-morph-lines" id="postLines">
-        <p>Awards: 0</p>
-        <p>Publications: 0</p>
-        <p>Collaborations: 4</p>
-        <p>"that's so sick" to myself in silence: 412</p>
+      <!-- Notepad window that appears in XP mode -->
+      <div class="notepad-window" id="notepad" aria-hidden="true">
+        <div class="notepad-titlebar" id="notepadTitle" data-draggable="true">
+          <div class="notepad-icon" aria-hidden="true"></div>
+          <div class="title">a-lil-about-me - Notepad</div>
+          <div class="spacer"></div>
+          <div class="notepad-controls" aria-hidden="true">
+            <div class="np-btn" title="Minimize" data-action="min"></div>
+            <div class="np-btn" title="Maximize" data-action="max"></div>
+            <div class="np-btn" title="Close" data-action="close"></div>
+          </div>
+        </div>
+        <div class="notepad-menu" aria-hidden="true">
+          <span>File</span><span>Edit</span><span>Format</span><span>View</span><span>Help</span>
+        </div>
+        <div class="notepad-body" id="notepadBody"></div>
+        <div class="resize-handle left" data-side="left" aria-hidden="true"></div>
+        <div class="resize-handle right" data-side="right" aria-hidden="true"></div>
+        <div class="resize-handle top" data-side="top" aria-hidden="true"></div>
+        <div class="resize-handle bottom" data-side="bottom" aria-hidden="true"></div>
       </div>
+
+      <!-- Image preview window (draggable) -->
+      <div class="image-window" id="imageWindow" aria-hidden="true">
+        <div class="notepad-titlebar" id="imageTitle" data-draggable="true">
+          <div class="notepad-icon" aria-hidden="true"></div>
+          <div class="title">during-ride.jpeg</div>
+          <div class="spacer"></div>
+          <div class="notepad-controls" aria-hidden="true">
+            <div class="np-btn" title="Minimize" data-action="min"></div>
+            <div class="np-btn" title="Maximize" data-action="max"></div>
+            <div class="np-btn" title="Close" data-action="close"></div>
+          </div>
+        </div>
+        <div class="image-body">
+          <img id="imagePreview" src="/Images/selfie.JPG" alt="Preview"/>
+        </div>
+        <div class="resize-handle left" data-side="left" aria-hidden="true"></div>
+        <div class="resize-handle right" data-side="right" aria-hidden="true"></div>
+        <div class="resize-handle top" data-side="top" aria-hidden="true"></div>
+        <div class="resize-handle bottom" data-side="bottom" aria-hidden="true"></div>
+      </div>
+
+      <!-- Second image preview window (draggable) -->
+      <div class="image-window" id="imageWindow2" aria-hidden="true">
+        <div class="notepad-titlebar" id="imageTitle2" data-draggable="true">
+          <div class="notepad-icon" aria-hidden="true"></div>
+          <div class="title">pre-ride.jpeg</div>
+          <div class="spacer"></div>
+          <div class="notepad-controls" aria-hidden="true">
+            <div class="np-btn" title="Minimize" data-action="min"></div>
+            <div class="np-btn" title="Maximize" data-action="max"></div>
+            <div class="np-btn" title="Close" data-action="close"></div>
+          </div>
+        </div>
+        <div class="image-body">
+          <img id="imagePreview2" src="Images/selfie2.JPG" alt="Preview 2"/>
+        </div>
+        <div class="resize-handle left" data-side="left" aria-hidden="true"></div>
+        <div class="resize-handle right" data-side="right" aria-hidden="true"></div>
+        <div class="resize-handle top" data-side="top" aria-hidden="true"></div>
+        <div class="resize-handle bottom" data-side="bottom" aria-hidden="true"></div>
+      </div>
+
+      <!-- Third image preview window (draggable) -->
+      <div class="image-window" id="imageWindow3" aria-hidden="true">
+        <div class="notepad-titlebar" id="imageTitle3" data-draggable="true">
+          <div class="notepad-icon" aria-hidden="true"></div>
+          <div class="title">NANpost-ride.jpeg</div>
+          <div class="spacer"></div>
+          <div class="notepad-controls" aria-hidden="true">
+            <div class="np-btn" title="Minimize" data-action="min"></div>
+            <div class="np-btn" title="Maximize" data-action="max"></div>
+            <div class="np-btn" title="Close" data-action="close"></div>
+          </div>
+        </div>
+        <div class="image-body">
+          <div class="nan-placeholder">NaN</div>
+        </div>
+        <div class="resize-handle left" data-side="left" aria-hidden="true"></div>
+        <div class="resize-handle right" data-side="right" aria-hidden="true"></div>
+        <div class="resize-handle top" data-side="top" aria-hidden="true"></div>
+        <div class="resize-handle bottom" data-side="bottom" aria-hidden="true"></div>
+      </div>
+
+      <!-- Inline images (hidden in XP mode). Replace src for the second image as needed. -->
+      <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img first">
+      <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img second">
     </div>
   </div>
+
+  <!-- XP Taskbar (Luna) -->
+  <div class="xp-toolbar" id="xpToolbar" aria-hidden="true">
+    <div class="xp-start" id="xpStart">
+      <span class="xp-winicon" aria-hidden="true"></span>
+      <span class="label">start</span>
+    </div>
+    <div class="xp-sep" aria-hidden="true"></div>
+
+      <div class="xp-taskarea" id="xpTasks">
+        <div class="task active">About – Niklas</div>
+        <div class="task" id="taskNotepad" style="display:none">a-lil-about-me - Notepad</div>
+        <div class="task" id="taskImage" style="display:none">during-ride.jpeg</div>
+        <div class="task" id="taskImage2" style="display:none">pre-ride.jpeg</div>
+        <div class="task" id="taskImage3" style="display:none">NANpost-ride.jpeg</div>
+      </div>
+
+    <div class="xp-sep" aria-hidden="true"></div>
+    <div class="xp-tray">
+      <span class="tray-icon" aria-hidden="true"></span>
+      <span class="tray-icon" aria-hidden="true"></span>
+      <span class="clock" id="xpClock">12:34 PM</span>
+    </div>
+  </div>
+
+  <!-- Start Menu -->
+  <nav class="xp-menu" id="xpMenu" aria-hidden="true">
+    <div class="chrome">
+      <aside class="rail">
+        <div class="xp-avatar" aria-hidden="true"></div>
+        <div class="xp-user">Niklas</div>
+        <div class="xp-rail-links">
+          <a href="/"><span class="xp-ico"></span>Home</a>
+          <a href="/project/"><span class="xp-ico"></span>Projects</a>
+          <a href="/experimental/"><span class="xp-ico"></span>Experimental</a>
+        </div>
+      </aside>
+
+      <div class="body">
+        <div class="menu-header">Niklas</div>
+        <div class="xp-items">
+          <a class="xp-item" href="/"><span class="xp-ico"></span>Home</a>
+          <a class="xp-item" href="/project/"><span class="xp-ico"></span>Projects</a>
+          <a class="xp-item" href="/experimental/"><span class="xp-ico"></span>Experimental</a>
+          <a class="xp-item" href="mailto:nikl2229us@gmail.com"><span class="xp-ico"></span>Contact</a>
+          <a class="xp-item" href="#" onclick="window.scrollTo({top:0,behavior:'smooth'})"><span class="xp-ico"></span>Back to Top</a>
+        </div>
+        <div class="footer">
+          <a class="xp-btn" href="#" onclick="event.preventDefault();">Log Off…</a>
+          <a class="xp-btn warn" href="#" data-action="restart" onclick="event.preventDefault();">Restart…</a>
+          <a class="xp-btn danger" href="#" data-action="shutdown" onclick="event.preventDefault();">Shut Down…</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Bottom-left reveal area -->
+  <div class="xp-hotspot" id="xpHotspot" aria-hidden="true"></div>
 
   <!-- BOTTOM FIXED FOOTER -->
   <div class="bottom">
@@ -366,6 +881,11 @@
 
   <!-- EMAIL POPUP -->
   <div class="email-popup" id="emailPopup">Email copied to clipboard</div>
+
+  <!-- Shutdown overlay (shown when clicking Shut Down…) -->
+  <div class="shutdown-overlay" id="shutdownOverlay" aria-hidden="true">
+    <div class="message" id="shutdownMessage"></div>
+  </div>
 
   <script>
     /* ===== Flags ===== */
@@ -451,62 +971,7 @@
         intro.dataset.splitDone = '1';
       }
 
-      // Split the post-morph lines into per-character spans so hover works there too
-      const postLinesEl = document.getElementById('postLines');
-      if (postLinesEl) {
-        postLinesEl.querySelectorAll('p').forEach(p => {
-          if (p.dataset.splitDone === '1') return;
-          const text = p.textContent || '';
-          const frag = document.createDocumentFragment();
-          for (const ch of text) {
-            const s = document.createElement('span');
-            s.className = (ch === ' ') ? 'char space' : 'char';
-            s.dataset.tx='0'; s.dataset.ty='0'; s.dataset.gx='0'; s.dataset.gy='0';
-            s.dataset.r='0'; s.dataset.rg='0'; s.dataset.gs='0';
-            // Use NBSP for spaces so they don't collapse when wrapped in spans
-            s.textContent = (ch === ' ') ? '\u00A0' : ch;
-            frag.appendChild(s);
-          }
-          p.textContent = '';
-          p.appendChild(frag);
-          p.dataset.splitDone = '1';
-        });
-
-        // Wrap leading digit sequences in a .num container for alignment
-        function wrapLeadingNumbers(p){
-          const nodes = Array.from(p.childNodes).filter(n => n.nodeType === 1 && n.classList.contains('char'));
-          if (!nodes.length) return null;
-          let i = 0;
-          // skip initial spaces
-          while (i < nodes.length && /\s/.test(nodes[i].textContent || '')) i++;
-          const start = i;
-          while (i < nodes.length && /[0-9]/.test(nodes[i].textContent || '')) i++;
-          const end = i; // exclusive
-          if (end > start) {
-            const wrapper = document.createElement('span');
-            wrapper.className = 'num';
-            // insert wrapper before first digit
-            p.insertBefore(wrapper, nodes[start]);
-            for (let k = start; k < end; k++) wrapper.appendChild(nodes[k]);
-            return wrapper;
-          }
-          return null;
-        }
-
-        function computeNumColumnWidth(){
-          const wrappers = [];
-          postLinesEl.querySelectorAll('p').forEach(p => {
-            let w = p.querySelector(':scope > .num');
-            if (!w) w = wrapLeadingNumbers(p);
-            if (w) wrappers.push(w);
-          });
-          let maxW = 0;
-          wrappers.forEach(w => { const r = w.getBoundingClientRect(); if (r.width > maxW) maxW = r.width; });
-          postLinesEl.style.setProperty('--num-col-w', `${Math.ceil(maxW)}px`);
-        }
-        computeNumColumnWidth();
-        window.addEventListener('resize', computeNumColumnWidth);
-      }
+      // Awards/post lines removed in this version
 
       /* ===== Wheel-driven reorder morph (calm, puzzle-like) ===== */
       (function wheelReorderMorph(){
@@ -514,11 +979,9 @@
         const TARGET_TEXT = (intro.dataset.scrambleTarget || '').replace(/\\n/g, '\n');
         if (!TARGET_TEXT) return;
 
-        // Source spans (already split earlier into .char inside words)
         const srcSpans = Array.from(intro.querySelectorAll('.char'));
         if (!srcSpans.length) return;
 
-        // Build hidden ghost with target text for measurement (wrap non-space chars)
         const ghost = document.createElement('p');
         const cs = getComputedStyle(intro);
         Object.assign(ghost.style, {
@@ -535,7 +998,6 @@
           letterSpacing: cs.letterSpacing,
           lineHeight: cs.lineHeight
         });
-        // On narrow screens, reduce tight tracking for better legibility
         try {
           if (matchMedia('(max-width: 900px)').matches) {
             ghost.style.letterSpacing = '0px';
@@ -550,36 +1012,32 @@
           s.className = 'char'; s.textContent = ch;
           ghost.appendChild(s); ghostChars.push(s);
         }
-        // also keep spaces in layout via a trailing text node if needed
         intro.parentElement?.appendChild(ghost);
 
-        // Build mapping from source letters -> target positions
-        const srcText = srcSpans.map(s => s.textContent || '').join('');
         const srcIndices = new Map();
         for (let i=0;i<srcSpans.length;i++){
           const c = srcSpans[i].textContent || '';
-          if (c === ' ') continue; // shouldn't occur in .char
+          if (c === ' ') continue;
           if (!srcIndices.has(c)) srcIndices.set(c, []);
           srcIndices.get(c).push(i);
         }
-        for (const [k,arr] of srcIndices) arr.sort((a,b)=>a-b); // ensure ascending
+        for (const [k,arr] of srcIndices) arr.sort((a,b)=>a-b);
 
         const mapS2T = new Array(srcSpans.length).fill(-1);
-        const extraT = []; // target indices with no source
+        const extraT = [];
         for (let j=0, tj=0; j<TARGET_TEXT.length; j++){
           const c = TARGET_TEXT[j];
-          if (c === ' ' || c === '\n') continue; // not represented as .char
+          if (c === ' ' || c === '\n') continue;
           const queue = srcIndices.get(c);
           if (queue && queue.length){
             const i = queue.shift();
-            mapS2T[i] = tj; // map to ghostChars index
+            mapS2T[i] = tj;
           } else {
             extraT.push(tj);
           }
           tj++;
         }
 
-        // Create visible extra spans for unmatched target chars
         const extraSpans = [];
         for (const tj of extraT){
           const c = ghostChars[tj].textContent || ' ';
@@ -590,13 +1048,11 @@
           extraSpans.push({ tj, span: s });
         }
 
-        // Seeds for extras to fly in from outside toward their target
         const extraSeeds = extraSpans.map(() => {
           const a = Math.random() * Math.PI * 2;
           return { rx: Math.cos(a), ry: Math.sin(a) };
         });
 
-        // Seeds for leftover letters to fly off radially
         const flySeeds = srcSpans.map(() => {
           const a = Math.random() * Math.PI * 2;
           return { rx: Math.cos(a), ry: Math.sin(a) };
@@ -607,13 +1063,13 @@
         }
 
         let dx = [], dy = [], dxExtra = [], dyExtra = [];
-        let BASE_SHIFT = -window.innerHeight * 1.0; // move intro up nearly a viewport
-        let FLY_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.5; // reduce overall spread
-        let FLY_IN_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.8; // how far extras fly in from
-        const H_SPREAD = 0.28;  // limit sideways spread (0..1)
-        const V_SPREAD = 0.85;  // emphasize upward drift (0..1)
-        const IMG_MULT = 2.0;        // image moves 2x the intro (stronger parallax)
-        const IMG_FADE_BOOST = 1.8;  // fade image faster (stronger)
+        let BASE_SHIFT = -window.innerHeight * 1.0;
+        let FLY_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.5;
+        let FLY_IN_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.8;
+        const H_SPREAD = 0.28;
+        const V_SPREAD = 0.85;
+        const IMG_MULT = 2.0;
+        const IMG_FADE_BOOST = 1.8;
         function measure(){
           const sC = centers(srcSpans);
           const tC = centers(ghostChars);
@@ -633,57 +1089,27 @@
             dxExtra[k] = (tc.x - sc.x);
             dyExtra[k] = (tc.y - sc.y);
           }
-          BASE_SHIFT = -window.innerHeight * 1.0; // how far the default moves up (full viewport)
-          FLY_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.5; // tighter fly radius
+          BASE_SHIFT = -window.innerHeight * 1.0;
+          FLY_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.5;
           FLY_IN_DIST = Math.max(window.innerWidth, window.innerHeight) * 0.8;
         }
 
-        let p = 0; // 0..1 progress (displayed)
-        let targetP = 0; // eased destination progress
+        let p = 0;
+        let targetP = 0;
         let animRAF = null;
         const clamp01 = v=> v<0?0:v>1?1:v;
         const ease = v=> v*v*(3-2*v);
-        // Post-lines control: reveal/hide with stagger when bottom or morph complete
-        let postVisible = false;
-        let postTimers = [];
-        function clearPostTimers(){ while (postTimers.length) clearTimeout(postTimers.pop()); }
-        function revealPostLines(){
-          if (postVisible) return;
-          const post = document.getElementById('postLines');
-          if (!post) return;
-          clearPostTimers();
-          const lines = Array.from(post.querySelectorAll('p'));
-          lines.forEach((el, i) => postTimers.push(setTimeout(() => el.classList.add('on'), i * 140)));
-          postVisible = true;
-        }
-        function hidePostLines(){
-          if (!postVisible) return;
-          const post = document.getElementById('postLines');
-          if (!post) return;
-          clearPostTimers();
-          const lines = Array.from(post.querySelectorAll('p'));
-          // hide in reverse order for a neat fold-up
-          lines.slice().reverse().forEach((el, i) => postTimers.push(setTimeout(() => el.classList.remove('on'), i * 120)));
-          postVisible = false;
-        }
-        function checkBottom(){
-          const atBottom = (window.innerHeight + (window.scrollY || document.documentElement.scrollTop || 0)) >= (document.documentElement.scrollHeight - 2);
-          if (atBottom) revealPostLines(); else if ((window.MORPH_P || 0) < 0.98) hidePostLines();
-        }
-        window.addEventListener('scroll', checkBottom, { passive: true });
 
         function render(){
           const pe = ease(p);
-          // Move the entire intro up as progress increases (desktop only)
+
           const MOBILE_VIEW = (window.matchMedia && matchMedia('(max-width: 900px)').matches) || IS_TOUCH;
           if (!MOBILE_VIEW) {
             intro.style.transform = `translateY(${BASE_SHIFT*pe}px)`;
           } else {
-            // avoid scroll-jank on mobile by not translating the main text block
             intro.style.transform = '';
           }
 
-          // Move image further up and out (stronger parallax) and fade
           const img = document.querySelector('.text-behind-img');
           if (img) {
             img.style.transform = `translateY(${(BASE_SHIFT*IMG_MULT)*pe}px)`;
@@ -694,26 +1120,22 @@
           for (let i=0;i<srcSpans.length;i++){
             const tj = mapS2T[i];
             if (tj >= 0){
-              // mapped letters glide to target; keep fully visible
               const el = srcSpans[i];
               el.style.opacity = '1';
-              // base (morph) transform via CSS variables
               el.style.setProperty('--bx', `${dx[i]*pe}px`);
               el.style.setProperty('--by', `${(dy[i] - BASE_SHIFT)*pe}px`);
               el.style.setProperty('--br', `0deg`);
               el.style.setProperty('--bs', `1`);
             } else {
-              // leftover letters: fly off with limited sideways spread, mostly upward
               const v = flySeeds[i];
-              const kfly = Math.pow(pe, 1.05); // gentle acceleration
+              const kfly = Math.pow(pe, 1.05);
               const fx = (v.rx * H_SPREAD) * FLY_DIST * kfly;
-              const fy = (-Math.abs(v.ry) * V_SPREAD) * FLY_DIST * kfly; // force upward
+              const fy = (-Math.abs(v.ry) * V_SPREAD) * FLY_DIST * kfly;
               const el = srcSpans[i];
               el.style.setProperty('--bx', `${fx}px`);
               el.style.setProperty('--by', `${fy}px`);
               el.style.setProperty('--br', `0deg`);
               el.style.setProperty('--bs', `1`);
-              // fade out faster for a cleaner exit
               el.style.opacity = String(Math.max(0, 1 - 2.4*pe));
             }
           }
@@ -721,20 +1143,15 @@
             const tdx = dxExtra[k], tdy = dyExtra[k];
             const el = extraSpans[k].span;
             const seed = extraSeeds[k];
-            // extras fly in from outside toward the target, while parent moves up
-            const inv = Math.pow(1 - pe, 1.15); // start far, ease into place
-            const sx = seed.rx * FLY_IN_DIST * inv * 0.35; // limit sideways
-            const sy = -Math.abs(seed.ry) * FLY_IN_DIST * inv; // mostly from above
+            const inv = Math.pow(1 - pe, 1.15);
+            const sx = seed.rx * FLY_IN_DIST * inv * 0.35;
+            const sy = -Math.abs(seed.ry) * FLY_IN_DIST * inv;
             el.style.setProperty('--bx', `${tdx + sx}px`);
             el.style.setProperty('--by', `${(tdy - BASE_SHIFT*pe) + sy}px`);
             el.style.setProperty('--br', `0deg`);
             el.style.setProperty('--bs', `1`);
             el.style.opacity = String(Math.min(1, pe * 1.25));
           }
-
-          // Toggle post lines based on morph completion
-          if (pe >= 0.98) revealPostLines();
-          if (pe < 0.95) hidePostLines();
         }
 
         function step(){
@@ -743,7 +1160,7 @@
           if (Math.abs(diff) < 0.006) {
             p = targetP;
           } else {
-            p += diff * 0.6; // much faster easing without changing scroll sensitivity
+            p += diff * 0.6;
           }
           window.MORPH_P = p;
           render();
@@ -751,12 +1168,11 @@
         }
 
         function onWheel(e){
-          targetP = clamp01(targetP + e.deltaY*0.0012); // keep scroll feel; finish faster via easing
+          targetP = clamp01(targetP + e.deltaY*0.0012);
           if (!animRAF) animRAF = requestAnimationFrame(step);
         }
         window.addEventListener('wheel', onWheel, { passive: true });
 
-        // Mobile: drive progress from scroll position instead of wheel
         try {
           const IS_MOBILE_VIEW = matchMedia('(max-width: 900px)').matches || IS_TOUCH;
           if (IS_MOBILE_VIEW) {
@@ -772,14 +1188,12 @@
           }
         } catch(_) {}
 
-        // Initial measure + render; update on resize
         measure(); render();
         window.addEventListener('resize', ()=>{ measure(); render(); });
       })();
 
       /* ===== Hover repel with rotation (restored) ===== */
       (function hoverRepel(){
-        // Disable hover effects on phone view
         try { if (matchMedia('(max-width: 900px)').matches) return; } catch(_) {}
         if (IS_TOUCH) return;
         const area = document.querySelector('.right');
@@ -787,10 +1201,10 @@
         const chars = Array.from(area.querySelectorAll('p .char'));
         if (!chars.length) return;
 
-        const radius = 220;      // influence radius
-        const maxOffset = 28;    // displacement at full strength
-        const lerp = 0.22;       // position smoothing
-        const rLerp = 0.2;       // rotation smoothing
+        const radius = 220;
+        const maxOffset = 28;
+        const lerp = 0.22;
+        const rLerp = 0.2;
         let rafId = null;
 
         chars.forEach(s => { s.dataset.tx='0'; s.dataset.ty='0'; s.dataset.gx='0'; s.dataset.gy='0'; s.dataset.r='0'; s.dataset.rg='0'; s.dataset.gs='0'; });
@@ -804,7 +1218,7 @@
             const dist = Math.hypot(dx, dy);
 
             if (dist < radius) {
-              const strength = 1 - dist / radius; // 0..1
+              const strength = 1 - dist / radius;
               const offset = strength * maxOffset;
               const ux = dx / (dist || 1), uy = dy / (dist || 1);
               span.dataset.gx = (ux * offset).toFixed(3);
@@ -843,7 +1257,6 @@
             span.dataset.r  = r.toFixed(3);
 
             const scale = 1 + gs * 0.06;
-            // Set hover deltas via CSS variables to compose with base morph
             span.style.setProperty('--hx', `${tx}px`);
             span.style.setProperty('--hy', `${ty}px`);
             span.style.setProperty('--hr', `${r}deg`);
@@ -856,7 +1269,6 @@
 
         function onLeave(){
           chars.forEach(s => { s.dataset.gx='0'; s.dataset.gy='0'; s.dataset.gs='0'; s.dataset.rg='0'; });
-          // Reset hover variables smoothly via applyForces loop
           if (!rafId) rafId = requestAnimationFrame(applyForces);
         }
 
@@ -880,34 +1292,415 @@
           });
         });
       }
+
+      // Mirror the right paragraph text into the Notepad body
+      try {
+        const nb = document.getElementById('notepadBody');
+        const introText = document.querySelector('.intro-text');
+        if (nb && introText) nb.textContent = (introText.textContent || '').trim();
+      } catch(_) {}
     });
 
-    /* ===== Blob under cursor (no animation, desktop only) ===== */
+    /* ===== Blob under cursor (desktop only), disabled in XP mode ===== */
     (function blobCursor(){
-      if (IS_TOUCH) return; // disabled on touch devices
+      if (IS_TOUCH) return;
       const blob = document.getElementById('blob');
       if (!blob) return;
-
       function onMove(e){
-        // Center the blob on the native cursor
+        if (document.body.classList.contains('xp-mode')) { blob.style.opacity = '0'; return; }
         blob.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
         blob.style.opacity = '1';
       }
-
       window.addEventListener('mousemove', onMove, { passive: true });
+    })();
+
+    /* ===== Draggable controls for Second Image window ===== */
+    (function imageWindow2(){
+      const win = document.getElementById('imageWindow2');
+      const title = document.getElementById('imageTitle2');
+      const task = document.getElementById('taskImage2');
+      const imgEl = document.getElementById('imagePreview2');
+      const trigger = document.querySelector('.text-behind-img.second');
+      if (!win || !title || !task || !imgEl) return;
+
+      let dragging = false; let startX = 0, startY = 0; let baseLeft = null, baseTop = null;
+      function clearActive(){ document.querySelectorAll('.notepad-window, .image-window').forEach(w => w.classList.remove('active')); }
+      function bringToFront(){ clearActive(); win.classList.add('active'); }
+      function toPixels(v){ return typeof v === 'number' ? v : parseFloat(String(v||'0')); }
+
+      title.addEventListener('mousedown', (e) => {
+        if (!document.body.classList.contains('xp-mode')) return;
+        dragging = true; title.setAttribute('data-dragging','true'); bringToFront();
+        const rect = win.getBoundingClientRect();
+        win.style.right = 'auto';
+        win.style.left = `${rect.left}px`;
+        win.style.top = `${rect.top}px`;
+        baseLeft = toPixels(win.style.left); baseTop = toPixels(win.style.top);
+        startX = e.clientX; startY = e.clientY;
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - startX; const dy = e.clientY - startY;
+        let nx = baseLeft + dx; let ny = baseTop + dy;
+        const rectNow = win.getBoundingClientRect();
+        const margin = 0; const taskbarH = 44;
+        const maxX = Math.max(0, window.innerWidth - rectNow.width - margin);
+        const maxY = Math.max(0, window.innerHeight - rectNow.height - taskbarH);
+        nx = Math.max(margin, Math.min(nx, maxX));
+        ny = Math.max(margin, Math.min(ny, maxY));
+        win.style.left = `${nx}px`; win.style.top = `${ny}px`;
+      });
+      window.addEventListener('mouseup', () => { if (dragging){ dragging=false; title.removeAttribute('data-dragging'); } });
+
+      // Controls
+      win.addEventListener('click', (e) => {
+        const btn = e.target.closest('.np-btn'); if (!btn) return;
+        const act = btn.getAttribute('data-action');
+        if (act === 'min') { win.classList.add('minimized'); task.style.display = ''; }
+        if (act === 'max') { win.classList.toggle('maximized'); bringToFront(); }
+        if (act === 'close') { win.classList.remove('visible'); win.classList.add('minimized'); task.style.display = 'none'; win.setAttribute('aria-hidden','true'); }
+      });
+      task.addEventListener('click', () => {
+        if (win.classList.contains('minimized') || !win.classList.contains('visible')) {
+          win.classList.add('visible'); win.classList.remove('minimized'); win.setAttribute('aria-hidden','false'); bringToFront();
+        } else {
+          win.classList.add('minimized');
+        }
+      });
+
+      // Open from clicking the second inline image when in XP mode
+      if (trigger) {
+        trigger.addEventListener('click', () => {
+          if (!document.body.classList.contains('xp-mode')) return;
+          try { imgEl.src = trigger.getAttribute('src') || imgEl.src; } catch(_) {}
+          win.classList.add('visible');
+          win.classList.remove('minimized');
+          win.setAttribute('aria-hidden','false');
+          task.style.display = '';
+          bringToFront();
+        });
+      }
+
+      // Sync with XP mode
+      const mo = new MutationObserver(() => {
+        const xp = document.body.classList.contains('xp-mode');
+        if (xp) { task.style.display = ''; }
+        else { task.style.display = 'none'; win.classList.add('minimized'); win.classList.remove('visible'); win.setAttribute('aria-hidden','true'); }
+      });
+      mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    })();
+
+    /* ===== Side-resize (left/right) for Notepad + Image windows ===== */
+    (function sideResize(){
+      const wins = [
+        document.getElementById('notepad'),
+        document.getElementById('imageWindow'),
+        document.getElementById('imageWindow2'),
+        document.getElementById('imageWindow3')
+      ].filter(Boolean);
+      if (!wins.length) return;
+
+      function toPx(n){ return typeof n === 'number' ? n : parseFloat(String(n||'0')); }
+      function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+      function bringToFront(el){ document.querySelectorAll('.notepad-window, .image-window').forEach(w => w.classList.remove('active')); el.classList.add('active'); }
+
+      // Keep notepad text size fixed; no font scaling needed.
+
+      function initFor(win){
+        const leftH = win.querySelector('.resize-handle.left');
+        const rightH = win.querySelector('.resize-handle.right');
+        const topH = win.querySelector('.resize-handle.top');
+        const bottomH = win.querySelector('.resize-handle.bottom');
+        if (!leftH && !rightH && !topH && !bottomH) return;
+
+        let resizing = false; let side = null;
+        let startX = 0, startY = 0; let baseLeft = 0, baseTop = 0; let baseWidth = 0, baseHeight = 0;
+
+        function start(e, which){
+          if (!document.body.classList.contains('xp-mode')) return;
+          if (win.classList.contains('maximized')) return;
+          const point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+          resizing = true; side = which; bringToFront(win);
+          const rect = win.getBoundingClientRect();
+          win.style.right = 'auto';
+          win.style.left = rect.left + 'px';
+          win.style.top = rect.top + 'px';
+          win.style.width = rect.width + 'px';
+          win.style.height = rect.height + 'px';
+          startX = point.clientX; startY = point.clientY; 
+          baseLeft = toPx(win.style.left); baseTop = toPx(win.style.top);
+          baseWidth = rect.width; baseHeight = rect.height;
+          e.preventDefault();
+        }
+
+        function move(e){
+          if (!resizing) return;
+          const point = (e.touches && e.touches[0]) ? e.touches[0] : e;
+          const dx = point.clientX - startX;
+          const dy = point.clientY - startY;
+          const cs = getComputedStyle(win);
+          const minW = parseFloat(cs.minWidth) || 180;
+          const maxW = Math.max(minW, Math.min(parseFloat(cs.maxWidth) || (window.innerWidth - 32), window.innerWidth - 24));
+          const maxH = Math.max(140, Math.min(parseFloat(cs.maxHeight) || (window.innerHeight - 32), window.innerHeight - 24));
+          const minH = 140;
+          const margin = 0; const taskbarH = 44;
+          let newLeft = baseLeft; let newTop = baseTop;
+          let newWidth = baseWidth; let newHeight = baseHeight;
+
+          if (side === 'right' || side === 'left') {
+            if (side === 'right') {
+              newWidth = clamp(baseWidth + dx, minW, maxW);
+              const maxAllow = window.innerWidth - margin - newLeft;
+              newWidth = Math.min(newWidth, maxAllow);
+            } else {
+              newLeft = baseLeft + dx;
+              newLeft = clamp(newLeft, margin, window.innerWidth - margin - minW);
+              const rightEdge = baseLeft + baseWidth;
+              newWidth = clamp(rightEdge - newLeft, minW, maxW);
+            }
+          } else if (side === 'bottom' || side === 'top') {
+            if (side === 'bottom') {
+              newHeight = clamp(baseHeight + dy, minH, maxH);
+              const maxAllow = window.innerHeight - taskbarH - margin - newTop;
+              newHeight = Math.min(newHeight, maxAllow);
+            } else {
+              newTop = baseTop + dy;
+              newTop = clamp(newTop, margin, window.innerHeight - taskbarH - margin - minH);
+              const bottomEdge = baseTop + baseHeight;
+              newHeight = clamp(bottomEdge - newTop, minH, maxH);
+            }
+          }
+
+          win.style.left = newLeft + 'px';
+          win.style.top = newTop + 'px';
+          win.style.width = newWidth + 'px';
+          win.style.height = newHeight + 'px';
+        }
+
+        function end(){ if (resizing){ resizing = false; side = null; } }
+
+        leftH && leftH.addEventListener('mousedown', (e)=>start(e,'left'));
+        rightH && rightH.addEventListener('mousedown', (e)=>start(e,'right'));
+        topH && topH.addEventListener('mousedown', (e)=>start(e,'top'));
+        bottomH && bottomH.addEventListener('mousedown', (e)=>start(e,'bottom'));
+        leftH && leftH.addEventListener('touchstart', (e)=>start(e,'left'), { passive:false });
+        rightH && rightH.addEventListener('touchstart', (e)=>start(e,'right'), { passive:false });
+        topH && topH.addEventListener('touchstart', (e)=>start(e,'top'), { passive:false });
+        bottomH && bottomH.addEventListener('touchstart', (e)=>start(e,'bottom'), { passive:false });
+        window.addEventListener('mousemove', move);
+        window.addEventListener('touchmove', move, { passive:false });
+        window.addEventListener('mouseup', end);
+        window.addEventListener('touchend', end);
+
+        // no-op for font size
+      }
+
+      wins.forEach(initFor);
+      // No font-size updates on resize; text remains constant
+    })();
+
+    /* ===== Draggable controls for Third Image window ===== */
+    (function imageWindow3(){
+      const win = document.getElementById('imageWindow3');
+      const title = document.getElementById('imageTitle3');
+      const task = document.getElementById('taskImage3');
+      if (!win || !title || !task) return;
+
+      let dragging = false; let startX = 0, startY = 0; let baseLeft = null, baseTop = null;
+      function clearActive(){ document.querySelectorAll('.notepad-window, .image-window').forEach(w => w.classList.remove('active')); }
+      function bringToFront(){ clearActive(); win.classList.add('active'); }
+      function toPixels(v){ return typeof v === 'number' ? v : parseFloat(String(v||'0')); }
+
+      title.addEventListener('mousedown', (e) => {
+        if (!document.body.classList.contains('xp-mode')) return;
+        dragging = true; title.setAttribute('data-dragging','true'); bringToFront();
+        const rect = win.getBoundingClientRect();
+        win.style.right = 'auto';
+        win.style.left = `${rect.left}px`;
+        win.style.top = `${rect.top}px`;
+        baseLeft = toPixels(win.style.left); baseTop = toPixels(win.style.top);
+        startX = e.clientX; startY = e.clientY;
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - startX; const dy = e.clientY - startY;
+        let nx = baseLeft + dx; let ny = baseTop + dy;
+        const rectNow = win.getBoundingClientRect();
+        const margin = 0; const taskbarH = 44;
+        const maxX = Math.max(0, window.innerWidth - rectNow.width - margin);
+        const maxY = Math.max(0, window.innerHeight - rectNow.height - taskbarH);
+        nx = Math.max(margin, Math.min(nx, maxX));
+        ny = Math.max(margin, Math.min(ny, maxY));
+        win.style.left = `${nx}px`; win.style.top = `${ny}px`;
+      });
+      window.addEventListener('mouseup', () => { if (dragging){ dragging=false; title.removeAttribute('data-dragging'); } });
+
+      // Controls
+      win.addEventListener('click', (e) => {
+        const btn = e.target.closest('.np-btn'); if (!btn) return;
+        const act = btn.getAttribute('data-action');
+        if (act === 'min') { win.classList.add('minimized'); task.style.display = ''; }
+        if (act === 'max') { win.classList.toggle('maximized'); bringToFront(); }
+        if (act === 'close') { win.classList.remove('visible'); win.classList.add('minimized'); task.style.display = 'none'; win.setAttribute('aria-hidden','true'); }
+      });
+      task.addEventListener('click', () => {
+        if (win.classList.contains('minimized') || !win.classList.contains('visible')) {
+          win.classList.add('visible'); win.classList.remove('minimized'); win.setAttribute('aria-hidden','false'); bringToFront();
+        } else {
+          win.classList.add('minimized');
+        }
+      });
+    })();
+    /* ===== Draggable + taskbar controls for Notepad ===== */
+    (function notepadWindow(){
+      const win = document.getElementById('notepad');
+      const title = document.getElementById('notepadTitle');
+      const task = document.getElementById('taskNotepad');
+      if (!win || !title || !task) return;
+
+      let dragging = false; let startX = 0, startY = 0; let baseLeft = null, baseTop = null;
+      function bringToFront(){ document.querySelectorAll('.notepad-window, .image-window').forEach(w => w.classList.remove('active')); win.classList.add('active'); }
+      function toPixels(v){ return typeof v === 'number' ? v : parseFloat(String(v||'0')); }
+
+      title.addEventListener('mousedown', (e) => {
+        if (!document.body.classList.contains('xp-mode')) return;
+        dragging = true; title.setAttribute('data-dragging','true'); bringToFront();
+        // Convert to viewport-fixed coordinates
+        const rect = win.getBoundingClientRect();
+        win.style.right = 'auto';
+        win.style.left = `${rect.left}px`;
+        win.style.top = `${rect.top}px`;
+        baseLeft = toPixels(win.style.left); baseTop = toPixels(win.style.top);
+        startX = e.clientX; startY = e.clientY;
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - startX; const dy = e.clientY - startY;
+        let nx = baseLeft + dx; let ny = baseTop + dy;
+        const rectNow = win.getBoundingClientRect();
+        const margin = 0; const taskbarH = 44; // keep above taskbar
+        const maxX = Math.max(0, window.innerWidth - rectNow.width - margin);
+        const maxY = Math.max(0, window.innerHeight - rectNow.height - taskbarH);
+        nx = Math.max(margin, Math.min(nx, maxX));
+        ny = Math.max(margin, Math.min(ny, maxY));
+        win.style.left = `${nx}px`; win.style.top = `${ny}px`;
+      });
+      window.addEventListener('mouseup', () => { if (dragging){ dragging=false; title.removeAttribute('data-dragging'); } });
+
+      // Controls
+      win.addEventListener('click', (e) => {
+        const btn = e.target.closest('.np-btn'); if (!btn) return;
+        const act = btn.getAttribute('data-action');
+        if (act === 'min') { win.classList.add('minimized'); win.setAttribute('aria-hidden','true'); task.style.display = ''; }
+        if (act === 'max') { win.classList.toggle('maximized'); bringToFront(); }
+        if (act === 'close') { win.classList.add('minimized'); win.setAttribute('aria-hidden','true'); task.style.display = 'none'; }
+      });
+      task.addEventListener('click', () => {
+        if (win.classList.contains('minimized')) {
+          win.classList.remove('minimized'); bringToFront();
+        } else {
+          win.classList.add('minimized');
+        }
+      });
+
+      // Show task when XP mode appears, hide when it leaves
+      const mo = new MutationObserver(() => {
+        const xp = document.body.classList.contains('xp-mode');
+        if (xp) { task.style.display = ''; win.classList.remove('minimized'); }
+        else { task.style.display = 'none'; win.classList.add('minimized'); }
+      });
+      mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    })();
+
+    /* ===== Draggable controls for Image Preview window ===== */
+    (function imageWindow(){
+      const win = document.getElementById('imageWindow');
+      const title = document.getElementById('imageTitle');
+      const task = document.getElementById('taskImage');
+      const imgEl = document.getElementById('imagePreview');
+      const trigger = document.querySelector('.text-behind-img.first');
+      if (!win || !title || !task || !imgEl) return;
+
+      let dragging = false; let startX = 0, startY = 0; let baseLeft = null, baseTop = null;
+      function clearActive(){ document.querySelectorAll('.notepad-window, .image-window').forEach(w => w.classList.remove('active')); }
+      function bringToFront(){ clearActive(); win.classList.add('active'); }
+      function toPixels(v){ return typeof v === 'number' ? v : parseFloat(String(v||'0')); }
+
+      title.addEventListener('mousedown', (e) => {
+        if (!document.body.classList.contains('xp-mode')) return;
+        dragging = true; title.setAttribute('data-dragging','true'); bringToFront();
+        const rect = win.getBoundingClientRect();
+        win.style.right = 'auto';
+        win.style.left = `${rect.left}px`;
+        win.style.top = `${rect.top}px`;
+        baseLeft = toPixels(win.style.left); baseTop = toPixels(win.style.top);
+        startX = e.clientX; startY = e.clientY;
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - startX; const dy = e.clientY - startY;
+        let nx = baseLeft + dx; let ny = baseTop + dy;
+        const rectNow = win.getBoundingClientRect();
+        const margin = 0; const taskbarH = 44;
+        const maxX = Math.max(0, window.innerWidth - rectNow.width - margin);
+        const maxY = Math.max(0, window.innerHeight - rectNow.height - taskbarH);
+        nx = Math.max(margin, Math.min(nx, maxX));
+        ny = Math.max(margin, Math.min(ny, maxY));
+        win.style.left = `${nx}px`; win.style.top = `${ny}px`;
+      });
+      window.addEventListener('mouseup', () => { if (dragging){ dragging=false; title.removeAttribute('data-dragging'); } });
+
+      // Controls
+      win.addEventListener('click', (e) => {
+        const btn = e.target.closest('.np-btn'); if (!btn) return;
+        const act = btn.getAttribute('data-action');
+        if (act === 'min') { win.classList.add('minimized'); task.style.display = ''; }
+        if (act === 'max') { win.classList.toggle('maximized'); bringToFront(); }
+        if (act === 'close') { win.classList.remove('visible'); win.classList.add('minimized'); task.style.display = 'none'; win.setAttribute('aria-hidden','true'); }
+      });
+      task.addEventListener('click', () => {
+        if (win.classList.contains('minimized') || !win.classList.contains('visible')) {
+          win.classList.add('visible'); win.classList.remove('minimized'); win.setAttribute('aria-hidden','false'); bringToFront();
+        } else {
+          win.classList.add('minimized');
+        }
+      });
+
+      // Open from clicking the underlying image when in XP mode
+      if (trigger) {
+        trigger.addEventListener('click', () => {
+          if (!document.body.classList.contains('xp-mode')) return;
+          try { imgEl.src = trigger.getAttribute('src') || imgEl.src; } catch(_) {}
+          win.classList.add('visible');
+          win.classList.remove('minimized');
+          win.setAttribute('aria-hidden','false');
+          task.style.display = '';
+          bringToFront();
+        });
+      }
+
+      // Sync with XP mode
+      const mo = new MutationObserver(() => {
+        const xp = document.body.classList.contains('xp-mode');
+        if (xp) { task.style.display = ''; /* start minimized until opened */ }
+        else { task.style.display = 'none'; win.classList.add('minimized'); win.classList.remove('visible'); win.setAttribute('aria-hidden','true'); }
+      });
+      mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
     })();
 
     /* ===== GSAP Load-in animation (with preloader) ===== */
     window.addEventListener('load', async () => {
       const preloader = document.getElementById('preloader');
 
-      // Prefer to wait for web fonts to avoid reflow during intro
       if (document.fonts && document.fonts.ready) {
         try { await document.fonts.ready; } catch (e) {}
       }
 
       if (!window.gsap) {
-        // If GSAP failed to load, just remove preloader
         preloader?.classList.add('is-hidden');
         setTimeout(() => preloader?.remove(), 600);
         return;
@@ -925,8 +1718,6 @@
         }
       } catch(_) {}
 
-      // Set initial states BEFORE revealing content
-      // Left starts slightly above (from top), others below, unless skipping side UI
       if (SKIP_SIDE_UI) {
         gsap.set('.left', { opacity: 1, y: 0 });
         gsap.set(['.bottom', '.corner-year'], { opacity: 1, y: 0 });
@@ -934,11 +1725,8 @@
         gsap.set('.left', { opacity: 0, y: -24 });
         gsap.set(['.bottom', '.corner-year'], { opacity: 0, y: 20 });
       }
-      // Sharp reveal: mask-wipe from right to left (no fade/scale)
       gsap.set('.text-behind-img', { clipPath: 'inset(0% 100% 0% 0%)' });
 
-      // Choose alternative intro animations: 'chars-slide-up' (default), 'words-slide-up',
-      // 'words-wipe', 'blur-fade', 'tracking-in', 'skew-reveal', 'mono-pop'
       const INTRO_MODE = 'mono-pop';
 
       function createTextAnimation(mode){
@@ -950,7 +1738,6 @@
             break;
           }
           case 'words-wipe': {
-            // Editorial-style mask reveal per word
             gsap.set('.intro-text .word', { clipPath: 'inset(0% 100% 0% 0%)', y: 2 });
             tl.to('.intro-text .word', {
               clipPath: 'inset(0% 0% 0% 0%)',
@@ -979,7 +1766,6 @@
             break;
           }
           case 'mono-pop': {
-            // Dialed-down pop: subtle lift + tiny overshoot
             gsap.set('.intro-text .word', { opacity: 0, y: 8, scale: 0.99, transformOrigin: '0% 80%' });
             tl.to('.intro-text .word', {
               keyframes: [
@@ -990,7 +1776,6 @@
             });
             break;
           }
-          case 'chars-slide-up':
           default: {
             gsap.set('.intro-text .char', { opacity: 0, y: 12 });
             tl.to('.intro-text .char', { opacity: 1, y: 0, duration: 0.45, stagger: { each: 0.006, from: 'start' }, ease: 'power4.out' });
@@ -999,7 +1784,6 @@
         return tl;
       }
 
-      // Reveal content by fading out the white overlay, then animate in
       requestAnimationFrame(() => {
         preloader?.classList.add('is-hidden');
         setTimeout(() => preloader?.remove(), 800);
@@ -1011,13 +1795,275 @@
       const mode = (!requiresClip || supportsClip) ? INTRO_MODE : 'words-slide-up';
       const textTl = createTextAnimation(mode);
       tl.add(textTl)
-        // Image starts 0.47s before text timeline completes
         .addLabel('imageStart', '>-0.47')
-        .to('.text-behind-img', { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'power3.out' }, 'imageStart')
+        .to('.text-behind-img', { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, ease: 'power3.out' }, 'imageStart');
       if (!SKIP_SIDE_UI) {
         tl.to(['.left', '.bottom', '.corner-year'], { opacity: 1, y: 0, duration: 0.45 }, 'imageStart+=0.5');
       }
     });
+
+    /* ===== XP Taskbar easter egg (Luna UI) ===== */
+    (function xpEasterEgg(){
+      const bar = document.getElementById('xpToolbar');
+      const hotspot = document.getElementById('xpHotspot');
+      const menu = document.getElementById('xpMenu');
+      const startBtn = document.getElementById('xpStart');
+      const shutdownOverlay = document.getElementById('shutdownOverlay');
+      const shutdownMessage = document.getElementById('shutdownMessage');
+      if (!bar || !hotspot || !menu || !startBtn) return;
+
+      // Disable XP UI entirely on mobile/touch
+      const MOBILE_VIEW = (typeof matchMedia!== 'undefined' && matchMedia('(max-width: 900px)').matches) || IS_TOUCH;
+      if (MOBILE_VIEW) {
+        try {
+          bar.classList.remove('show');
+          bar.setAttribute('aria-hidden','true');
+          menu.classList.remove('open');
+          menu.setAttribute('aria-hidden','true');
+          document.body.classList.remove('xp-mode');
+        } catch(_) {}
+        return;
+      }
+
+      let shown = false, menuOpen = false, hoverTimer = null;
+      // Disable scroll-to-Windows for the first 2 seconds after load
+      const XP_SCROLL_ENABLE_AT = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 3200;
+
+      // Easy starting positions (edit these numbers)
+      const START_POS = {
+        notepad: { left: 1000,  top: 320 },
+        image1:  { left: 120, top: 20 },
+        image2:  { left: 420, top: 65 },
+        image3:  { left: 480, top: 540 }
+      };
+
+      function updateClock(){
+        const el = document.getElementById('xpClock'); if (!el) return;
+        const d = new Date(); let h = d.getHours();
+        const m = String(d.getMinutes()).padStart(2,'0');
+        const ampm = h >= 12 ? 'PM' : 'AM'; h = ((h+11)%12)+1;
+        el.textContent = `${h}:${m} ${ampm}`;
+      }
+
+      function showBar(){
+        if (shown) return;
+        shown = true; updateClock();
+        bar.classList.add('show'); bar.setAttribute('aria-hidden','false');
+        document.body.classList.add('xp-mode');
+        // Drive morph to end and reveal app windows
+        try { window.XP_MORPH_SET && window.XP_MORPH_SET(1); } catch(_) {}
+        // Ensure intro paragraph is hidden in XP mode (override any inline opacity)
+        try { if (window.gsap){ gsap.set('.intro-text', { opacity: 0 }); } else { const it = document.querySelector('.intro-text'); if (it) it.style.opacity = '0'; } } catch(_) {}
+        try {
+          const note = document.getElementById('notepad');
+          if (note) {
+            note.style.left = START_POS.notepad.left + 'px';
+            note.style.top  = START_POS.notepad.top + 'px';
+            note.style.right = 'auto';
+            note.style.opacity = '';
+            note.setAttribute('aria-hidden','false');
+          }
+        } catch(_) {}
+        try {
+          const imgWin = document.getElementById('imageWindow');
+          const imgTask = document.getElementById('taskImage');
+          if (imgWin && imgTask) {
+            imgWin.style.left = START_POS.image1.left + 'px';
+            imgWin.style.top  = START_POS.image1.top + 'px';
+            imgWin.style.opacity = '';
+            imgWin.classList.add('visible');
+            imgWin.classList.remove('minimized');
+            imgWin.setAttribute('aria-hidden','false');
+            imgTask.style.display = '';
+          }
+          const imgWin2 = document.getElementById('imageWindow2');
+          const imgTask2 = document.getElementById('taskImage2');
+          if (imgWin2 && imgTask2) {
+            imgWin2.style.left = START_POS.image2.left + 'px';
+            imgWin2.style.top  = START_POS.image2.top + 'px';
+            imgWin2.style.opacity = '';
+            imgWin2.classList.add('visible');
+            imgWin2.classList.remove('minimized');
+            imgWin2.setAttribute('aria-hidden','false');
+            imgTask2.style.display = '';
+          }
+          const imgWin3 = document.getElementById('imageWindow3');
+          const imgTask3 = document.getElementById('taskImage3');
+          if (imgWin3 && imgTask3) {
+            imgWin3.style.left = START_POS.image3.left + 'px';
+            imgWin3.style.top  = START_POS.image3.top + 'px';
+            imgWin3.style.opacity = '';
+            imgWin3.classList.add('visible');
+            imgWin3.classList.remove('minimized');
+            imgWin3.setAttribute('aria-hidden','false');
+            imgTask3.style.display = '';
+          }
+        } catch(_) {}
+        // Animate site UI out and toolbar contents in
+        try {
+          if (window.gsap){
+            gsap.to('.left', { y: -40, opacity: 0, duration: 0.32, ease: 'power2.out' });
+            gsap.to('.bottom', { y: 40, opacity: 0, duration: 0.32, ease: 'power2.out' });
+            gsap.to('.corner-year', { y: 40, opacity: 0, duration: 0.32, ease: 'power2.out' });
+            const parts = [document.getElementById('xpStart'), ...bar.querySelectorAll('.xp-taskarea .task'), ...bar.querySelectorAll('.xp-tray > *')];
+            gsap.fromTo(parts, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.22, ease: 'power2.out', stagger: 0.03 });
+          }
+        } catch(_) {}
+      }
+      function hideBar(){
+        if (!shown || menuOpen) return;
+        shown = false;
+        // Animate toolbar contents out first
+        try {
+          if (window.gsap){
+            const parts = [document.getElementById('xpStart'), ...bar.querySelectorAll('.xp-taskarea .task'), ...bar.querySelectorAll('.xp-tray > *')];
+            gsap.to(parts, { y: 8, opacity: 0, duration: 0.16, ease: 'power2.in' });
+          }
+        } catch(_) {}
+        // Then hide the bar slightly after
+        setTimeout(() => { bar.classList.remove('show'); bar.setAttribute('aria-hidden','true'); }, 140);
+        // Reset morph and hide app windows BEFORE leaving XP mode to avoid layout shift
+        try { window.XP_MORPH_SET && window.XP_MORPH_SET(0); } catch(_) {}
+        try { document.getElementById('notepad')?.setAttribute('aria-hidden','true'); } catch(_) {}
+        try {
+          const imgWin = document.getElementById('imageWindow');
+          const imgTask = document.getElementById('taskImage');
+          if (imgWin && imgTask) {
+            if (window.gsap) gsap.set(imgWin, { opacity: 0 });
+            imgWin.classList.remove('visible');
+            imgWin.classList.add('minimized');
+            imgWin.setAttribute('aria-hidden','true');
+            imgTask.style.display = 'none';
+          }
+          const imgWin2 = document.getElementById('imageWindow2');
+          const imgTask2 = document.getElementById('taskImage2');
+          if (imgWin2 && imgTask2) {
+            if (window.gsap) gsap.set(imgWin2, { opacity: 0 });
+            imgWin2.classList.remove('visible');
+            imgWin2.classList.add('minimized');
+            imgWin2.setAttribute('aria-hidden','true');
+            imgTask2.style.display = 'none';
+          }
+          const imgWin3 = document.getElementById('imageWindow3');
+          const imgTask3 = document.getElementById('taskImage3');
+          if (imgWin3 && imgTask3) {
+            if (window.gsap) gsap.set(imgWin3, { opacity: 0 });
+            imgWin3.classList.remove('visible');
+            imgWin3.classList.add('minimized');
+            imgWin3.setAttribute('aria-hidden','true');
+            imgTask3.style.display = 'none';
+          }
+        } catch(_) {}
+        // Now leave XP mode (switch windows back to absolute without flashing)
+        document.body.classList.remove('xp-mode');
+        // Animate site UI back in
+        try {
+          if (window.gsap){
+            gsap.to('.left', { y: 0, opacity: 1, duration: 0.32, ease: 'power2.out', clearProps: 'transform,opacity' });
+            gsap.to('.bottom', { y: 0, opacity: 1, duration: 0.32, ease: 'power2.out', clearProps: 'transform,opacity' });
+            gsap.to('.corner-year', { y: 0, opacity: 1, duration: 0.32, ease: 'power2.out', clearProps: 'transform,opacity' });
+            // Fade in the right paragraph and image, then clear inline props
+            gsap.fromTo('.intro-text', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.38, ease: 'power2.out', clearProps: 'opacity,transform' });
+            gsap.fromTo('.text-behind-img', { opacity: 0 }, { opacity: 1, duration: 0.42, ease: 'power2.out', clearProps: 'opacity' });
+          }
+        } catch(_) {}
+      }
+      function openMenu(){ menu.classList.add('open'); menu.setAttribute('aria-hidden','false'); menuOpen = true; }
+      function closeMenu(){ menu.classList.remove('open'); menu.setAttribute('aria-hidden','true'); menuOpen = false; }
+
+      // Wheel: down shows, up hides
+      let wheelCooldown = false;
+      window.addEventListener('wheel', (e) => {
+        if (wheelCooldown) return;
+        const nowTs = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+        if (nowTs < XP_SCROLL_ENABLE_AT) return;
+        const dy = e.deltaY || 0;
+        if (!shown && dy > 20){ showBar(); wheelCooldown = true; setTimeout(()=>wheelCooldown=false, 420); return; }
+        if (shown && dy < -20){ closeMenu(); hideBar(); wheelCooldown = true; setTimeout(()=>wheelCooldown=false, 420); return; }
+      }, { passive:true });
+
+      // Hotspot hover
+      hotspot.addEventListener('mouseenter', () => { hoverTimer = setTimeout(showBar, 550); });
+      hotspot.addEventListener('mouseleave', () => { if (hoverTimer){ clearTimeout(hoverTimer); hoverTimer=null; } });
+
+      // Start toggles menu
+      startBtn.addEventListener('click', (e) => { e.stopPropagation(); showBar(); (menuOpen?closeMenu:openMenu)(); });
+
+      // Click outside closes menu
+      document.addEventListener('click', (e) => { if (menuOpen && !menu.contains(e.target)) closeMenu(); });
+
+      // Konami toggles bar; Esc closes
+      const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+      let idx = 0;
+      window.addEventListener('keydown', (e) => {
+        const key = e.key.length===1 ? e.key.toLowerCase() : e.key;
+        const expected = KONAMI[idx].length===1 ? KONAMI[idx] : KONAMI[idx];
+        if (key === expected.toLowerCase()){
+          idx++;
+          if (idx === KONAMI.length){ idx=0; if (shown){ closeMenu(); hideBar(); } else { showBar(); } }
+        } else { idx = 0; }
+        if (e.key === 'Escape'){ closeMenu(); hideBar(); }
+      });
+
+      // Touch: swipe down/up
+      let touchStartY = null;
+      window.addEventListener('touchstart', (e)=>{ touchStartY = e.touches[0]?.clientY ?? null; }, { passive:true });
+      window.addEventListener('touchmove', (e)=>{
+        if (touchStartY==null) return;
+        const nowTs = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+        if (nowTs < XP_SCROLL_ENABLE_AT) return;
+        const y = e.touches[0]?.clientY ?? touchStartY;
+        const dy = y - touchStartY;
+        if (!shown && dy > 40){ showBar(); touchStartY = y; }
+        else if (shown && dy < -40){ closeMenu(); hideBar(); touchStartY = y; }
+      }, { passive:true });
+
+      // Clock tick
+      setInterval(()=>{ if (shown) updateClock(); }, 60000);
+
+      // Start menu actions: Restart (sequence) and Shut Down (black forever)
+      const restartBtn = menu.querySelector('[data-action="restart"]');
+      const shutdownBtn = menu.querySelector('[data-action="shutdown"]');
+      if (restartBtn && shutdownOverlay && shutdownMessage) {
+        restartBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          closeMenu();
+          // Show black immediately
+          shutdownMessage.textContent = '';
+          shutdownMessage.classList.remove('visible');
+          shutdownOverlay.classList.add('show');
+          shutdownOverlay.setAttribute('aria-hidden','false');
+          // After ~2s, show restarting message
+          setTimeout(() => {
+            shutdownMessage.textContent = 'restarting...';
+            shutdownMessage.classList.add('visible');
+          }, 2000);
+          // After additional ~1.2s, hide overlay and restore original (leave XP mode)
+          setTimeout(() => {
+            shutdownOverlay.classList.remove('show');
+            shutdownOverlay.setAttribute('aria-hidden','true');
+            shutdownMessage.classList.remove('visible');
+            shutdownMessage.textContent = '';
+            try { hideBar(); } catch(_) {}
+          }, 3200);
+        });
+      }
+      if (shutdownBtn && shutdownOverlay && shutdownMessage) {
+        shutdownBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          closeMenu();
+          // Black screen forever (until page reload)
+          shutdownMessage.textContent = '';
+          shutdownMessage.classList.remove('visible');
+          shutdownOverlay.classList.add('show');
+          shutdownOverlay.setAttribute('aria-hidden','false');
+          // Optionally leave XP mode under the overlay
+          setTimeout(() => { try { hideBar(); } catch(_) {} }, 300);
+        });
+      }
+    })();
   </script>
 </body>
 </html>
