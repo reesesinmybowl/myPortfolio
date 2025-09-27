@@ -24,6 +24,10 @@
       overflow-x: hidden;
     }
 
+    body.xp-mode {
+      background: url('Images/windowsxpbg.webp') center center / cover fixed no-repeat;
+    }
+
     /* ===== Preloader (white screen until ready) ===== */
     .preloader {
       position: fixed;
@@ -305,6 +309,72 @@
       --xp-green-2:#1ba11f;
       --xp-gold-1:#ffe8a3;
       --xp-gold-2:#ffc957;
+    }
+
+    /* ===== XP Desktop icons ===== */
+    .xp-desktop {
+      position: fixed;
+      top: 68px;
+      right: 40px;
+      width: 520px;
+      height: 160px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s ease;
+      z-index: 1800;
+    }
+    body.xp-mode .xp-desktop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .xp-icon {
+      position: absolute;
+      width: 112px;
+      padding: 10px 8px 12px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.55);
+      font: 11px/1.25 Tahoma, Verdana, sans-serif;
+      text-align: center;
+      cursor: grab;
+      outline: none;
+      user-select: none;
+      transition: background .2s ease, box-shadow .2s ease;
+    }
+    .xp-icon.dragging { cursor: grabbing; }
+    .xp-icon .xp-icon-thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      box-shadow:
+        0 2px 6px rgba(0,0,0,.25),
+        0 0 0 1px rgba(255,255,255,.4) inset;
+      pointer-events: none;
+    }
+    .xp-icon .xp-icon-label { pointer-events: none; }
+    .xp-icon.selected,
+    .xp-icon:focus-visible {
+      background: rgba(53, 118, 227, .55);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.75);
+    }
+    .xp-icon-thumb.projects {
+      background: linear-gradient(145deg, #ffb56b, #ff6f91 55%, #ef3f6b);
+    }
+    .xp-icon-thumb.experimental {
+      background: linear-gradient(160deg, #8d9bff, #7ed8ff);
+    }
+    .xp-icon-thumb.contact {
+      background: linear-gradient(140deg, #4de38a, #28b36a);
+    }
+    .xp-icon-thumb.instagram {
+      background: linear-gradient(135deg, #f9ce34, #ee2a7b 45%, #6228d7);
+    }
+    @media (max-width: 900px) {
+      .xp-desktop { display: none !important; }
     }
 
     /* Taskbar */
@@ -702,6 +772,26 @@
         <a href="/project/" class="unstyled-link">Projects</a><br>
         <a href="/experimental/" class="unstyled-link">Experimental</a>
       </p>
+    </div>
+
+    <!-- XP DESKTOP ICONS -->
+    <div class="xp-desktop" id="xpDesktop" aria-hidden="true">
+      <div class="xp-icon" role="button" tabindex="-1" data-url="/project/" data-target="_self" data-order="0" data-start-y="0">
+        <span class="xp-icon-thumb projects" aria-hidden="true"></span>
+        <span class="xp-icon-label">Projects</span>
+      </div>
+      <div class="xp-icon" role="button" tabindex="-1" data-url="/experimental/" data-target="_self" data-order="1" data-start-y="0">
+        <span class="xp-icon-thumb experimental" aria-hidden="true"></span>
+        <span class="xp-icon-label">Experimental</span>
+      </div>
+      <div class="xp-icon" role="button" tabindex="-1" data-url="mailto:nikl2229us@gmail.com" data-target="_self" data-order="2" data-start-y="0">
+        <span class="xp-icon-thumb contact" aria-hidden="true"></span>
+        <span class="xp-icon-label">Contact</span>
+      </div>
+      <div class="xp-icon" role="button" tabindex="-1" data-url="https://instagram.com/niklastsalkos" data-target="_blank" data-order="3" data-start-y="0">
+        <span class="xp-icon-thumb instagram" aria-hidden="true"></span>
+        <span class="xp-icon-label">Instagram</span>
+      </div>
     </div>
 
     <!-- RIGHT SECTION -->
@@ -1806,7 +1896,101 @@
       const startBtn = document.getElementById('xpStart');
       const shutdownOverlay = document.getElementById('shutdownOverlay');
       const shutdownMessage = document.getElementById('shutdownMessage');
+      const desktop = document.getElementById('xpDesktop');
+      const desktopIcons = desktop ? Array.from(desktop.querySelectorAll('.xp-icon')) : [];
       if (!bar || !hotspot || !menu || !startBtn) return;
+
+      let selectedIcon = null;
+      let iconsInitialized = false;
+      let draggingIcon = null;
+      let dragPointerStart = { x: 0, y: 0 };
+      let dragIconStart = { x: 0, y: 0 };
+      let dragExceededThreshold = false;
+      let lastDraggedIcon = null;
+      const ICON_DRAG_THRESHOLD = 4;
+      const ICON_GAP = 24;
+      const DEFAULT_ICON_WIDTH = 112;
+
+      function parseIconCoord(value, fallback = 0) {
+        const n = parseFloat(value);
+        return Number.isFinite(n) ? n : fallback;
+      }
+      function getIconMetrics(){
+        const width = desktopIcons[0]?.offsetWidth || DEFAULT_ICON_WIDTH;
+        const count = desktopIcons.length;
+        const totalWidth = width * count + ICON_GAP * Math.max(0, count - 1);
+        const baseLeft = Math.max(0, desktop.clientWidth - totalWidth);
+        return { width, baseLeft };
+      }
+      function clampIconPosition(icon, x, y) {
+        if (!desktop) return { x, y };
+        const maxX = Math.max(0, desktop.clientWidth - icon.offsetWidth);
+        const maxY = Math.max(0, desktop.clientHeight - icon.offsetHeight);
+        return {
+          x: Math.min(Math.max(0, x), maxX),
+          y: Math.min(Math.max(0, y), maxY)
+        };
+      }
+      function syncIconPosition(icon, x, y) {
+        icon.style.left = `${x}px`;
+        icon.style.top = `${y}px`;
+        icon.dataset.x = String(x);
+        icon.dataset.y = String(y);
+      }
+      function ensureIconsPlaced(forceReset = false) {
+        if (!desktop) return;
+        const { width: sampleWidth, baseLeft } = getIconMetrics();
+
+        if (!iconsInitialized || forceReset) {
+          desktopIcons.forEach((icon, idx) => {
+            const order = parseIconCoord(icon.dataset.order, idx);
+            const startY = parseIconCoord(icon.dataset.startY, 0);
+            const x = baseLeft + order * (sampleWidth + ICON_GAP);
+            const clamped = clampIconPosition(icon, x, startY);
+            syncIconPosition(icon, clamped.x, clamped.y);
+          });
+          iconsInitialized = true;
+          return;
+        }
+
+        desktopIcons.forEach((icon, idx) => {
+          const fallbackX = baseLeft + parseIconCoord(icon.dataset.order, idx) * (sampleWidth + ICON_GAP);
+          const fallbackY = parseIconCoord(icon.dataset.startY, 0);
+          const x = parseIconCoord(icon.dataset.x, fallbackX);
+          const y = parseIconCoord(icon.dataset.y, fallbackY);
+          const clamped = clampIconPosition(icon, x, y);
+          syncIconPosition(icon, clamped.x, clamped.y);
+        });
+      }
+      const handleIconMove = (e) => {
+        if (!draggingIcon || !desktop) return;
+        const dx = e.clientX - dragPointerStart.x;
+        const dy = e.clientY - dragPointerStart.y;
+        if (!dragExceededThreshold) {
+          if (Math.abs(dx) > ICON_DRAG_THRESHOLD || Math.abs(dy) > ICON_DRAG_THRESHOLD) {
+            dragExceededThreshold = true;
+          } else {
+            return;
+          }
+        }
+        const nextX = dragIconStart.x + dx;
+        const nextY = dragIconStart.y + dy;
+        const clamped = clampIconPosition(draggingIcon, nextX, nextY);
+        syncIconPosition(draggingIcon, clamped.x, clamped.y);
+      };
+      const handleIconMouseUp = () => {
+        if (!draggingIcon) return;
+        document.removeEventListener('mousemove', handleIconMove);
+        draggingIcon.classList.remove('dragging');
+        if (dragExceededThreshold) {
+          lastDraggedIcon = draggingIcon;
+        }
+        draggingIcon = null;
+        dragExceededThreshold = false;
+        dragPointerStart = { x: 0, y: 0 };
+        dragIconStart = { x: 0, y: 0 };
+      };
+      window.addEventListener('mouseup', handleIconMouseUp);
 
       // Disable XP UI entirely on mobile/touch
       const MOBILE_VIEW = (typeof matchMedia!== 'undefined' && matchMedia('(max-width: 900px)').matches) || IS_TOUCH;
@@ -1833,6 +2017,40 @@
         image3:  { left: 480, top: 540 }
       };
 
+      function setIconsFocusable(active){
+        desktopIcons.forEach(icon => icon.setAttribute('tabindex', active ? '0' : '-1'));
+      }
+      function clearSelection(){
+        if (selectedIcon) {
+          selectedIcon.classList.remove('selected');
+          selectedIcon = null;
+        }
+        lastDraggedIcon = null;
+      }
+      function selectIcon(icon){
+        if (selectedIcon === icon) return;
+        clearSelection();
+        if (icon) {
+          selectedIcon = icon;
+          icon.classList.add('selected');
+        }
+      }
+      function openIcon(icon){
+        if (!icon) return;
+        const url = icon.dataset.url || '';
+        if (!url) return;
+        const target = (icon.dataset.target || '_self').toLowerCase();
+        if (target === '_blank') {
+          window.open(url, '_blank', 'noopener');
+        } else {
+          window.location.href = url;
+        }
+      }
+      ensureIconsPlaced(true);
+      setIconsFocusable(false);
+      if (desktop) desktop.setAttribute('aria-hidden','true');
+      window.addEventListener('resize', () => ensureIconsPlaced());
+
       function updateClock(){
         const el = document.getElementById('xpClock'); if (!el) return;
         const d = new Date(); let h = d.getHours();
@@ -1846,6 +2064,13 @@
         shown = true; updateClock();
         bar.classList.add('show'); bar.setAttribute('aria-hidden','false');
         document.body.classList.add('xp-mode');
+        if (desktop) {
+          desktop.setAttribute('aria-hidden','false');
+          ensureIconsPlaced();
+          setIconsFocusable(true);
+          clearSelection();
+          lastDraggedIcon = null;
+        }
         // Drive morph to end and reveal app windows
         try { window.XP_MORPH_SET && window.XP_MORPH_SET(1); } catch(_) {}
         // Ensure intro paragraph is hidden in XP mode (override any inline opacity)
@@ -1950,6 +2175,18 @@
             imgTask3.style.display = 'none';
           }
         } catch(_) {}
+        if (desktop) {
+          desktop.setAttribute('aria-hidden','true');
+          setIconsFocusable(false);
+          desktopIcons.forEach(icon => icon.blur());
+          lastDraggedIcon = null;
+          if (draggingIcon) {
+            draggingIcon.classList.remove('dragging');
+            draggingIcon = null;
+            document.removeEventListener('mousemove', handleIconMove);
+          }
+        }
+        clearSelection();
         // Now leave XP mode (switch windows back to absolute without flashing)
         document.body.classList.remove('xp-mode');
         // Animate site UI back in
@@ -2016,6 +2253,79 @@
 
       // Clock tick
       setInterval(()=>{ if (shown) updateClock(); }, 60000);
+
+      desktopIcons.forEach((icon) => {
+        icon.addEventListener('mousedown', (e) => {
+          if (!document.body.classList.contains('xp-mode')) return;
+          if (e.button !== 0) return;
+          e.preventDefault();
+          e.stopPropagation();
+          selectIcon(icon);
+          try { icon.focus({ preventScroll: true }); } catch(_) { icon.focus(); }
+          if (draggingIcon && draggingIcon !== icon) {
+            draggingIcon.classList.remove('dragging');
+            document.removeEventListener('mousemove', handleIconMove);
+          }
+          draggingIcon = icon;
+          dragPointerStart = { x: e.clientX, y: e.clientY };
+          const metrics = getIconMetrics();
+          const iconOrder = parseIconCoord(icon.dataset.order, desktopIcons.indexOf(icon));
+          const fallbackX = metrics.baseLeft + iconOrder * (metrics.width + ICON_GAP);
+          dragIconStart = {
+            x: parseIconCoord(icon.dataset.x, fallbackX),
+            y: parseIconCoord(icon.dataset.y, parseIconCoord(icon.dataset.startY, 0))
+          };
+          dragExceededThreshold = false;
+          lastDraggedIcon = null;
+          icon.classList.add('dragging');
+          document.addEventListener('mousemove', handleIconMove);
+        });
+
+        icon.addEventListener('click', (e) => {
+          if (!document.body.classList.contains('xp-mode')) return;
+          if (lastDraggedIcon === icon) { lastDraggedIcon = null; return; }
+          e.preventDefault();
+          e.stopPropagation();
+          selectIcon(icon);
+          try { icon.focus({ preventScroll: true }); } catch(_) { icon.focus(); }
+        });
+
+        icon.addEventListener('dblclick', (e) => {
+          if (!document.body.classList.contains('xp-mode')) return;
+          e.preventDefault();
+          e.stopPropagation();
+          lastDraggedIcon = null;
+          openIcon(icon);
+        });
+
+        icon.addEventListener('keydown', (e) => {
+          if (!document.body.classList.contains('xp-mode')) return;
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            lastDraggedIcon = null;
+            openIcon(icon);
+            return;
+          }
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            clearSelection();
+            icon.blur();
+            return;
+          }
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const total = desktopIcons.length;
+            if (!total) return;
+            const dir = e.key === 'ArrowDown' ? 1 : -1;
+            const currentIndex = Math.max(0, desktopIcons.indexOf(icon));
+            const nextIndex = (currentIndex + total + dir) % total;
+            const nextIcon = desktopIcons[nextIndex];
+            selectIcon(nextIcon);
+            lastDraggedIcon = null;
+            try { nextIcon.focus({ preventScroll: true }); } catch(_) { nextIcon.focus(); }
+          }
+        });
+      });
 
       // Start menu actions: Restart (sequence) and Shut Down (black forever)
       const restartBtn = menu.querySelector('[data-action="restart"]');
