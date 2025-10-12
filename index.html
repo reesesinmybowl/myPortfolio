@@ -2094,11 +2094,12 @@
       if (SKIP_SIDE_UI) {
         gsap.set('.left', { opacity: 1, y: 0 });
         gsap.set(['.bottom', '.corner-year'], { opacity: 1, y: 0 });
+        gsap.set('.text-behind-img', { clipPath: 'inset(0% 0% 0% 0%)' });
       } else {
         gsap.set('.left', { opacity: 0, y: -24 });
         gsap.set(['.bottom', '.corner-year'], { opacity: 0, y: 20 });
+        gsap.set('.text-behind-img', { clipPath: 'inset(0% 100% 0% 0%)' });
       }
-      gsap.set('.text-behind-img', { clipPath: 'inset(0% 100% 0% 0%)' });
 
       const INTRO_MODE = 'mono-pop';
 
@@ -2161,6 +2162,10 @@
         preloader?.classList.add('is-hidden');
         setTimeout(() => preloader?.remove(), 800);
       });
+
+      if (SKIP_SIDE_UI) {
+        return;
+      }
 
       const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
       const supportsClip = (window.CSS && CSS.supports && CSS.supports('clip-path', 'inset(0% 0% 0% 0%)'));
