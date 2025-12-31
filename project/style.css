@@ -61,6 +61,8 @@ body {
 .animated-word-inner { display: inline-block; }
 .animated-word-inner::after {
   content: '|';
+  position: relative;
+  top: -1px;
   color: white;
   margin-left: -1.5px;
   vertical-align: top;

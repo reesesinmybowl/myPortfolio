@@ -72,9 +72,9 @@
   let FONT_WEIGHT = 400;
   let ALL_TEXT_SIZE_PX = 20;
 
-  let SCROLL_SENSITIVITY = 0.0016;
-  let MAX_VELOCITY = 0.35;
-  let DAMPING = 0.85;
+  let SCROLL_SENSITIVITY = 0.004;
+  let MAX_VELOCITY = 0.4;
+  let DAMPING = 0.86;
   let LERP_TO_TARGET = 0.18;
   let SNAP_IDLE_MS = 160;
   let SNAP_STRENGTH = 0.25;
@@ -127,10 +127,10 @@
     MIN_GAP_PX = Math.round(clamp(minSide * 0.035, 12, 40));
     MAX_GAP_PX = Math.round(clamp(minSide * 0.45, 120, mobile ? 120 : 160));
 
-    // Softer physics on touch to avoid whiplash
-    SCROLL_SENSITIVITY = mobile ? 0.0011 : 0.0016;
-    MAX_VELOCITY       = mobile ? 0.22   : 0.35;
-    DAMPING            = mobile ? 0.88   : 0.85;
+    // Slightly faster scroll than the original, but easy to control
+    SCROLL_SENSITIVITY = mobile ? 0.0025 : 0.004;
+    MAX_VELOCITY       = mobile ? 0.3    : 0.4;
+    DAMPING            = mobile ? 0.9    : 0.86;
 
     // Apply to overlay
     $center.style.fontVariationSettings = `"wght" ${FONT_WEIGHT}`;
@@ -169,12 +169,12 @@
 
     // HOURS (00..current hour)
     idxHourStart = items.length;
-    for(let h=0; h<=currentHour; h++){ items.push(pad2(h)); }
+    for (let h = 0; h <= currentHour; h++) { items.push(pad2(h)); }
     idxHourEnd = items.length - 1;
 
-    // MINUTES (00..current minute)
+    // MINUTES (00..current minute) – keep every minute so time is exact
     idxMinStart = items.length;
-    for(let mm=0; mm<=currentMin; mm++){ items.push(pad2(mm)); }
+    for (let mm = 0; mm <= currentMin; mm++) { items.push(pad2(mm)); }
     idxMinEnd = items.length - 1;
 
     idx1975 = items.indexOf('1975');

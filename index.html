@@ -18,8 +18,8 @@
       margin: 0;
       background: #fbfbfb;
       font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      line-height: 1.4;
+      font-size: 14px;
+      line-height: 1.2;
       color: #000;
       overflow-x: hidden;
     }
@@ -32,7 +32,7 @@
     .preloader {
       position: fixed;
       inset: 0;
-      background: #fff; /* keep page white before first paint */
+      background: #fbfbfb; /* match page background to avoid flash */
       z-index: 9999;
     }
     .preloader.is-hidden {
@@ -42,22 +42,32 @@
     }
 
     /* ===== Layout wrapper — reserve room for fixed left on desktop ===== */
-    .page { padding-left: 280px; padding-right: 20px; }
+    .page {
+      display: block;
+      padding-left: 280px;
+      padding-right: 20px;
+    }
 
-    /* ===== Left sidebar (fixed) ===== */
+    /* ===== Left sidebar (fixed) — match Projects page ===== */
     .left {
       position: fixed;
-      top: 20px;
+      top: 0;
       left: 40px;
       width: 200px;
-      line-height: 1.4;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
       z-index: 1000;
       background: transparent;
       mix-blend-mode: difference;
-      color: #fff;
+      color: white;
+      font-size: 12px;
+      line-height: 1.2;
+      font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
+    .left-top { padding-top: 20px; }
     .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
-    .name { font-weight: 700; font-size: 1.1em; letter-spacing: -0.02em; }
+    .name { font-weight: 600; font-size: 12px; letter-spacing: -0.02em; }
 
     /* Links */
     .unstyled-link {
@@ -69,26 +79,23 @@
     .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
 
     /* Ensure name is always bold and unaffected by hover */
-    .left .name { font-weight: 700; font-variation-settings: 'wght' 700; }
+    .left .name { font-weight: 600; font-variation-settings: 'wght' 600; }
     .no-hover-link { all: unset; cursor: pointer; color: inherit; }
 
-    /* Bottom links: smooth hover (excludes corner year which is separate) */
+    /* Bottom links: match left sidebar hover behavior */
     .bottom .unstyled-link:not(.no-hover-link) {
-      font-weight: 400;
       font-variation-settings: 'wght' 400;
       transition: font-variation-settings .28s ease-in-out;
     }
     .bottom .unstyled-link:not(.no-hover-link):hover {
-      font-weight: 400; /* avoid jump from global hover rule */
+      font-weight: 700;
       font-variation-settings: 'wght' 700;
     }
 
     /* Contact link — hide email by default */
     .contact-swap .hover-text { display: none; }
-    @media (hover: hover) {
-      .contact-swap:hover .default-text { display: none; }
-      .contact-swap:hover .hover-text { display: inline; }
-    }
+    .contact-swap:hover .default-text { display: none; }
+    .contact-swap:hover .hover-text { display: inline; }
     .contact-swap.show-email .default-text { display: none; }
     .contact-swap.show-email .hover-text { display: inline; }
 
@@ -98,6 +105,8 @@
     .animated-word-inner::after {
       content: '|';
       display: inline-block;
+      position: relative;
+      top: -1px;
       color: #fff;
       margin-left: -1.5px;
       animation: blink-caret .75s step-end infinite;
@@ -107,22 +116,29 @@
     .animated-text.is-empty .animated-word-inner::after { opacity: 0; }
     @keyframes blink-caret { 0%,100%{opacity:1;} 50%{opacity:0;} }
 
+    /* Tighten gap between name and "Designer" label (same as Projects) */
+    .left .animated-text {
+      margin-right: -0.15em;
+      margin-top: -2px;
+    }
+
     /* ===== Right column ===== */
     .right {
       position: relative;
-      max-width: 1400px;
-      padding: 220px 24px 120px; /* original desktop spacing */
-      margin-left: auto;
+      max-width: 900px;
+      padding: 180px 24px 120px;
+      margin: 0 auto;
     }
 
-    /* Big intro paragraph */
+    /* Big intro paragraph — fluid size so it works across different laptop resolutions */
     .right p {
-      font-size: clamp(28px, 6vw, 60px);
+      font-size: clamp(32px, 4vw, 48px);
       line-height: 1.05;
       margin: 4px 0 0 0;
       letter-spacing: -3px;
       position: relative;
       z-index: 1;
+      margin-left: clamp(-160px, -8vw, -80px);
     }
 
     /* Keep layout stable when JS wraps text */
@@ -163,10 +179,10 @@
     }
     .intro-text .word:last-child .char:last-child { margin-right: 0; }
 
-    /* ===== Image behind text (desktop position unchanged) ===== */
+    /* ===== Image behind text (desktop, more adaptive to viewport height) ===== */
     .text-behind-img {
       position: absolute;
-      top: calc(clamp(400px, 22vh, 0px) - 10px);
+      top: calc(clamp(260px, 35vh, 420px) - 10px);
       right: clamp(12px, 8vw, 40px);
       width: clamp(160px, 28vw, 420px);
       height: auto;
@@ -183,22 +199,24 @@
       position: fixed;
       bottom: 40px;
       left: 40px;
-      width: 200px;
-      font-size: 0.9rem;
+      width: 220px;
+      font-size: 12px;
       line-height: 1.35;
       color: #fff;
       background: transparent; /* no white background */
       mix-blend-mode: difference;
+      z-index: 1200;
+      padding-bottom: 12px;
     }
     .bottom p { margin: 0; }
-    .bottom p + p { margin-top: 30px; }
+    .bottom p + p { margin-top: 32px; }
 
     /* ===== Corner year (desktop only) ===== */
     .corner-year {
       position: fixed;
       bottom: 40px;
       right: 60px;
-      font-size: 0.9rem;
+      font-size: 12px;
       color: #fff;
       mix-blend-mode: difference;
       z-index: 1000;
@@ -298,7 +316,7 @@
       .right { padding-bottom: 160px; overflow: visible; }
       .bottom {
         background: transparent;
-        pointer-events: none; /* keep it “invisible” except links */
+        pointer-events: auto;
       }
       .bottom a, .bottom .contact-swap, .bottom span, .bottom p {
         pointer-events: auto;
@@ -599,9 +617,10 @@
       transform: translateY(16px) scale(.985);
       transition: opacity .35s ease, transform .35s ease;
       z-index: 2;
+      pointer-events: none; /* don't block underlying UI when hidden */
     }
     /* App windows are fixed-position overlays; hidden when minimized */
-    .notepad-window.active { z-index: 2105; }
+    .notepad-window.active { z-index: 2105; pointer-events: auto; }
     .notepad-window.minimized { opacity: 0; pointer-events: none; transform: translateY(10px) scale(.98); }
     .notepad-window.maximized {
       left: 16px; right: 16px; top: 80px; width: auto;
@@ -684,7 +703,7 @@
       white-space: pre-wrap;
     }
     /* When XP mode is active, show Notepad and fade the intro */
-    .xp-mode .notepad-window { opacity: 1; transform: translateY(0) scale(1); }
+    .xp-mode .notepad-window { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     /* But allow Notepad to be minimized/closed while XP mode is active */
     .xp-mode .notepad-window.minimized { opacity: 0 !important; pointer-events: none !important; transform: translateY(10px) scale(.98) !important; }
     .xp-mode .right .intro-text { opacity: 0; transition: opacity .35s ease; }
@@ -712,13 +731,14 @@
       transform: translateY(16px) scale(.985);
       transition: opacity .35s ease, transform .35s ease;
       z-index: 2;
+      pointer-events: none; /* don't block underlying UI when hidden */
     }
     /* Individual starting positions for each image window */
     #imageWindow { left: clamp(12px, 12vw, 200px); top: clamp(140px, 16vh, 280px); }
     #imageWindow2 { left: clamp(240px, 28vw, 520px); top: clamp(220px, 26vh, 380px); }
     /* Make the third image window narrower by default */
     #imageWindow3 { width: clamp(120px, 28vw, 420px); }
-    .image-window.visible { opacity: 1; transform: translateY(0) scale(1); }
+    .image-window.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     .image-window.active { z-index: 2106; }
     .image-window.minimized { opacity: 0; pointer-events: none; transform: translateY(10px) scale(.98); }
     .image-window.maximized { left: 16px; right: 16px; top: 80px; width: auto; }
@@ -784,14 +804,18 @@
   <div class="page">
     <!-- LEFT SIDEBAR --> 
     <div class="left">
-      <p>
-        <a href="/" class="unstyled-link no-hover-link"><span class="name">Niklas Tsalkos</span></a><br>
-        <span class="animated-text"><span class="animated-word-inner"></span></span> Designer
-      </p>
-      <p>
-        <a href="/project/" class="unstyled-link">Projects</a><br>
-        <a href="/experimental/" class="unstyled-link">Experimental</a>
-      </p>
+      <div class="left-top">
+        <p>
+          <a href="/" class="unstyled-link no-hover-link">
+            <span class="name">Niklas Tsalkos</span><br>
+            <span class="animated-text"><span class="animated-word-inner"></span></span> Designer
+          </a>
+        </p>
+        <p>
+          <a href="/project/" class="unstyled-link">Projects</a><br>
+          <a href="/experimental/" class="unstyled-link">Experimental</a>
+        </p>
+      </div>
     </div>
 
     <!-- XP DESKTOP ICONS -->
@@ -1156,9 +1180,37 @@
           const farDistance = 840 + Math.random() * 1080;
           const farX = scatterX + dirX * farDistance + (Math.random() - 0.5) * 160;
           const farY = scatterY + dirY * farDistance + (Math.random() - 0.5) * 160;
+
+          const implosionDistance = Math.max(
+            35,
+            Math.min(150, base * (0.52 + Math.random() * 0.42))
+          );
+          const implosionX = -dirX * implosionDistance;
+          const implosionY = -dirY * implosionDistance;
+          const implosionScale = 1;
+          const implosionDuration = 0.16 + Math.random() * 0.09;
+
           const spin = (Math.random() - 0.5) * 120;
-          const scaleUp = 1 + Math.random() * 0.24;
-          const depthScale = 0.32 + Math.random() * 0.22;
+          const wantsWildSpin = Math.random() < 0.08;
+          const wantsFastSpin = !wantsWildSpin && Math.random() < 0.22;
+          const spinBoost = wantsWildSpin
+            ? 6 + Math.random() * 6
+            : wantsFastSpin
+              ? 2.6 + Math.random() * 2.8
+              : 1;
+          // give each character a long rotation, letting a few shoot into full-on orbit
+          const initialSpin = spin * 0.82 * spinBoost;
+          const slowRotationAmount =
+            (Math.random() > 0.5 ? 1 : -1) *
+            (180 + Math.random() * 360) *
+            (wantsWildSpin
+              ? 5 + Math.random() * 4
+              : wantsFastSpin
+                ? 2.2 + Math.random() * 1.8
+                : 1);
+          const driftSpin = initialSpin + slowRotationAmount;
+          const scaleUp = 1;
+          const depthScale = 1;
 
           span.dataset.tx = '0';
           span.dataset.ty = '0';
@@ -1182,24 +1234,34 @@
 
           const charTl = gsap.timeline();
           charTl.to(span, {
+            duration: implosionDuration,
+            ease: 'power3.in',
+            '--jx': `${implosionX}px`,
+            '--jy': `${implosionY}px`,
+            '--jr': `${initialSpin * 0.18}deg`,
+            '--js': implosionScale,
+            opacity: 1
+          }, 0);
+
+          charTl.to(span, {
             duration: riseDuration,
             ease: 'power4.in',
             '--jx': `${scatterX}px`,
             '--jy': `${scatterY}px`,
-            '--jr': `${spin * 0.82}deg`,
+            '--jr': `${initialSpin}deg`,
             '--js': scaleUp,
             opacity: 1
-          }, 0);
+          }, '>');
 
           charTl.to(span, {
             duration: driftDuration,
             ease: 'none',
             '--jx': `${farX}px`,
             '--jy': `${farY}px`,
-            '--jr': `${spin * 0.4}deg`,
+            '--jr': `${driftSpin}deg`,
             '--js': scaleUp * depthScale,
             opacity: 0
-          }, '-=0.001');
+          }, '>-0.001');
 
           newTweens.push(charTl);
           maxDuration = Math.max(maxDuration, charTl.totalDuration());
@@ -1651,18 +1713,11 @@
 
       /* ===== Contact / copy email ===== */
       const contactLink = document.getElementById('contactLink');
-      const emailPopup = document.getElementById('emailPopup');
-      const emailAddress = 'nikl2229us@gmail.com';
       if (contactLink) {
-        contactLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          navigator.clipboard.writeText(emailAddress).then(() => {
-            contactLink.classList.add('show-email');
-            if (emailPopup) {
-              emailPopup.classList.add('visible');
-              setTimeout(() => emailPopup.classList.remove('visible'), 1200);
-            }
-          });
+        contactLink.addEventListener('click', () => {
+          // Ensure the email text stays revealed after click
+          contactLink.classList.add('show-email');
+          // Let the normal mailto: behavior happen (no preventDefault)
         });
       }
 

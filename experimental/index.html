@@ -5,8 +5,307 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Experimental — Niklas Tsalkos</title>
   <meta name="description" content="Experimental projects by Niklas Tsalkos – Interactive Design, Motion, Type, and more.">
+  <script>document.documentElement.classList.add('js');</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../style_exp.css">
+  <style>
+/* === RESET === */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  overflow-y: scroll;
+}
+
+body {
+  margin: 0;
+  background: #fbfbfb;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #111;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === LEFT SIDEBAR (match Projects) === */
+.left {
+  position: fixed;
+  top: 0;
+  left: 40px;
+  width: 200px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  line-height: 1.2;
+  z-index: 1000;
+  background: transparent;
+  mix-blend-mode: difference;
+  color: white;
+  font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.left-top {
+  padding-top: 20px;
+}
+
+.left p {
+  margin: 0 0 24px 0;
+  text-align: left;
+  font-weight: 400;
+}
+
+.name {
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: -0.02em;
+}
+
+.nav-links {
+  margin-top: 24px;
+}
+
+.nav-links a {
+  display: block;
+  line-height: 1.2;
+  margin: 0; /* ensures no extra gap */
+}
+
+/* === LINKS (shared behavior) === */
+.unstyled-link {
+  all: unset;
+  cursor: pointer;
+  font-weight: 400;
+  transition: font-weight 0.2s ease;
+}
+
+.unstyled-link:not(.no-hover-link):hover {
+  font-weight: 700;
+}
+
+.no-hover-link {
+  all: unset;
+  cursor: pointer;
+  color: inherit;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: inherit;
+  font-weight: 400;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* === ANIMATED TEXT === */
+.animated-text { position: relative; display: inline-block; white-space: nowrap; }
+.animated-word-inner { display: inline-block; }
+.animated-word-inner::after {
+  content: '|';
+  display: inline-block;
+  position: relative;
+  top: -1px;
+  color: #fff;
+  margin-left: -1.5px;
+  animation: blink-caret .75s step-end infinite;
+  vertical-align: top;
+}
+
+.animated-text.is-deleting .animated-word-inner::after,
+.animated-text.is-empty .animated-word-inner::after {
+  opacity: 0;
+}
+
+@keyframes blink-caret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Tighten gap between name and "Designer" label (same as Projects) */
+.left .animated-text {
+  margin-right: -0.15em;
+  margin-top: -2px;
+}
+
+/* ===== Trickle-down load-in (match Projects) ===== */
+@keyframes dropIn {
+  0%   { opacity: 0; transform: translateY(-32px); filter: drop-shadow(0 8px 0 rgba(0,0,0,0)); }
+  60%  { opacity: 1; transform: translateY(2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Start hidden only when JS is present */
+.js .experimental-grid .card {
+  opacity: 0;
+  transform: translateY(-32px);
+  will-change: transform, opacity;
+}
+.js .experimental-grid .card.reveal-in {
+  animation: dropIn .8s cubic-bezier(.2,.8,.2,1) forwards;
+  animation-delay: var(--stagger, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .experimental-grid .card {
+    opacity: 1;
+    transform: none;
+  }
+  .js .experimental-grid .card.reveal-in {
+    animation: none !important;
+  }
+}
+
+/* === GRID === */
+.experimental-grid {
+  margin-left: 300px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  flex-grow: 1;
+}
+
+.card {
+  break-inside: avoid;
+  display: block;
+  position: relative;
+  width: 100%;
+  background: none;
+  grid-column: span 2;
+}
+
+.card.aspect-1-1 {
+  grid-column: span 1;
+}
+
+.card img,
+.card video,
+.card iframe {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border: none;
+  pointer-events: auto;
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+
+.card.aspect-16-9 video,
+.card.aspect-16-9 img,
+.card.aspect-16-9 iframe {
+  aspect-ratio: 16 / 9;
+}
+
+.card.aspect-9-16 video,
+.card.aspect-9-16 img {
+  aspect-ratio: 9 / 16;
+}
+
+.card.aspect-1-1 video,
+.card.aspect-1-1 img {
+  aspect-ratio: 1 / 1;
+}
+
+.card.aspect-4-5 video,
+.card.aspect-4-5 img {
+  aspect-ratio: 4 / 5;
+}
+
+.card.aspect-1-1.large {
+  grid-column: span 2;
+}
+
+/* === MEDIA LABELS === */
+.media-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.corner-text {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #111;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.corner-text.light {
+  color: white;
+}
+
+.interactive-label {
+  position: absolute;
+  top: -2px;
+  left: -8px;
+  transform: translateX(-100%);
+  font-size: 11px;
+  font-weight: 500;
+  color: #111;
+  pointer-events: none;
+}
+
+/* === BOTTOM === */
+.bottom {
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+  width: 200px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: white;
+  background: transparent;
+  mix-blend-mode: difference;
+}
+
+.bottom p {
+  margin: 0;
+}
+
+.bottom p + p {
+  margin-top: 8px;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+  .experimental-grid {
+    grid-template-columns: 1fr;
+    margin-left: 220px;
+  }
+
+  .card {
+    grid-column: span 1 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .left {
+    position: static;
+    width: auto;
+    padding: 20px;
+    color: black;
+    mix-blend-mode: normal;
+  }
+
+  .experimental-grid {
+    margin-left: 0;
+    padding: 15px;
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    grid-column: span 1 !important;
+  }
+}
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
@@ -14,18 +313,20 @@
 <body>
 
   <div class="left">
-    <p>
-      <a href="/" class="unstyled-link">
-        <span class="name">Niklas Tsalkos</span><br>
-        <span class="animated-text">
-          <span class="animated-word-inner"></span>
-        </span> Designer
-      </a>
-    </p>
+    <div class="left-top">
+      <p>
+        <a href="/" class="unstyled-link no-hover-link">
+          <span class="name">Niklas Tsalkos</span><br>
+          <span class="animated-text">
+            <span class="animated-word-inner"></span>
+          </span> Designer
+        </a>
+      </p>
 
-    <div class="nav-links">
-      <a href="/project/" class="nav-link">Projects</a>
-      <a href="/" class="nav-link">About</a>
+      <div class="nav-links">
+        <a href="/project/" class="nav-link">Projects</a>
+        <a href="/" class="nav-link">About</a>
+      </div>
     </div>
   </div>
 
@@ -46,9 +347,20 @@
       </div>
     </a>
 
-<a class="card aspect-16-9" href="../selectyear/">
+    <a class="card aspect-16-9" href="../index_no_curtain.html">
+      <div class="interactive-label">(interactive)</div>
+      <div class="media-wrapper">
+        <iframe src="../index_no_curtain.html?mode=thumb"></iframe>
+      </div>
+    </a>
+
+<a class="card aspect-16-9 has-clock-text" href="../selectyear/">
+  <div class="interactive-label">(interactive)</div>
   <div class="media-wrapper">
-    <img src="../Images/selectyear.png" alt="Poster Project">
+    <iframe src="../selectyear/index.html"></iframe>
+    <div class="corner-text light" data-role="hover-clock-label">
+      Hover to show the clock
+    </div>
   </div>
 </a>
 
@@ -222,29 +534,88 @@
 
         loop();
       }
-    });
 
-    // Snappy load-in for media tiles (images + videos)
-    window.addEventListener('load', () => {
-      if (!window.gsap) return;
+      /* ===== Trickle-down load-in for experimental tiles (match Projects) ===== */
+      const cards = Array.from(document.querySelectorAll('.experimental-grid .card'));
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReduced) return;
 
-      const mediaNodes = Array.from(document.querySelectorAll('.experimental-grid .media-wrapper img, .experimental-grid .media-wrapper video'));
-      if (!mediaNodes.length) return;
+      if (!cards.length) return;
 
-      // initial state
-      gsap.set(mediaNodes, { opacity: 0, y: 18, scale: 0.98, transformOrigin: '50% 50%' });
+      // Helper: wait for card's primary media (img/video) to be ready
+      function waitForCardMedia(card, timeoutMs = 2000) {
+        const img = card.querySelector('img');
+        const vid = card.querySelector('video');
+        let p = Promise.resolve();
 
-      // animate in with light stagger
-      gsap.to(mediaNodes, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.5,
-        ease: 'power3.out',
-        stagger: { each: 0.06, from: 'start' }
+        if (img) {
+          if (img.complete && img.naturalWidth > 0) {
+            p = Promise.resolve();
+          } else if ('decode' in img) {
+            p = img.decode().catch(() => {});
+          }
+        } else if (vid) {
+          if (vid.readyState >= 2) {
+            p = Promise.resolve();
+          } else {
+            p = new Promise(res => {
+              const onReady = () => { cleanup(); res(); };
+              const cleanup = () => {
+                vid.removeEventListener('loadeddata', onReady);
+                vid.removeEventListener('canplay', onReady);
+              };
+              vid.addEventListener('loadeddata', onReady, { once: true });
+              vid.addEventListener('canplay', onReady, { once: true });
+            });
+          }
+        }
+
+        return Promise.race([
+          p,
+          new Promise(res => setTimeout(res, timeoutMs))
+        ]);
+      }
+
+      // If reduced motion, reveal without animation and skip waiting
+      if (prefersReduced) {
+        cards.forEach(el => el.classList.add('reveal-in'));
+        return;
+      }
+
+      const baseDelay = 140; // ms between items
+      const initialCount = Math.min(4, cards.length);
+
+      // Reveal first few tiles sequentially
+      (async () => {
+        for (let i = 0; i < initialCount; i++) {
+          const el = cards[i];
+          await waitForCardMedia(el);
+          el.style.setProperty('--stagger', '0ms');
+          requestAnimationFrame(() => el.classList.add('reveal-in'));
+          await new Promise(r => setTimeout(r, baseDelay));
+        }
+      })();
+
+      // Reveal remaining tiles as they enter viewport
+      const io = new IntersectionObserver(async (entries) => {
+        const intersecting = entries
+          .filter(e => e.isIntersecting && !e.target.classList.contains('reveal-in'))
+          .sort((a, b) => cards.indexOf(a.target) - cards.indexOf(b.target))
+          .map(e => e.target);
+
+        for (const el of intersecting) {
+          io.unobserve(el);
+          await waitForCardMedia(el);
+          el.style.setProperty('--stagger', '0ms');
+          requestAnimationFrame(() => el.classList.add('reveal-in'));
+          await new Promise(r => setTimeout(r, baseDelay));
+        }
+      }, {
+        root: null,
+        rootMargin: '0px 0px -20% 0px',
+        threshold: 0.2
       });
+
+      cards.slice(initialCount).forEach(el => io.observe(el));
     });
   </script>
 

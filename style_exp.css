@@ -18,28 +18,37 @@ body {
   flex-direction: column;
 }
 
-/* === LEFT SIDEBAR === */
+/* === LEFT SIDEBAR (match Projects) === */
 .left {
   position: fixed;
-  top: 20px;
+  top: 0;
   left: 40px;
-  width: 280px;
-  line-height: 1.4;
+  width: 200px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  line-height: 1.2;
   z-index: 1000;
   background: transparent;
-  mix-blend-mode: normal;
-  color: #111;
+  mix-blend-mode: difference;
+  color: white;
+  font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.left-top {
+  padding-top: 20px;
 }
 
 .left p {
-  margin: 0 0 16px 0;
+  margin: 0 0 24px 0;
   text-align: left;
   font-weight: 400;
 }
 
 .name {
-  font-weight: 900;
-  font-size: 1.1em;
+  font-weight: 600;
+  font-size: 12px;
   letter-spacing: -0.02em;
 }
 
@@ -49,26 +58,26 @@ body {
 
 .nav-links a {
   display: block;
-  line-height: 1.4;
+  line-height: 1.2;
   margin: 0; /* ensures no extra gap */
 }
 
-/* === LINKS === */
+/* === LINKS (shared behavior) === */
 .unstyled-link {
   all: unset;
   cursor: pointer;
   font-weight: 400;
-  color: inherit;
-  text-decoration: none;
+  transition: font-weight 0.2s ease;
 }
 
-.unstyled-link:hover,
-.unstyled-link:focus,
-.unstyled-link:active {
-  font-weight: 400;
+.unstyled-link:not(.no-hover-link):hover {
+  font-weight: 700;
+}
+
+.no-hover-link {
+  all: unset;
+  cursor: pointer;
   color: inherit;
-  text-decoration: none;
-  opacity: 1;
 }
 
 .nav-link {
@@ -89,7 +98,9 @@ body {
 .animated-word-inner::after {
   content: '|';
   display: inline-block;
-  color: #111;            /* keep page’s dark theme */
+  position: relative;
+  top: -1px;
+  color: #fff;
   margin-left: -1.5px;
   animation: blink-caret .75s step-end infinite;
   vertical-align: top;
@@ -101,9 +112,41 @@ body {
 }
 
 @keyframes blink-caret {
-  from { opacity: 1; }
-  50%  { opacity: 0; }
-  to   { opacity: 1; }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Tighten gap between name and "Designer" label (same as Projects) */
+.left .animated-text {
+  margin-right: -0.15em;
+  margin-top: -2px;
+}
+
+/* ===== Trickle-down load-in (match Projects) ===== */
+@keyframes dropIn {
+  0%   { opacity: 0; transform: translateY(-32px); filter: drop-shadow(0 8px 0 rgba(0,0,0,0)); }
+  60%  { opacity: 1; transform: translateY(2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Start hidden only when JS is present */
+.js .experimental-grid .card {
+  opacity: 0;
+  transform: translateY(-32px);
+  will-change: transform, opacity;
+}
+.js .experimental-grid .card.reveal-in {
+  animation: dropIn .8s cubic-bezier(.2,.8,.2,1) forwards;
+  animation-delay: var(--stagger, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .experimental-grid .card {
+    opacity: 1;
+    transform: none;
+  }
+  .js .experimental-grid .card.reveal-in {
+    animation: none !important;
+  }
 }
 
 /* === GRID === */
@@ -185,6 +228,20 @@ body {
 
 .corner-text.light {
   color: white;
+}
+
+.interactive-label {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  pointer-events: none;
+}
+
+.has-clock-text .corner-text {
+  top: 28px;
 }
 
 /* === BOTTOM === */

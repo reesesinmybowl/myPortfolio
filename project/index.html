@@ -4,23 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Niklas Tsalkos</title>
-  <meta name="description" content="Niklas Tsalkos – Interactive Design, Motion, Type, and more. Based in Copenhagen.">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-
+	  <meta name="description" content="Niklas Tsalkos – Interactive Design, Motion, Type, and more. Based in Copenhagen.">
   <script>document.documentElement.classList.add('js');</script>
   <style>
     /* ===== Base ===== */
     * { box-sizing: border-box; }
     html { height: 100%; }
-    body {
-      margin: 0;
-      background: #fbfbfb;
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      line-height: 1.4;
-      color: #000;
-      overflow-x: hidden;
-    }
+		    body {
+		      margin: 0;
+		      background: #fbfbfb;
+		      font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+		      font-size: 12px;
+		      line-height: 1.2;
+		      color: #000;
+		      overflow-x: hidden;
+		    }
 
     .page {
       display: block;
@@ -29,7 +27,7 @@
     }
 
     /* LEFT SIDEBAR */
-    .left {
+	    .left {
       position: fixed;
       top: 0;
       left: 40px;
@@ -40,11 +38,13 @@
       z-index: 1000;
       background: transparent;
       mix-blend-mode: difference;
-      color: white;
+	      color: white;
+	      font-size: 12px;
+	      line-height: 1.2;
     }
     .left-top { padding-top: 20px; }
     .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
-    .name { font-weight: 600; font-size: 1.1em; letter-spacing: -0.02em; }
+	    .name { font-weight: 600; font-size: 12px; letter-spacing: -0.02em; }
 
     .unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight 0.2s ease; }
     .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
@@ -56,6 +56,8 @@
     .animated-word-inner::after {
       content: '|';
       display: inline-block;
+      position: relative;
+      top: -1px;
       color: #fff;
       margin-left: -1.5px;
       animation: blink-caret .75s step-end infinite;
@@ -64,6 +66,12 @@
     .animated-text.is-deleting .animated-word-inner::after,
     .animated-text.is-empty .animated-word-inner::after { opacity: 0; }
     @keyframes blink-caret { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+    /* Tighten gap between name and "Designer" label */
+    .left .animated-text {
+      margin-right: -0.15em;
+      margin-top: -2px;
+    }
 
     /* PROJECTS */
     .grid {
@@ -83,33 +91,33 @@
       justify-content: flex-end;
     }
 
-    .meta {
+	    .meta {
       position: absolute;
       left: -400px;
       top: 0;
-      width: 320px;
-      font-size: 14px;
+	      width: 320px;
+	      font-size: 12px;
       line-height: 1.25;
       color: #444;
     }
-    .meta h3 {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 700;
-      color: #000;
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-    }
-    .meta h3 span.year {
+		    .meta h3 {
+	      margin: 0;
+		      font-size: 12px;
+	      font-weight: 600;
+	      color: #000;
+	      display: flex;
+	      justify-content: space-between;
+	      align-items: baseline;
+	    }
+	    .meta h3 span.year {
       font-weight: 400;
-      color: #666;
-      font-size: 13px;
+	      color: #666;
+	      font-size: 12px;
     }
     .meta p { margin: 0; }
 
-    .card {
-      width: 800px;
+	    .card {
+	      width: 600px;
       overflow: hidden;
       display: flex;
       justify-content: center;
@@ -159,8 +167,8 @@
       .project-row{position:static;flex-direction:column;}
       .meta{display:none;}
       .card{width:100%;align-items:center;}
-    }
-    @media (max-width:360px){.name{font-size:1em;}}
+	    }
+	    @media (max-width:360px){.name{font-size:12px;}}
   </style>
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>

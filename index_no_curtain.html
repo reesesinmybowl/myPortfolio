@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Rotating Text (No Curtain)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000000;
+        color: #ffffff;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        position: relative;
+        overflow: hidden;
+      }
+
+      :root {
+        /* Tracking (letter-spacing) for the headline text.
+           Tweak this value to set manual tracking. */
+        --tracking: -0.5em;
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        /* subtle dark tint over everything (background + text) */
+        background: rgba(0, 0, 0, 0.35);
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      .scanlines {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 20;
+        /* Subtle horizontal CRT-style black lines */
+        background-image: repeating-linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.35) 0px,
+          rgba(0, 0, 0, 0.35) 2px,
+          transparent 2px,
+          transparent 6px
+        );
+        mix-blend-mode: multiply;
+        transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+      }
+
+      .headline {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-weight: 800;
+        text-transform: none;
+        letter-spacing: var(--tracking, -0.5em);
+        color: #ffffff;
+        padding: 8vh 6vw;
+        text-align: center;
+        perspective: 1200px;
+        overflow: hidden;
+      }
+
+      .headline-inner {
+        max-width: 1800px;
+        width: 100%;
+        font-size: 170px;
+        line-height: .8;
+        text-align: center;
+        margin: 0 auto;
+        transform-style: preserve-3d;
+        will-change: transform;
+        transition: transform 0.22s ease-out, color 0.22s ease-out;
+      }
+
+      /* Slightly smaller when used as a thumbnail */
+      html.is-thumb .headline {
+        padding: 6vh 5vw;
+      }
+
+      html.is-thumb .headline-inner {
+        font-size: 140px;
+      }
+
+      .char {
+        display: inline-block;
+        transform-origin: center center;
+      }
+
+      .letter {
+        display: inline-block;
+        position: relative;
+        /* Soft, consistent feather on each glyph via a tiny blur + shadow */
+        filter: blur(0.8px);
+        text-shadow: 0 0 4px rgba(255, 255, 255, 0.7);
+      }
+
+      .letter.leak::before {
+        content: "";
+        position: absolute;
+        inset: -30% -15%;
+        pointer-events: none;
+        background:
+          linear-gradient(
+            to right,
+            transparent 0%,
+            rgba(255, 140, 200, 0.85) 35%,
+            rgba(255, 210, 235, 0.9) 55%,
+            transparent 100%
+          ),
+          linear-gradient(
+            to bottom,
+            transparent 0%,
+            rgba(255, 80, 160, 0.5) 40%,
+            transparent 100%
+          );
+        mix-blend-mode: screen;
+        opacity: var(--leak-opacity, 0);
+      }
+
+      .no-split {
+        white-space: nowrap;
+      }
+
+      /* --- Signal / distortion "glitch" state --- */
+
+      body.is-glitch .scanlines {
+        opacity: 0.8;
+      }
+
+      body.is-glitch .letter {
+        filter: blur(1.4px) contrast(1.2) saturate(1.05);
+        text-shadow:
+          0 0 10px rgba(255, 255, 255, 0.75),
+          -1px 0 5px rgba(255, 150, 150, 0.4),
+          1px 0 5px rgba(150, 200, 255, 0.4);
+        mix-blend-mode: screen;
+        background-image: linear-gradient(
+          120deg,
+          rgba(255, 180, 210, 0.9),
+          rgba(255, 255, 255, 1),
+          rgba(180, 220, 255, 0.9)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="overlay"></div>
+    <div class="scanlines"></div>
+    <div class="headline">
+      <div class="headline-inner">
+        It&nbsp;doesn't&nbsp;matter<br />
+        what&nbsp;I&nbsp;write&nbsp;here,<br />
+        but&nbsp;it&nbsp;should&nbsp;be<br />
+        something useful.
+      </div>
+    </div>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("mode") === "thumb") {
+        document.documentElement.classList.add("is-thumb");
+      }
+
+      const headlineInner = document.querySelector(".headline-inner");
+
+      // Wrap headline text so each word can float individually
+      if (headlineInner) {
+        const originalNodes = Array.from(headlineInner.childNodes);
+        headlineInner.innerHTML = "";
+        let charIndex = 0;
+
+        originalNodes.forEach((node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent || "";
+            const parts = text.split(/(\s+)/);
+            parts.forEach((part) => {
+              if (!part) return;
+              if (/^\s+$/.test(part)) {
+                headlineInner.appendChild(document.createTextNode(part));
+              } else {
+                const span = document.createElement("span");
+                span.className = "char";
+                span.textContent = part;
+                span.dataset.word = part.trim();
+                span.dataset.index = String(charIndex);
+                headlineInner.appendChild(span);
+                charIndex += 1;
+              }
+            });
+          } else if (node.nodeName === "BR") {
+            headlineInner.appendChild(node.cloneNode());
+          } else {
+            headlineInner.appendChild(node.cloneNode(true));
+          }
+        });
+      }
+
+      let chars = document.querySelectorAll(".char");
+
+      // Wrap "something" + "useful." in a no-wrap container
+      (function groupSomethingUseful() {
+        const arr = Array.from(chars);
+        const idx = arr.findIndex((span) => span.dataset.word === "something");
+        if (idx === -1 || idx + 1 >= arr.length) return;
+        const next = arr[idx + 1];
+        if (!next.dataset.word || !/useful\.?/i.test(next.dataset.word)) return;
+
+        const parent = arr[idx].parentNode;
+        const wrapper = document.createElement("span");
+        wrapper.className = "no-split";
+        parent.insertBefore(wrapper, arr[idx]);
+
+        wrapper.appendChild(arr[idx]);
+        wrapper.appendChild(document.createTextNode(" "));
+        wrapper.appendChild(next);
+
+        chars = document.querySelectorAll(".char");
+      })();
+
+      // After words are wrapped, split each word into letter spans
+      // so we can feather the edges of each letter via CSS masks.
+      let letters = [];
+      if (chars && chars.length) {
+        let letterIndex = 0;
+        const charsArray = Array.from(chars);
+
+        charsArray.forEach((wordSpan) => {
+          const text = wordSpan.textContent || "";
+          wordSpan.textContent = "";
+
+          for (let i = 0; i < text.length; i += 1) {
+            const ch = text[i];
+            const letterSpan = document.createElement("span");
+            letterSpan.className = "letter";
+            letterSpan.textContent = ch;
+            letterSpan.dataset.index = String(letterIndex);
+            wordSpan.appendChild(letterSpan);
+            letters.push(letterSpan);
+            letterIndex += 1;
+          }
+        });
+      }
+
+      // Mouse-driven parallax "camera" movement (text only, no curtain)
+      function handlePointerMove(event) {
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        const clientX =
+          event.touches && event.touches[0]
+            ? event.touches[0].clientX
+            : event.clientX;
+        const clientY =
+          event.touches && event.touches[0]
+            ? event.touches[0].clientY
+            : event.clientY;
+
+        const normX = (clientX / viewportWidth) * 2 - 1;
+        const normY = (clientY / viewportHeight) * 2 - 1;
+
+        const rotateY = normX * 40;
+        const rotateX = normY * -26;
+
+        // Extra zoom when the cursor approaches a corner
+        const cornerProximity = Math.max(
+          0,
+          Math.min(1, Math.abs(normX) + Math.abs(normY) - 1)
+        );
+        const baseScale = 1.06;
+        const zoomScale = baseScale + cornerProximity * 0.6;
+
+        if (headlineInner) {
+          const textTranslateX = normX * 150;
+          const textTranslateY = normY * 90;
+
+          headlineInner.style.transform = `
+            translate3d(${textTranslateX}px, ${textTranslateY}px, -260px)
+            rotateY(${rotateY}deg)
+            rotateX(${rotateX}deg)
+            scale(${zoomScale * 0.9})
+          `;
+        }
+
+        // Per-word depth based on proximity to the corner opposite the cursor
+        if (chars && chars.length) {
+          const maxCornerDist = Math.hypot(1, 1);
+          const mouseNx = (normX + 1) / 2;
+          const mouseNy = (normY + 1) / 2;
+          const oppCornerX = 1 - mouseNx;
+          const oppCornerY = 1 - mouseNy;
+
+          // When we get close to a corner, tone down the
+          // per-word 3D effect so words don't overlap
+          // as aggressively. 0 = full effect, 1 = strongly reduced.
+          const depthIntensity = 1 - 0.6 * cornerProximity;
+
+          const spans = Array.from(chars);
+
+          spans.forEach((span) => {
+            const rect = span.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            const nx = cx / viewportWidth;
+            const ny = cy / viewportHeight;
+
+            const minD = Math.hypot(nx - oppCornerX, ny - oppCornerY);
+
+            const nearCorner = 1 - Math.min(minD / maxCornerDist, 1);
+            const combined = nearCorner * (0.6 + 0.6 * cornerProximity);
+            const shaped = combined * depthIntensity;
+            const maxForward = 360;
+            const maxBack = 220;
+            const depth = shaped * maxForward - (1 - shaped) * maxBack;
+
+            const scale =
+              1 + (depth / (maxForward + maxBack)) * 0.32 * depthIntensity;
+
+            // Light leak intensity: stronger on words closer to the focus corner.
+            const leakLetters = span.querySelectorAll(".letter.leak");
+            if (leakLetters.length) {
+              const leakBase = 0.15;
+              const leakMaxExtra = 0.7 - leakBase;
+              const leakOpacity = leakBase + Math.max(0, shaped) * leakMaxExtra;
+              leakLetters.forEach((letterEl) => {
+                letterEl.style.setProperty("--leak-opacity", leakOpacity.toString());
+              });
+            }
+
+            span.style.transform = `
+              translateZ(${depth}px)
+              scale(${scale})
+              rotateY(${-rotateY * 1.15 * depthIntensity}deg)
+              rotateX(${-rotateX * 1.15 * depthIntensity}deg)
+            `;
+          });
+        }
+      }
+
+      window.addEventListener("mousemove", handlePointerMove);
+      window.addEventListener("touchmove", handlePointerMove, {
+        passive: true,
+      });
+
+      // Permanent VHS-style distortion
+      document.body.classList.add("is-glitch");
+    </script>
+  </body>
+</html>
