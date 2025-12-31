@@ -334,15 +334,7 @@ body {
     <a class="card aspect-16-9">
       <div class="media-wrapper">
         <video autoplay muted loop playsinline>
-          <source src="../Videos/exp2.mp4" type="video/mp4">
-        </video>
-      </div>
-    </a>
-
-        <a class="card aspect-16-9">
-      <div class="media-wrapper">
-        <video autoplay muted loop playsinline>
-          <source src="../Videos/exp4.mp4" type="video/mp4">
+          <source src="../Videos/goodstuff.mp4" type="video/mp4">
         </video>
       </div>
     </a>
@@ -538,6 +530,20 @@ body {
       /* ===== Trickle-down load-in for experimental tiles (match Projects) ===== */
       const cards = Array.from(document.querySelectorAll('.experimental-grid .card'));
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Reset the interactive "signal" iframe when leaving its card
+      const signalIframe = document.querySelector('.experimental-grid .card iframe[src*="index_no_curtain.html"]');
+      if (signalIframe) {
+        const signalCard = signalIframe.closest('.card');
+        if (signalCard) {
+          signalCard.addEventListener('mouseleave', () => {
+            const iframeWindow = signalIframe.contentWindow;
+            if (iframeWindow && typeof iframeWindow.resetHeadlineState === 'function') {
+              iframeWindow.resetHeadlineState();
+            }
+          });
+        }
+      }
 
       if (!cards.length) return;
 

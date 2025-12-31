@@ -82,7 +82,8 @@
         margin: 0 auto;
         transform-style: preserve-3d;
         will-change: transform;
-        transition: transform 0.22s ease-out, color 0.22s ease-out;
+        transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1),
+          color 0.5s ease-out;
       }
 
       /* Slightly smaller when used as a thumbnail */
@@ -97,6 +98,7 @@
       .char {
         display: inline-block;
         transform-origin: center center;
+        transition: transform 0.55s cubic-bezier(0.19, 1, 0.22, 1);
       }
 
       .letter {
@@ -353,10 +355,32 @@
         }
       }
 
+      // Reset text back to resting state (used when cursor leaves the card/iframe)
+      function resetHeadlineState() {
+        if (headlineInner) {
+          headlineInner.style.transform = "";
+        }
+
+        if (chars && chars.length) {
+          const spans = Array.from(chars);
+          spans.forEach((span) => {
+            span.style.transform = "";
+
+            const leakLetters = span.querySelectorAll(".letter.leak");
+            leakLetters.forEach((letterEl) => {
+              letterEl.style.setProperty("--leak-opacity", "0");
+            });
+          });
+        }
+      }
+
       window.addEventListener("mousemove", handlePointerMove);
       window.addEventListener("touchmove", handlePointerMove, {
         passive: true,
       });
+
+      window.addEventListener("mouseleave", resetHeadlineState);
+      window.addEventListener("blur", resetHeadlineState);
 
       // Permanent VHS-style distortion
       document.body.classList.add("is-glitch");
