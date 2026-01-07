@@ -268,27 +268,46 @@
     }
 
     @media (max-width: 900px) {
-      .page { padding-left: 0; padding-right: 0; }
+      html, body {
+        height: 100vh;
+        overflow: hidden;
+      }
+      .page {
+        padding-left: 0;
+        padding-right: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
       .left {
-        position: static;
+        position: fixed;
+        top: 8px;
+        left: 16px;
         width: auto;
-        padding: 20px 20px;
+        padding: 0;
         color: #000;
         mix-blend-mode: normal;
+      }
+      .left p {
+        margin: 0 0 4px 0;
       }
 
       .right {
         margin-left: 0;
-        /* Add safe-area padding to avoid iPhone bottom overlap */
-        padding: 0px 16px calc(80px + env(safe-area-inset-bottom));
+        /* Mobile: keep text high on screen, with modest bottom padding */
+        padding: 120px 16px 24px;
+        flex: 1 0 auto;
       }
 
       /* Mobile: set image layering above footer, keep text on top */
-      .text-behind-img { top: 250px; right: 35px; z-index: 5; }
+      .text-behind-img { top: 320px; right: 35px; z-index: 5; }
       .right p {
         z-index: 10;
         /* Loosen tracking on mobile for readability */
         letter-spacing: 0px;
+        font-size: clamp(18px, 4.2vw, 26px);
+        margin-left: 0;
+        margin-top: 2px;
       }
       .intro-ghost { white-space: nowrap; max-width: 100%; overflow-wrap: normal; word-break: normal; }
 
@@ -296,7 +315,8 @@
         position: static;
         mix-blend-mode: normal;
         color: #000;
-        padding: 0 16px 24px;
+        padding: 0 16px 16px;
+        margin-top: auto;
       }
 
       .blob-cursor { display: none !important; } /* disabled on mobile */
@@ -385,6 +405,8 @@
         0 2px 6px rgba(0,0,0,.25),
         0 0 0 1px rgba(255,255,255,.4) inset;
       pointer-events: none;
+      position: relative;
+      overflow: hidden;
     }
     .xp-icon .xp-icon-label { pointer-events: none; }
     .xp-icon.selected,
@@ -393,16 +415,128 @@
       box-shadow: 0 0 0 1px rgba(255,255,255,.75);
     }
     .xp-icon-thumb.projects {
-      background: linear-gradient(145deg, #ffb56b, #ff6f91 55%, #ef3f6b);
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .xp-icon-thumb.projects::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      top: 18px;
+      width: 28px;
+      height: 18px;
+      border-radius: 3px;
+      background: #2f6fff;
+      box-shadow:
+        0 0 0 2px rgba(0,0,0,.75),
+        0 3px 0 rgba(0,0,0,.55);
+    }
+    .xp-icon-thumb.projects::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      width: 14px;
+      height: 8px;
+      border-radius: 3px 3px 0 0;
+      background: #5f9dff;
+      box-shadow: 0 0 0 2px rgba(0,0,0,.75);
     }
     .xp-icon-thumb.experimental {
-      background: linear-gradient(160deg, #8d9bff, #7ed8ff);
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .xp-icon-thumb.experimental::before {
+      content: "";
+      position: absolute;
+      left: 15px;
+      top: 12px;
+      width: 22px;
+      height: 26px;
+      background: #ffd95a;
+      clip-path: polygon(
+        35% 0,
+        65% 0,
+        80% 20%,
+        70% 100%,
+        30% 100%,
+        20% 20%
+      );
+      box-shadow:
+        0 0 0 2px rgba(0,0,0,.8),
+        0 3px 0 rgba(0,0,0,.6);
+    }
+    .xp-icon-thumb.experimental::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 22px;
+      width: 16px;
+      height: 10px;
+      border-radius: 0 0 6px 6px;
+      background: rgba(255, 255, 255, 0.35);
     }
     .xp-icon-thumb.contact {
-      background: linear-gradient(140deg, #4de38a, #28b36a);
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .xp-icon-thumb.contact::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      top: 10px;
+      width: 20px;
+      height: 30px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, #4de38a, #1b8a4a);
+      box-shadow:
+        0 0 0 2px rgba(0,0,0,.75),
+        0 3px 0 rgba(0,0,0,.55);
+    }
+    .xp-icon-thumb.contact::after {
+      content: "";
+      position: absolute;
+      left: 19px;
+      top: 14px;
+      width: 14px;
+      height: 10px;
+      border-radius: 2px;
+      background: #e8fff1;
+      box-shadow: 0 0 0 1px rgba(0,0,0,.35);
     }
     .xp-icon-thumb.instagram {
-      background: linear-gradient(135deg, #f9ce34, #ee2a7b 45%, #6228d7);
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .xp-icon-thumb.instagram::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      width: 24px;
+      height: 20px;
+      border-radius: 4px;
+      background:
+        radial-gradient(circle at 0% 0%, #ffe66b 0, #ff8a5c 40%, transparent 70%),
+        radial-gradient(circle at 100% 100%, #ff5f6d 0, #8e44ad 50%, #1b0b38 90%);
+      box-shadow:
+        0 0 0 2px rgba(0,0,0,.8),
+        0 3px 0 rgba(0,0,0,.6);
+    }
+    .xp-icon-thumb.instagram::after {
+      content: "";
+      position: absolute;
+      left: 21px;
+      top: 18px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 0 2px #1b0b38;
     }
     @media (max-width: 900px) {
       .xp-desktop { display: none !important; }
@@ -603,7 +737,7 @@
       position: fixed;
       left: clamp(12px, 8vw, 40px);
       top: clamp(220px, 24vh, 360px);
-      width: clamp(280px, 46vw, 720px);
+      width: clamp(280px, 40vw, 640px);
       min-width: 220px;
       max-width: calc(100vw - 32px);
       max-height: calc(100vh - 32px);
@@ -611,7 +745,7 @@
       background: #f2f2f2;
       border: 1px solid #7b90ba;
       border-radius: 5px;
-      box-shadow: 0 18px 36px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.18);
+      box-shadow: none;
       overflow: hidden;
       opacity: 0;
       transform: translateY(16px) scale(.985);
@@ -725,7 +859,7 @@
       background: #f2f2f2;
       border: 1px solid #7b90ba;
       border-radius: 5px;
-      box-shadow: 0 18px 36px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.18);
+      box-shadow: none;
       overflow: hidden;
       opacity: 0;
       transform: translateY(16px) scale(.985);
@@ -2255,7 +2389,7 @@
       let dragExceededThreshold = false;
       let lastDraggedIcon = null;
       const ICON_DRAG_THRESHOLD = 4;
-      const ICON_GAP = 24;
+      const ICON_GAP = 10;
       const DEFAULT_ICON_WIDTH = 112;
 
       function parseIconCoord(value, fallback = 0) {
@@ -2358,10 +2492,10 @@
 
       // Easy starting positions (edit these numbers)
       const START_POS = {
-        notepad: { left: 1000,  top: 320 },
+        notepad: { left: 800,  top: 320 },
         image1:  { left: 120, top: 20 },
         image2:  { left: 420, top: 65 },
-        image3:  { left: 480, top: 540 }
+        image3:  { left: 480, top: 490 }
       };
 
       function setIconsFocusable(active){
@@ -2430,6 +2564,10 @@
             note.style.right = 'auto';
             note.style.opacity = '';
             note.setAttribute('aria-hidden','false');
+            document
+              .querySelectorAll('.notepad-window, .image-window')
+              .forEach(w => w.classList.remove('active'));
+            note.classList.add('active');
           }
         } catch(_) {}
         try {
