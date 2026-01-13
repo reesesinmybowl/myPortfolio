@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Rotating Text (No Curtain)</title>
+    <link rel="icon" href="Images/numbersgame.png" type="image/png">
     <style>
       * {
         box-sizing: border-box;
@@ -87,12 +88,27 @@
       }
 
       /* Slightly smaller when used as a thumbnail */
+      html.is-thumb {
+        --tracking: -0.12em;
+      }
+
       html.is-thumb .headline {
         padding: 6vh 5vw;
       }
 
       html.is-thumb .headline-inner {
-        font-size: 140px;
+        font-size: clamp(24px, 10vw, 64px);
+        line-height: 1.05;
+      }
+
+      /* Embedded preview inside the experimental grid */
+      html.is-embed .headline {
+        padding: 6.3vh 6vw;
+      }
+
+      html.is-embed .headline-inner {
+        font-size: clamp(78px, 10.8vw, 156px);
+        line-height: 0.85;
       }
 
       .char {
@@ -167,8 +183,8 @@
     <div class="scanlines"></div>
     <div class="headline">
       <div class="headline-inner">
-        It&nbsp;doesn't&nbsp;matter<br />
-        what&nbsp;I&nbsp;write&nbsp;here,<br />
+        it&nbsp;doesn't&nbsp;matter<br />
+        what&nbsp;i&nbsp;write&nbsp;here,<br />
         but&nbsp;it&nbsp;should&nbsp;be<br />
         something useful.
       </div>
@@ -177,6 +193,9 @@
       const params = new URLSearchParams(window.location.search);
       if (params.get("mode") === "thumb") {
         document.documentElement.classList.add("is-thumb");
+      }
+      if (window.self !== window.top && !document.documentElement.classList.contains("is-thumb")) {
+        document.documentElement.classList.add("is-embed");
       }
 
       const headlineInner = document.querySelector(".headline-inner");

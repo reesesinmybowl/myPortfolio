@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>About – Niklas Tsalkos</title>
+  <link rel="icon" href="Images/numbersgame.png" type="image/png">
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
 
@@ -291,24 +292,36 @@
       .left p {
         margin: 0 0 4px 0;
       }
+      .left-top {
+        padding-top: 16px;
+      }
+      .left p + p {
+        padding-top: 24px;
+      }
 
       .right {
         margin-left: 0;
         /* Mobile: keep text high on screen, with modest bottom padding */
-        padding: 120px 16px 24px;
+        padding: 132px 16px 24px;
         flex: 1 0 auto;
       }
 
       /* Mobile: set image layering above footer, keep text on top */
-      .text-behind-img { top: 320px; right: 35px; z-index: 5; }
+      .text-behind-img {
+        top: 320px;
+        right: 24px;
+        width: clamp(220px, 60vw, 520px);
+        z-index: 5;
+      }
       .right p {
         z-index: 10;
         /* Loosen tracking on mobile for readability */
         letter-spacing: 0px;
-        font-size: clamp(18px, 4.2vw, 26px);
+        font-size: clamp(20px, 5vw, 30px);
         margin-left: 0;
         margin-top: 2px;
       }
+      .mobile-hide { display: none; }
       .intro-ghost { white-space: nowrap; max-width: 100%; overflow-wrap: normal; word-break: normal; }
 
       .bottom {
@@ -976,7 +989,7 @@
     <div class="right">
       <div class="blob-cursor" id="blob"></div>
       <p class="intro-text">
-        Hi there! My name is Niklas. I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics. I'm currently studying at DMJX and previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
+        Hi there! My name is Niklas. I'm an <span class="mobile-hide">Interactive </span>Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics. I'm currently studying at DMJX and previously, I completed a semester in Visual Communication at Krabbesholm Højskole.
       </p>
 
       <!-- Notepad window that appears in XP mode -->

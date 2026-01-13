@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Niklas Tsalkos</title>
 	  <meta name="description" content="Niklas Tsalkos – Interactive Design, Motion, Type, and more. Based in Copenhagen.">
+	  <link rel="icon" href="../Images/numbersgame.png" type="image/png">
   <script>document.documentElement.classList.add('js');</script>
   <style>
     /* ===== Base ===== */
@@ -161,9 +162,11 @@
       html{height:auto; overflow-y:auto;}
       body{min-height:100svh;}
       .page{padding-left:0; padding-right:0;}
-      .left{position:static;width:auto;height:auto;padding:20px;color:black;mix-blend-mode:normal;}
-      .left-top{padding-top:0;}
-      .grid{align-items:stretch;padding:0 16px 16px;}
+      .left{position:fixed;top:8px;left:16px;width:auto;height:auto;padding:0;color:black;mix-blend-mode:normal;}
+      .left p{margin:0 0 4px 0;}
+      .left p + p{padding-top:24px;}
+      .left-top{padding-top:16px;}
+      .grid{align-items:stretch;padding:120px 16px 16px;}
       .project-row{position:static;flex-direction:column;}
       .meta{display:none;}
       .card{width:100%;align-items:center;}

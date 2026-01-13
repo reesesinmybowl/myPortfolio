@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Experimental — Niklas Tsalkos</title>
   <meta name="description" content="Experimental projects by Niklas Tsalkos – Interactive Design, Motion, Type, and more.">
+  <link rel="icon" href="../Images/numbersgame.png" type="image/png">
   <script>document.documentElement.classList.add('js');</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -227,6 +228,15 @@ body {
   height: 100%;
 }
 
+.card.no-curtain .media-wrapper {
+  overflow: hidden;
+}
+
+.card.no-curtain iframe {
+  transform: scale(1.18);
+  transform-origin: center;
+}
+
 .corner-text {
   position: absolute;
   top: 8px;
@@ -286,24 +296,35 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .left {
-    position: static;
+    position: fixed;
+    top: 8px;
+    left: 16px;
     width: auto;
-    padding: 20px;
+    padding: 0;
     color: black;
     mix-blend-mode: normal;
   }
+  .left p { margin: 0 0 4px 0; }
 
   .experimental-grid {
     margin-left: 0;
-    padding: 15px;
+    padding: 120px 16px 16px;
     grid-template-columns: 1fr;
   }
 
   .card {
     grid-column: span 1 !important;
   }
+
+  .card.aspect-16-9 .media-wrapper { aspect-ratio: 16 / 9; }
+  .card iframe { height: 100%; }
+  .card.no-curtain iframe {
+    transform: scale(1.28);
+  }
+
+  .interactive-label { display: none; }
 }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -339,10 +360,10 @@ body {
       </div>
     </a>
 
-    <a class="card aspect-16-9" href="../index_no_curtain.html">
+    <a class="card aspect-16-9 no-curtain" href="../index_no_curtain.html">
       <div class="interactive-label">(interactive)</div>
       <div class="media-wrapper">
-        <iframe src="../index_no_curtain.html?mode=thumb"></iframe>
+        <iframe src="../index_no_curtain.html"></iframe>
       </div>
     </a>
 
