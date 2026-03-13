@@ -1860,11 +1860,30 @@
 
       /* ===== Contact / copy email ===== */
       const contactLink = document.getElementById('contactLink');
+      const emailPopup = document.getElementById('emailPopup');
+      const emailAddress = 'nikl2229us@gmail.com';
+      let emailPopupTimeout = null;
+
+      function showEmailPopup(message) {
+        if (!emailPopup) return;
+        emailPopup.textContent = message;
+        emailPopup.classList.add('visible');
+        if (emailPopupTimeout) clearTimeout(emailPopupTimeout);
+        emailPopupTimeout = setTimeout(() => {
+          emailPopup.classList.remove('visible');
+        }, 1400);
+      }
+
       if (contactLink) {
         contactLink.addEventListener('click', () => {
-          // Ensure the email text stays revealed after click
+          // Keep the address revealed after interaction.
           contactLink.classList.add('show-email');
-          // Let the normal mailto: behavior happen (no preventDefault)
+
+          // Try to copy while preserving the normal mailto behavior.
+          if (!navigator.clipboard || !window.isSecureContext) return;
+          navigator.clipboard.writeText(emailAddress)
+            .then(() => showEmailPopup('Email copied to clipboard'))
+            .catch(() => showEmailPopup(emailAddress));
         });
       }
 
