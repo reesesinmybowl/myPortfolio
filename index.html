@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>About – Niklas Tsalkos</title>
   <link rel="icon" href="Images/numbersgame.png" type="image/png">
+  <link rel="prefetch" href="/project/" as="document">
+  <link rel="prefetch" href="/experimental/" as="document">
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
 
@@ -78,6 +80,9 @@
       transition: font-weight .2s ease;
     }
     .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+    .unstyled-link.is-active {
+      font-weight: 700;
+    }
 
     /* Ensure name is always bold and unaffected by hover */
     .left .name { font-weight: 600; font-variation-settings: 'wght' 600; }
@@ -959,6 +964,7 @@
           </a>
         </p>
         <p>
+          <a href="/" class="unstyled-link is-active" aria-current="page">About Me</a><br>
           <a href="/project/" class="unstyled-link">Projects</a><br>
           <a href="/experimental/" class="unstyled-link">Experimental</a>
         </p>
@@ -1081,6 +1087,7 @@
       <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img first" draggable="false">
       <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img second" draggable="false">
     </div>
+
   </div>
 
   <!-- XP Taskbar (Luna) -->
@@ -1250,6 +1257,109 @@
           span.style.opacity = '1';
         });
       }
+
+      /* ===== Scroll down -> Projects page (desktop + mobile) ===== */
+      (function scrollToProjects(){
+        const FLOW_KEY = '__flowNavTransition';
+        const PROJECTS_PATH = '/project/';
+        const WHEEL_THRESHOLD = 34;
+        let navLocked = false;
+        let touchStartY = null;
+        let wheelAccum = 0;
+
+        function getTransitionTarget() {
+          return document.querySelector('.right') || document.body;
+        }
+
+        function applyIncomingTransition() {
+          let payload = null;
+          try {
+            const raw = sessionStorage.getItem(FLOW_KEY);
+            if (raw) payload = JSON.parse(raw);
+            sessionStorage.removeItem(FLOW_KEY);
+          } catch (_) {}
+
+          if (!payload || !payload.direction) return;
+
+          const target = getTransitionTarget();
+          const enterFrom = payload.direction === 'down' ? 8 : -8;
+          target.style.transition = 'none';
+          target.style.transform = `translateY(${enterFrom}px)`;
+          target.style.opacity = '0';
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              target.style.transition = 'transform 90ms cubic-bezier(.22,.61,.36,1), opacity 70ms ease';
+              target.style.transform = 'translateY(0px)';
+              target.style.opacity = '1';
+              setTimeout(() => {
+                target.style.removeProperty('transition');
+                target.style.removeProperty('transform');
+                target.style.removeProperty('opacity');
+              }, 95);
+            });
+          });
+        }
+
+        function flowNavigate(path, direction) {
+          if (shouldIgnoreNavigation()) return;
+          navLocked = true;
+          try {
+            sessionStorage.setItem(FLOW_KEY, JSON.stringify({ direction, ts: Date.now() }));
+          } catch (_) {}
+
+          const target = getTransitionTarget();
+          const exitTo = direction === 'down' ? -8 : 8;
+          target.style.willChange = 'transform, opacity';
+          target.style.transition = 'transform 70ms cubic-bezier(.4,0,.2,1), opacity 55ms ease';
+          target.style.transform = `translateY(${exitTo}px)`;
+          target.style.opacity = '0';
+
+          setTimeout(() => {
+            window.location.href = path;
+          }, 45);
+        }
+
+        function shouldIgnoreNavigation() {
+          if (navLocked) return true;
+          if (document.body.classList.contains('xp-mode')) return true;
+          return false;
+        }
+
+        function goToProjects() {
+          flowNavigate(PROJECTS_PATH, 'down');
+        }
+
+        applyIncomingTransition();
+
+        window.addEventListener('wheel', (e) => {
+          const dy = e.deltaY || 0;
+          if (dy <= 0) {
+            wheelAccum = 0;
+            return;
+          }
+          wheelAccum += dy;
+          if (wheelAccum >= WHEEL_THRESHOLD) goToProjects();
+        }, { passive: true });
+
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+            goToProjects();
+          }
+        });
+
+        window.addEventListener('touchstart', (e) => {
+          touchStartY = e.touches[0]?.clientY ?? null;
+        }, { passive: true });
+
+        window.addEventListener('touchend', (e) => {
+          if (touchStartY == null) return;
+          const endY = e.changedTouches[0]?.clientY ?? touchStartY;
+          const delta = touchStartY - endY;
+          touchStartY = null;
+          if (delta > 42) goToProjects();
+        }, { passive: true });
+      })();
 
       // Prevent native image dragging that caused lag when interacting with XP windows
       document.querySelectorAll('.image-window img, .text-behind-img').forEach((img) => {
@@ -1480,6 +1590,8 @@
 
       /* ===== Wheel-driven reorder morph (calm, puzzle-like) ===== */
       (function wheelReorderMorph(){
+        const ENABLE_MORPH_REORDER = false;
+        if (!ENABLE_MORPH_REORDER) return;
         if (!intro) return;
         const TARGET_TEXT = (intro.dataset.scrambleTarget || '').replace(/\\n/g, '\n');
         if (!TARGET_TEXT) return;
@@ -2287,16 +2399,19 @@
     })();
 
     /* ===== GSAP Load-in animation (with preloader) ===== */
-    window.addEventListener('load', async () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const preloader = document.getElementById('preloader');
+      const FAST_START = true;
 
-      if (document.fonts && document.fonts.ready) {
-        try { await document.fonts.ready; } catch (e) {}
+      if (FAST_START) {
+        preloader?.classList.add('is-hidden');
+        setTimeout(() => preloader?.remove(), 80);
+        return;
       }
 
       if (!window.gsap) {
         preloader?.classList.add('is-hidden');
-        setTimeout(() => preloader?.remove(), 600);
+        setTimeout(() => preloader?.remove(), 220);
         return;
       }
 
@@ -2381,7 +2496,7 @@
 
       requestAnimationFrame(() => {
         preloader?.classList.add('is-hidden');
-        setTimeout(() => preloader?.remove(), 800);
+        setTimeout(() => preloader?.remove(), 220);
       });
 
       if (SKIP_SIDE_UI) {
@@ -2519,6 +2634,7 @@
       }
 
       let shown = false, menuOpen = false, hoverTimer = null;
+      const ENABLE_XP_SCROLL_REVEAL = false;
       // Disable scroll-to-Windows for the first 2 seconds after load
       const XP_SCROLL_ENABLE_AT = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 3200;
 
@@ -2724,6 +2840,7 @@
       // Wheel: down shows, up hides
       let wheelCooldown = false;
       window.addEventListener('wheel', (e) => {
+        if (!ENABLE_XP_SCROLL_REVEAL) return;
         if (wheelCooldown) return;
         const nowTs = (typeof performance !== 'undefined' ? performance.now() : Date.now());
         if (nowTs < XP_SCROLL_ENABLE_AT) return;
@@ -2733,7 +2850,10 @@
       }, { passive:true });
 
       // Hotspot hover
-      hotspot.addEventListener('mouseenter', () => { hoverTimer = setTimeout(showBar, 550); });
+      hotspot.addEventListener('mouseenter', () => {
+        if (!ENABLE_XP_SCROLL_REVEAL) return;
+        hoverTimer = setTimeout(showBar, 550);
+      });
       hotspot.addEventListener('mouseleave', () => { if (hoverTimer){ clearTimeout(hoverTimer); hoverTimer=null; } });
 
       // Start toggles menu
@@ -2759,6 +2879,7 @@
       let touchStartY = null;
       window.addEventListener('touchstart', (e)=>{ touchStartY = e.touches[0]?.clientY ?? null; }, { passive:true });
       window.addEventListener('touchmove', (e)=>{
+        if (!ENABLE_XP_SCROLL_REVEAL) return;
         if (touchStartY==null) return;
         const nowTs = (typeof performance !== 'undefined' ? performance.now() : Date.now());
         if (nowTs < XP_SCROLL_ENABLE_AT) return;
