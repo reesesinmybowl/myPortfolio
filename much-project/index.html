@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Much Project — Niklas Tsalkos</title>
+  <link rel="icon" href="../Images/numbersgame.png" type="image/png">
+  <script>document.documentElement.classList.add('js');</script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fbfbfb;
+      font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 12px;
+      line-height: 1.2;
+      color: #000;
+      overflow-x: hidden;
+    }
+
+    .page {
+      display: block;
+      padding-left: 280px;
+      padding-right: 20px;
+    }
+
+    .left {
+      position: fixed;
+      top: 0;
+      left: 40px;
+      width: 200px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      background: transparent;
+      mix-blend-mode: difference;
+      color: white;
+      font-size: 12px;
+      line-height: 1.2;
+      isolation: isolate;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: translateZ(0);
+    }
+
+    .left-top { padding-top: 20px; }
+    .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
+    .name { font-weight: 600; font-size: 12px; letter-spacing: -0.02em; }
+
+    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight 0.2s ease; }
+    .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+    .unstyled-link.is-active { font-weight: 600; font-variation-settings: 'wght' 600; }
+    .no-hover-link { all: unset; cursor: pointer; color: inherit; }
+
+    .animated-text { position: relative; display: inline-block; white-space: nowrap; }
+    .animated-word-inner { display: inline-block; }
+    .animated-word-inner::after {
+      content: '|';
+      display: inline-block;
+      position: relative;
+      top: -1px;
+      color: #fff;
+      margin-left: -1.5px;
+      animation: blink-caret .75s step-end infinite;
+      vertical-align: top;
+    }
+    .animated-text.is-deleting .animated-word-inner::after,
+    .animated-text.is-empty .animated-word-inner::after { opacity: 0; }
+    @keyframes blink-caret { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+    .left .animated-text {
+      margin-right: -0.15em;
+      margin-top: -2px;
+    }
+
+    .nav-block {
+      margin: 0 0 24px 0;
+      text-align: left;
+      font-weight: 400;
+    }
+
+    .hero {
+      margin: 20px 0 12px;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+    }
+
+    .hero video {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .intro-copy {
+      margin: 0 0 12px;
+      padding: 60px 0;
+      max-width: 1120px;
+      font-size: 30px;
+      line-height: 33.3px;
+      font-weight: 400;
+    }
+
+    /* ===== Trickle-down load-in ===== */
+    @keyframes dropIn {
+      0%   { opacity: 0; transform: translateY(-32px); filter: drop-shadow(0 8px 0 rgba(0,0,0,0)); }
+      60%  { opacity: 1; transform: translateY(2px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .js .hero,
+    .js .grid .project-row {
+      opacity: 0;
+      transform: translateY(-32px);
+      will-change: transform, opacity;
+    }
+
+    .js .hero.reveal-in,
+    .js .grid .project-row.reveal-in {
+      animation: dropIn .8s cubic-bezier(.2,.8,.2,1) forwards;
+      animation-delay: var(--stagger, 0ms);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .js .hero,
+      .js .grid .project-row {
+        opacity: 1;
+        transform: none;
+      }
+      .js .hero.reveal-in,
+      .js .grid .project-row.reveal-in {
+        animation: none !important;
+      }
+    }
+
+    .grid {
+      padding-top: 0;
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 12px;
+      position: relative;
+    }
+
+    .project-row {
+      position: relative;
+      display: block;
+      grid-column: span 12;
+    }
+
+    .card {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid #e5e5e5;
+      background: #fff;
+      display: block;
+    }
+
+    .card img,
+    .card video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .tile {
+      background: #fff;
+      min-height: 140px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .project-row:nth-of-type(1) { grid-column: 1 / span 8; }
+    .project-row:nth-of-type(1) .card { aspect-ratio: 1 / 1; }
+
+    .project-row:nth-of-type(2) { grid-column: 6 / span 7; }
+    .project-row:nth-of-type(2) .card { aspect-ratio: 4 / 5; }
+
+    .project-row:nth-of-type(3) { grid-column: 1 / span 6; }
+    .project-row:nth-of-type(3) .card { aspect-ratio: 4 / 5; }
+
+    .project-row:nth-of-type(4) { grid-column: 7 / span 6; }
+    .project-row:nth-of-type(4) .card { aspect-ratio: 4 / 5; }
+
+    .project-row:nth-of-type(5) { grid-column: 1 / span 6; }
+    .project-row:nth-of-type(5) .card { aspect-ratio: 4 / 5; }
+
+    .project-row:nth-of-type(6) { grid-column: 7 / span 6; }
+    .project-row:nth-of-type(6) .card { aspect-ratio: 4 / 5; }
+
+    .project-row:nth-of-type(7) { grid-column: 2 / span 10; }
+    .project-row:nth-of-type(7) .card { aspect-ratio: 4 / 5; }
+
+    @media (max-width: 900px) {
+      .page { padding-left: 0; padding-right: 0; }
+      .left {
+        position: fixed;
+        top: 8px;
+        left: 16px;
+        width: calc(100vw - 32px);
+        height: auto;
+        padding: 0;
+        color: black;
+        mix-blend-mode: normal;
+      }
+      .left p { margin: 0; }
+      .nav-block { margin: 0; }
+      .left-top {
+        padding-top: 16px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .left-top p:first-child a { font-size: 12px; line-height: 1.1; }
+      .left-top p:first-child a br { display: none; }
+      .left-top p:first-child .animated-text { display: inline-block; white-space: nowrap; }
+      .left-top p:first-child .name { font-size: 12px; line-height: 1.1; display: block; }
+      .nav-links { text-align: right; white-space: nowrap; }
+      .nav-links br { display: none; }
+      .nav-links a + a::before { content: " / "; }
+
+      .hero { margin: 120px 16px 14px; }
+      .intro-copy {
+        margin: 0 16px 14px;
+        padding: 12px 0;
+        font-size: 30px;
+        line-height: 33.3px;
+      }
+      .grid { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 14px; }
+      .project-row { position: static; }
+      .card { width: 100%; }
+    }
+  </style>
+  <script defer src="/ga-init.js"></script>
+  <script defer src="/analytics.js"></script>
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+  <div class="page">
+    <div class="left">
+      <div class="left-top">
+        <p class="nav-block">
+          <a href="/" class="unstyled-link no-hover-link">
+            <span class="name">Niklas Tsalkos</span><br>
+            <span class="animated-text"><span class="animated-word-inner"></span></span> Designer
+          </a>
+        </p>
+        <div class="nav-block nav-links">
+          <a href="/" class="unstyled-link">About</a><br>
+          <a href="/project/" class="unstyled-link is-active" aria-current="page">Projects</a><br>
+          <a href="/experimental/" class="unstyled-link">Experimental</a>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <section class="hero">
+        <video src="../Videos/MuchProjectVideo.mp4" autoplay muted loop playsinline></video>
+      </section>
+
+      <p class="intro-copy">We created a logo, identity and motion system for Much, an AI-driven legal assistant for small and medium-sized companies. Designed to make legal work feel less heavy, more proactive and easier to move through.</p>
+
+      <section class="grid">
+        <section class="project-row">
+          <div class="card website">
+            <img src="../Images/much1.jpg" alt="Much Project visual 1">
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <img src="../Images/much2.jpg" alt="Much Project visual 2">
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <video src="../Videos/Much_SingleCellBlack.mp4" autoplay muted loop playsinline></video>
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <video src="../Videos/Much_SingleCellWhite.mp4" autoplay muted loop playsinline></video>
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <video src="../Videos/Much_TrickleTreeWhite.mp4" autoplay muted loop playsinline></video>
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <video src="../Videos/Much_TrickleTreeBlack.mp4" autoplay muted loop playsinline></video>
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <img src="../Images/much3.jpg" alt="Much Project visual 3">
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const revealItems = Array.from(document.querySelectorAll('.hero, .grid .project-row'));
+
+      if (!revealItems.length) return;
+
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) {
+        revealItems.forEach(el => el.classList.add('reveal-in'));
+        return;
+      }
+
+      const baseDelay = 140;
+
+      (async () => {
+        for (const [index, el] of revealItems.entries()) {
+          el.style.setProperty('--stagger', '0ms');
+          requestAnimationFrame(() => el.classList.add('reveal-in'));
+          await new Promise(r => setTimeout(r, index === 0 ? 60 : baseDelay));
+        }
+      })();
+
+      const animatedTextContainer = document.querySelector('.animated-text');
+      const animatedWordInner = document.querySelector('.animated-word-inner');
+      const words = ['Interactive', 'Graphic', 'Motion'];
+      const STORAGE_KEY = 'navDesignerWordIndex';
+      let currentIndex = 0;
+      let hasSavedIndex = false;
+
+      try {
+        const savedIndex = Number.parseInt(sessionStorage.getItem(STORAGE_KEY) || '', 10);
+        if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < words.length) {
+          currentIndex = savedIndex;
+          hasSavedIndex = true;
+        }
+      } catch (_) {}
+
+      const typingSpeed = 70, deletingSpeed = 40, wordDisplayTime = 3000, pauseBeforeTyping = 300;
+      if (!animatedTextContainer || !animatedWordInner) return;
+
+      const measuringDiv = document.createElement('div');
+      Object.assign(measuringDiv.style, { position: 'absolute', visibility: 'hidden', whiteSpace: 'nowrap' });
+      document.body.appendChild(measuringDiv);
+
+      function getTextWidth(text) {
+        measuringDiv.textContent = text;
+        return measuringDiv.offsetWidth;
+      }
+
+      function saveCurrentIndex() {
+        try { sessionStorage.setItem(STORAGE_KEY, String(currentIndex)); } catch (_) {}
+      }
+
+      function typeWord(word, cb) {
+        let i = 0;
+        animatedTextContainer.classList.remove('is-deleting', 'is-empty');
+        animatedWordInner.textContent = '';
+        const iv = setInterval(() => {
+          if (i < word.length) {
+            animatedWordInner.textContent += word[i++];
+            animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+          } else {
+            clearInterval(iv);
+            if (cb) cb();
+          }
+        }, typingSpeed);
+      }
+
+      function deleteWord(cb) {
+        let text = animatedWordInner.textContent;
+        animatedTextContainer.classList.add('is-deleting');
+        const iv = setInterval(() => {
+          if (text.length) {
+            text = text.slice(0, -1);
+            animatedWordInner.textContent = text;
+            animatedTextContainer.style.width = `${getTextWidth(text)}px`;
+          } else {
+            clearInterval(iv);
+            animatedTextContainer.classList.add('is-empty');
+            animatedTextContainer.style.width = '0px';
+            if (cb) cb();
+          }
+        }, deletingSpeed);
+      }
+
+      function loop() {
+        const currentWord = words[currentIndex];
+        typeWord(currentWord, () => {
+          setTimeout(() => {
+            deleteWord(() => {
+              setTimeout(() => {
+                currentIndex = (currentIndex + 1) % words.length;
+                saveCurrentIndex();
+                loop();
+              }, pauseBeforeTyping);
+            });
+          }, wordDisplayTime);
+        });
+      }
+
+      if (hasSavedIndex) {
+        animatedTextContainer.classList.remove('is-deleting', 'is-empty');
+        animatedWordInner.textContent = words[currentIndex];
+        animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+        setTimeout(() => {
+          deleteWord(() => {
+            setTimeout(() => {
+              currentIndex = (currentIndex + 1) % words.length;
+              saveCurrentIndex();
+              loop();
+            }, pauseBeforeTyping);
+          });
+        }, wordDisplayTime);
+      } else {
+        saveCurrentIndex();
+        loop();
+      }
+    });
+  </script>
+</body>
+</html>

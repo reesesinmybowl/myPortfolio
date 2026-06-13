@@ -6,8 +6,6 @@
   <title>Niklas Tsalkos</title>
 	  <meta name="description" content="Niklas Tsalkos – Interactive Design, Motion, Type, and more. Based in Copenhagen.">
 	  <link rel="icon" href="../Images/numbersgame.png" type="image/png">
-  <link rel="prefetch" href="/" as="document">
-  <link rel="prefetch" href="/experimental/" as="document">
   <script>document.documentElement.classList.add('js');</script>
   <style>
     /* ===== Base ===== */
@@ -44,7 +42,10 @@
 	      color: white;
 	      font-size: 12px;
 	      line-height: 1.2;
-      font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      isolation: isolate;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: translateZ(0);
     }
     .left-top { padding-top: 20px; }
     .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
@@ -52,8 +53,10 @@
 
     .unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight 0.2s ease; }
     .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
-    .unstyled-link.is-active { font-weight: 700; }
-    .left .name { font-weight: 600; font-variation-settings: 'wght' 600; }
+    .unstyled-link.is-active {
+      font-weight: 600;
+      font-variation-settings: 'wght' 600;
+    }
     .no-hover-link { all: unset; cursor: pointer; color: inherit; }
 
     /* ===== Designer typewriter ===== */
@@ -120,7 +123,7 @@
 	      color: #666;
 	      font-size: 12px;
     }
-    .meta p { margin: 0; }
+    .meta p { margin: 0; line-height: 1.15; }
 
 	    .card {
 	      width: 600px;
@@ -183,10 +186,18 @@
       html{height:auto; overflow-y:auto;}
       body{min-height:100svh;}
       .page{padding-left:0; padding-right:0;}
-      .left{position:fixed;top:8px;left:16px;width:auto;height:auto;padding:0;color:black;mix-blend-mode:normal;}
-      .left p{margin:0 0 4px 0;}
-      .left p + p{padding-top:24px;}
+      .left{position:fixed;top:8px;left:16px;width:calc(100vw - 32px);height:auto;padding:0;color:black;mix-blend-mode:normal;}
+      .left p{margin:0;}
+      .left p + p{padding-top:0;}
       .left-top{padding-top:16px;}
+      .left-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+      .left-top p:first-child a{font-size:12px;line-height:1.1;}
+      .left-top p:first-child a br{display:none;}
+      .left-top p:first-child .animated-text{display:inline-block;white-space:nowrap;}
+      .left-top p:first-child .name{font-size:12px;line-height:1.1;display:block;}
+      .left-top p:last-child{text-align:right;white-space:nowrap;}
+      .left-top p:last-child br{display:none;}
+      .left-top p:last-child a + a::before{content:" / ";}
       .grid{align-items:stretch;padding:120px 16px 16px;}
       .project-row{position:static;flex-direction:column;}
       .meta{display:none;}
@@ -217,7 +228,7 @@
           </a>
         </p>
         <p>
-          <a href="/" class="unstyled-link">About Me</a><br>
+          <a href="/" class="unstyled-link">About</a><br>
           <a href="/project/" class="unstyled-link is-active" aria-current="page">Projects</a><br>
           <a href="/experimental/" class="unstyled-link">Experimental</a>
         </p>
@@ -226,7 +237,17 @@
 
     <!-- PROJECTS (sorted by year DESC) -->
     <div class="grid">
-      <!-- 2025 -->
+      <!-- 2026 -->
+      <section id="proj13" class="project-row">
+        <div class="meta">
+          <h3>Font Runner <span class="year">2026</span></h3>
+          <p>Font Runner is my bachelor project, a digital platform that turns your Strava activity into custom letters, patterns and gear. Less about pace, distance and performance. More about making movement feel personal.</p>
+        </div>
+        <a class="card website" style="pointer-events: none;">
+          <img src="../Images/Font Runner Poster.png" alt="Font Runner Poster Project">
+        </a>
+      </section>
+
       <section id="proj10" class="project-row">
         <div class="meta">
           <h3>Research Studio Lookbook <span class="year">2026</span></h3>
@@ -242,8 +263,18 @@
           <h3>Dully <span class="year">2026</span></h3>
           <p>A motion-led project for Dully, using pacing, rhythm, and contrast to build a sharper and more distinctive branded presence.</p>
         </div>
-        <a class="card website" style="pointer-events: none;">
+        <div class="card website">
           <video src="../Images/dullymBgM.mp4" muted loop playsinline autoplay></video>
+        </div>
+      </section>
+
+      <section id="proj12" class="project-row">
+        <div class="meta">
+          <h3>Much<span class="year">2026</span></h3>
+          <p>Motion design system, defining timing, transitions, and movement rules to create a consistent visual rhythm across the entire identity.</p>
+        </div>
+        <a href="../much-project/" class="card website">
+          <video src="../Videos/MuchProjectVideo.mp4" muted loop playsinline autoplay></video>
         </a>
       </section>
 
@@ -259,7 +290,7 @@
 
       <section id="proj0" class="project-row">
         <div class="meta">
-          <h3>Beries & Dairies<span class="year">2025</span></h3>
+          <h3>Berries & Dairies<span class="year">2025</span></h3>
           <p>Berries & Dairies is an editorial style web experiment combining typography and motion, exploring how identity shifts dynamically across geographies.</p>
         </div>
         <a href="../berries-n-dairies/" class="card website">
@@ -368,7 +399,17 @@
       const animatedTextContainer=document.querySelector('.animated-text');
       const animatedWordInner=document.querySelector('.animated-word-inner');
       const words=['Interactive','Graphic','Motion'];
+      const STORAGE_KEY='navDesignerWordIndex';
       let currentIndex=0;
+      let hasSavedIndex=false;
+
+      try{
+        const savedIndex=Number.parseInt(sessionStorage.getItem(STORAGE_KEY)||'',10);
+        if(Number.isInteger(savedIndex)&&savedIndex>=0&&savedIndex<words.length){
+          currentIndex=savedIndex;
+          hasSavedIndex=true;
+        }
+      }catch(_){ }
       const typingSpeed=70,deletingSpeed=40,wordDisplayTime=3000,pauseBeforeTyping=300;
 
       function setupTypewriter(){
@@ -382,6 +423,10 @@
         function getTextWidth(text){
           measuringDiv.textContent=text;
           return measuringDiv.offsetWidth;
+        }
+
+        function saveCurrentIndex(){
+          try{sessionStorage.setItem(STORAGE_KEY,String(currentIndex));}catch(_){ }
         }
 
         function typeWord(word,cb){
@@ -424,121 +469,67 @@
               deleteWord(()=>{
                 setTimeout(()=>{
                   currentIndex=(currentIndex+1)%words.length;
+                  saveCurrentIndex();
                   loop();
                 },pauseBeforeTyping);
               });
             },wordDisplayTime);
           });
         }
-        loop();
+        if(hasSavedIndex){
+          animatedTextContainer.classList.remove('is-deleting','is-empty');
+          animatedWordInner.textContent=words[currentIndex];
+          animatedTextContainer.style.width=`${getTextWidth(animatedWordInner.textContent)}px`;
+          setTimeout(()=>{
+            deleteWord(()=>{
+              setTimeout(()=>{
+                currentIndex=(currentIndex+1)%words.length;
+                saveCurrentIndex();
+                loop();
+              },pauseBeforeTyping);
+            });
+          },wordDisplayTime);
+        }else{
+          saveCurrentIndex();
+          loop();
+        }
       }
       setupTypewriter();
 
-      // Keep first cards responsive while deferring off-screen media payload.
-      document.querySelectorAll('.grid .project-row').forEach((row, idx) => {
-        const img = row.querySelector('img');
-        const vid = row.querySelector('video');
-
-        if (img && idx > 1) {
-          img.loading = 'lazy';
-          img.decoding = 'async';
-        }
-
-        if (vid) {
-          vid.preload = idx < 2 ? 'metadata' : 'none';
-        }
-      });
-
-      /* ===== Edge scroll navigation: About <-> Projects <-> Experimental ===== */
-      (function edgeScrollNavigation(){
-        const FLOW_KEY = '__flowNavTransition';
+      /* ===== Edge scroll: About <-> Projects <-> Experimental ===== */
+      (function projectEdgeNav(){
         const PREV_PATH = '/';
         const NEXT_PATH = '/experimental/';
-        const EDGE_TOLERANCE_TOP = 18;
-        const EDGE_TOLERANCE_BOTTOM = 4;
-        const WHEEL_THRESHOLD_UP = 120;
-        const WHEEL_THRESHOLD_DOWN = 320;
-        const SWIPE_THRESHOLD = 60;
-
+        const EDGE_TOP = 4;
+        const EDGE_BOTTOM = 6;
+        const WHEEL_UP_THRESHOLD = 420;
+        const WHEEL_DOWN_THRESHOLD = 280;
+        const SWIPE_UP_THRESHOLD = 120;
+        const SWIPE_DOWN_THRESHOLD = 64;
         let navLocked = false;
         let wheelAccum = 0;
         let touchStartY = null;
 
-        function getTransitionTarget() {
-          return document.querySelector('.grid') || document.body;
-        }
-
-        function applyIncomingTransition() {
-          let payload = null;
-          try {
-            const raw = sessionStorage.getItem(FLOW_KEY);
-            if (raw) payload = JSON.parse(raw);
-            sessionStorage.removeItem(FLOW_KEY);
-          } catch (_) {}
-
-          if (!payload || !payload.direction) return;
-
-          const target = getTransitionTarget();
-          const enterFrom = payload.direction === 'down' ? 8 : -8;
-          target.style.transition = 'none';
-          target.style.transform = `translateY(${enterFrom}px)`;
-          target.style.opacity = '0';
-
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              target.style.transition = 'transform 90ms cubic-bezier(.22,.61,.36,1), opacity 70ms ease';
-              target.style.transform = 'translateY(0px)';
-              target.style.opacity = '1';
-              setTimeout(() => {
-                target.style.removeProperty('transition');
-                target.style.removeProperty('transform');
-                target.style.removeProperty('opacity');
-              }, 95);
-            });
-          });
-        }
-
-        function atTop() {
+        function atTop(){
           const y = window.scrollY || document.documentElement.scrollTop || 0;
-          return y <= EDGE_TOLERANCE_TOP;
+          return y <= EDGE_TOP;
         }
 
-        function atBottom() {
+        function atBottom(){
           const doc = document.documentElement;
           const y = window.scrollY || doc.scrollTop || 0;
           const max = Math.max(0, doc.scrollHeight - window.innerHeight);
-          return y >= max - EDGE_TOLERANCE_BOTTOM;
+          return y >= max - EDGE_BOTTOM;
         }
 
-        function navigate(path) {
-          if (navLocked || !path) return;
-          flowNavigate(path, 'down');
-        }
-
-        function flowNavigate(path, direction) {
+        function go(path){
           if (navLocked || !path) return;
           navLocked = true;
-          try {
-            sessionStorage.setItem(FLOW_KEY, JSON.stringify({ direction, ts: Date.now() }));
-          } catch (_) {}
-
-          const target = getTransitionTarget();
-          const exitTo = direction === 'down' ? -8 : 8;
-          target.style.willChange = 'transform, opacity';
-          target.style.transition = 'transform 70ms cubic-bezier(.4,0,.2,1), opacity 55ms ease';
-          target.style.transform = `translateY(${exitTo}px)`;
-          target.style.opacity = '0';
-
-          setTimeout(() => {
-            window.location.href = path;
-          }, 45);
+          window.location.href = path;
         }
-
-        applyIncomingTransition();
 
         window.addEventListener('wheel', (e) => {
           if (navLocked) return;
-
           const dy = e.deltaY || 0;
           if (Math.abs(dy) < 2) return;
 
@@ -552,19 +543,10 @@
 
           if (dy < 0 && nearTop) {
             wheelAccum += Math.max(dy, -80);
+            if (wheelAccum <= -WHEEL_UP_THRESHOLD) go(PREV_PATH);
           } else if (dy > 0 && nearBottom) {
             wheelAccum += Math.min(dy, 80);
-          } else {
-            wheelAccum = dy;
-          }
-
-          if (nearTop && wheelAccum <= -WHEEL_THRESHOLD_UP) {
-            flowNavigate(PREV_PATH, 'up');
-            return;
-          }
-
-          if (nearBottom && wheelAccum >= WHEEL_THRESHOLD_DOWN) {
-            flowNavigate(NEXT_PATH, 'down');
+            if (wheelAccum >= WHEEL_DOWN_THRESHOLD) go(NEXT_PATH);
           }
         }, { passive: true });
 
@@ -578,13 +560,12 @@
           const delta = touchStartY - endY;
           touchStartY = null;
 
-          if (atTop() && delta <= -SWIPE_THRESHOLD) {
-            flowNavigate(PREV_PATH, 'up');
+          if (atTop() && delta <= -SWIPE_UP_THRESHOLD) {
+            go(PREV_PATH);
             return;
           }
-
-          if (atBottom() && delta >= SWIPE_THRESHOLD) {
-            flowNavigate(NEXT_PATH, 'down');
+          if (atBottom() && delta >= SWIPE_DOWN_THRESHOLD) {
+            go(NEXT_PATH);
           }
         }, { passive: true });
       })();
@@ -592,18 +573,8 @@
       /* ===== Trickle-down project reveal (deterministic order) ===== */
       const rows = Array.from(document.querySelectorAll('.grid .project-row'));
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const FAST_REVEAL = true;
 
       if (!rows.length) return;
-
-      if (FAST_REVEAL) {
-        rows.forEach(el => {
-          el.classList.add('reveal-in');
-          el.style.opacity = '1';
-          el.style.transform = 'none';
-        });
-        return;
-      }
 
       // Helper: wait for row's primary media (img/video) to decode/be ready
       function waitForRowMedia(row, timeoutMs = 2000) {
