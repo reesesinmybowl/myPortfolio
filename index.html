@@ -2401,13 +2401,6 @@
     /* ===== GSAP Load-in animation (with preloader) ===== */
     document.addEventListener('DOMContentLoaded', () => {
       const preloader = document.getElementById('preloader');
-      const FAST_START = true;
-
-      if (FAST_START) {
-        preloader?.classList.add('is-hidden');
-        setTimeout(() => preloader?.remove(), 80);
-        return;
-      }
 
       if (!window.gsap) {
         preloader?.classList.add('is-hidden');
