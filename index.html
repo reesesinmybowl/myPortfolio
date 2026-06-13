@@ -27,6 +27,15 @@
       overflow-x: hidden;
     }
 
+    :root {
+      --about-photo-top: calc(clamp(260px, 35vh, 420px) - 18px);
+      --about-photo-1-top: calc(var(--about-photo-top));
+      --about-photo-2-top: calc(var(--about-photo-top) + 230px);
+      --about-photo-width: clamp(160px, 28vw, 420px);
+      --about-photo-1-right: clamp(20px, 18vw, 20px);
+      --about-photo-2-right: 600px;
+    }
+
     body.xp-mode {
       background: url('Images/gmod_flatgrass.webp') center center / cover fixed no-repeat;
     }
@@ -188,14 +197,25 @@
     /* ===== Image behind text (desktop, more adaptive to viewport height) ===== */
     .text-behind-img {
       position: absolute;
-      top: calc(clamp(260px, 35vh, 420px) - 10px);
+      top: var(--about-photo-top);
       right: clamp(12px, 8vw, 40px);
-      width: clamp(160px, 28vw, 420px);
+      width: var(--about-photo-width);
       height: auto;
       z-index: 0;
       pointer-events: none;
       user-select: none;
       will-change: clip-path, transform;
+    }
+    .text-behind-img.first {
+      position: fixed;
+      right: var(--about-photo-1-right);
+      top: var(--about-photo-1-top);
+    }
+    .text-behind-img.second {
+      position: fixed;
+      right: var(--about-photo-2-right);
+      top: var(--about-photo-2-top);
+      display: none;
     }
     /* In XP mode, hide the original inline image (use the window instead) */
     .xp-mode .text-behind-img { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
@@ -317,6 +337,9 @@
         right: 24px;
         width: clamp(220px, 60vw, 520px);
         z-index: 5;
+      }
+      .text-behind-img.second {
+        position: absolute;
       }
       .right p {
         z-index: 10;
