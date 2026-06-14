@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>About – Niklas Tsalkos</title>
   <link rel="icon" href="Images/numbersgame.png" type="image/png">
-  <link rel="prefetch" href="/project/" as="document">
-  <link rel="prefetch" href="/experimental/" as="document">
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
 
@@ -76,6 +74,10 @@
       font-size: 12px;
       line-height: 1.2;
       font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      isolation: isolate;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: translateZ(0);
     }
     .left-top { padding-top: 20px; }
     .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
@@ -90,7 +92,8 @@
     }
     .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
     .unstyled-link.is-active {
-      font-weight: 700;
+      font-weight: 600;
+      font-variation-settings: 'wght' 600;
     }
 
     /* Ensure name is always bold and unaffected by hover */
@@ -309,20 +312,31 @@
         position: fixed;
         top: 8px;
         left: 16px;
-        width: auto;
+        width: calc(100vw - 32px);
         padding: 0;
         color: #000;
         mix-blend-mode: normal;
       }
       .left p {
-        margin: 0 0 4px 0;
+        margin: 0;
       }
       .left-top {
         padding-top: 16px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
       }
       .left p + p {
-        padding-top: 24px;
+        padding-top: 0;
       }
+      .left-top p:first-child a { font-size: 12px; line-height: 1.1; }
+      .left-top p:first-child a br { display: none; }
+      .left-top p:first-child .animated-text { display: inline-block; white-space: nowrap; }
+      .left-top p:first-child .name { font-size: 12px; line-height: 1.1; display: block; }
+      .left-top p:last-child { text-align: right; white-space: nowrap; }
+      .left-top p:last-child br { display: none; }
+      .left-top p:last-child a + a::before { content: " / "; }
 
       .right {
         margin-left: 0;
@@ -1108,9 +1122,8 @@
 
       <!-- Inline images (hidden in XP mode). Replace src for the second image as needed. -->
       <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img first" draggable="false">
-      <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img second" draggable="false">
+      <img src="Images/selfie2.JPG" alt="Decorative" class="text-behind-img second" draggable="false">
     </div>
-
   </div>
 
   <!-- XP Taskbar (Luna) -->
@@ -1203,7 +1216,17 @@
       const animatedTextContainer = document.querySelector('.animated-text');
       const animatedWordInner = document.querySelector('.animated-word-inner');
       const words = ['Interactive', 'Graphic', 'Motion'];
+      const STORAGE_KEY = 'navDesignerWordIndex';
       let currentIndex = 0;
+      let hasSavedIndex = false;
+
+      try {
+        const savedIndex = Number.parseInt(sessionStorage.getItem(STORAGE_KEY) || '', 10);
+        if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < words.length) {
+          currentIndex = savedIndex;
+          hasSavedIndex = true;
+        }
+      } catch (_) {}
 
       const typingSpeed = 70, deletingSpeed = 40, wordDisplayTime = 3000, pauseBeforeTyping = 300;
 
@@ -1223,6 +1246,9 @@
         });
 
         const getTextWidth = (text) => { measuringDiv.textContent = text; return measuringDiv.offsetWidth; };
+        const saveCurrentIndex = () => {
+          try { sessionStorage.setItem(STORAGE_KEY, String(currentIndex)); } catch (_) {}
+        };
 
         const typeWord = (word, done) => {
           let i = 0;
@@ -1258,12 +1284,29 @@
               deleteWord(() =>
                 setTimeout(() => {
                   currentIndex = (currentIndex + 1) % words.length;
+                  saveCurrentIndex();
                   loop();
                 }, pauseBeforeTyping)
               ), wordDisplayTime)
           );
 
-        loop();
+        if (hasSavedIndex) {
+          animatedTextContainer.classList.remove('is-deleting', 'is-empty');
+          animatedWordInner.textContent = words[currentIndex];
+          animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+          setTimeout(() => {
+            deleteWord(() =>
+              setTimeout(() => {
+                currentIndex = (currentIndex + 1) % words.length;
+                saveCurrentIndex();
+                loop();
+              }, pauseBeforeTyping)
+            );
+          }, wordDisplayTime);
+        } else {
+          saveCurrentIndex();
+          loop();
+        }
       }
 
       /* ===== Split ONLY the intro text into words/chars ===== */
@@ -1281,106 +1324,60 @@
         });
       }
 
-      /* ===== Scroll down -> Projects page (desktop + mobile) ===== */
-      (function scrollToProjects(){
-        const FLOW_KEY = '__flowNavTransition';
-        const PROJECTS_PATH = '/project/';
-        const WHEEL_THRESHOLD = 34;
+      /* ===== Edge scroll: About -> Projects ===== */
+      (function aboutToProjectsNav(){
+        const NEXT_PATH = '/project/';
+        const WHEEL_THRESHOLD = 160;
+        const SWIPE_THRESHOLD = 52;
         let navLocked = false;
-        let touchStartY = null;
         let wheelAccum = 0;
+        let touchStartY = null;
 
-        function getTransitionTarget() {
-          return document.querySelector('.right') || document.body;
-        }
-
-        function applyIncomingTransition() {
-          let payload = null;
-          try {
-            const raw = sessionStorage.getItem(FLOW_KEY);
-            if (raw) payload = JSON.parse(raw);
-            sessionStorage.removeItem(FLOW_KEY);
-          } catch (_) {}
-
-          if (!payload || !payload.direction) return;
-
-          const target = getTransitionTarget();
-          const enterFrom = payload.direction === 'down' ? 8 : -8;
-          target.style.transition = 'none';
-          target.style.transform = `translateY(${enterFrom}px)`;
-          target.style.opacity = '0';
-
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              target.style.transition = 'transform 90ms cubic-bezier(.22,.61,.36,1), opacity 70ms ease';
-              target.style.transform = 'translateY(0px)';
-              target.style.opacity = '1';
-              setTimeout(() => {
-                target.style.removeProperty('transition');
-                target.style.removeProperty('transform');
-                target.style.removeProperty('opacity');
-              }, 95);
-            });
+        function freezeAboutImagesForNavigation() {
+          document.querySelectorAll('.text-behind-img').forEach((img) => {
+            img.style.transform = 'translateZ(0)';
+            img.style.opacity = '1';
+            img.style.clipPath = 'inset(0% 0% 0% 0%)';
           });
+          if (window.gsap) {
+            try {
+              gsap.killTweensOf('.text-behind-img');
+              gsap.set('.text-behind-img', {
+                x: 0,
+                y: 0,
+                opacity: 1,
+                clipPath: 'inset(0% 0% 0% 0%)',
+                clearProps: 'transform'
+              });
+            } catch (_) {}
+          }
         }
 
-        function flowNavigate(path, direction) {
-          if (shouldIgnoreNavigation()) return;
+        function goNext() {
+          if (navLocked || document.body.classList.contains('xp-mode')) return;
           navLocked = true;
-          try {
-            sessionStorage.setItem(FLOW_KEY, JSON.stringify({ direction, ts: Date.now() }));
-          } catch (_) {}
-
-          const target = getTransitionTarget();
-          const exitTo = direction === 'down' ? -8 : 8;
-          target.style.willChange = 'transform, opacity';
-          target.style.transition = 'transform 70ms cubic-bezier(.4,0,.2,1), opacity 55ms ease';
-          target.style.transform = `translateY(${exitTo}px)`;
-          target.style.opacity = '0';
-
-          setTimeout(() => {
-            window.location.href = path;
-          }, 45);
+          freezeAboutImagesForNavigation();
+          window.location.href = NEXT_PATH;
         }
-
-        function shouldIgnoreNavigation() {
-          if (navLocked) return true;
-          if (document.body.classList.contains('xp-mode')) return true;
-          return false;
-        }
-
-        function goToProjects() {
-          flowNavigate(PROJECTS_PATH, 'down');
-        }
-
-        applyIncomingTransition();
 
         window.addEventListener('wheel', (e) => {
+          if (navLocked) return;
           const dy = e.deltaY || 0;
-          if (dy <= 0) {
-            wheelAccum = 0;
-            return;
-          }
-          wheelAccum += dy;
-          if (wheelAccum >= WHEEL_THRESHOLD) goToProjects();
+          if (dy <= 0) { wheelAccum = 0; return; }
+          wheelAccum += Math.min(dy, 80);
+          if (wheelAccum >= WHEEL_THRESHOLD) goNext();
         }, { passive: true });
-
-        window.addEventListener('keydown', (e) => {
-          if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
-            goToProjects();
-          }
-        });
 
         window.addEventListener('touchstart', (e) => {
           touchStartY = e.touches[0]?.clientY ?? null;
         }, { passive: true });
 
         window.addEventListener('touchend', (e) => {
-          if (touchStartY == null) return;
+          if (navLocked || touchStartY == null) return;
           const endY = e.changedTouches[0]?.clientY ?? touchStartY;
           const delta = touchStartY - endY;
           touchStartY = null;
-          if (delta > 42) goToProjects();
+          if (delta >= SWIPE_THRESHOLD) goNext();
         }, { passive: true });
       })();
 
@@ -1613,8 +1610,6 @@
 
       /* ===== Wheel-driven reorder morph (calm, puzzle-like) ===== */
       (function wheelReorderMorph(){
-        const ENABLE_MORPH_REORDER = false;
-        if (!ENABLE_MORPH_REORDER) return;
         if (!intro) return;
         const TARGET_TEXT = (intro.dataset.scrambleTarget || '').replace(/\\n/g, '\n');
         if (!TARGET_TEXT) return;
@@ -2422,12 +2417,16 @@
     })();
 
     /* ===== GSAP Load-in animation (with preloader) ===== */
-    document.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('load', async () => {
       const preloader = document.getElementById('preloader');
+
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (e) {}
+      }
 
       if (!window.gsap) {
         preloader?.classList.add('is-hidden');
-        setTimeout(() => preloader?.remove(), 220);
+        setTimeout(() => preloader?.remove(), 600);
         return;
       }
 
@@ -2512,7 +2511,7 @@
 
       requestAnimationFrame(() => {
         preloader?.classList.add('is-hidden');
-        setTimeout(() => preloader?.remove(), 220);
+        setTimeout(() => preloader?.remove(), 800);
       });
 
       if (SKIP_SIDE_UI) {
@@ -2534,6 +2533,7 @@
 
     /* ===== XP Taskbar easter egg (Luna UI) ===== */
     (function xpEasterEgg(){
+      const ENABLE_XP_MODE = false;
       const bar = document.getElementById('xpToolbar');
       const hotspot = document.getElementById('xpHotspot');
       const menu = document.getElementById('xpMenu');
@@ -2543,6 +2543,23 @@
       const desktop = document.getElementById('xpDesktop');
       const desktopIcons = desktop ? Array.from(desktop.querySelectorAll('.xp-icon')) : [];
       if (!bar || !hotspot || !menu || !startBtn) return;
+
+      if (!ENABLE_XP_MODE) {
+        try {
+          document.body.classList.remove('xp-mode');
+          bar.classList.remove('show');
+          menu.classList.remove('open');
+          bar.setAttribute('aria-hidden', 'true');
+          menu.setAttribute('aria-hidden', 'true');
+          hotspot.setAttribute('aria-hidden', 'true');
+          if (desktop) desktop.setAttribute('aria-hidden', 'true');
+          bar.style.display = 'none';
+          menu.style.display = 'none';
+          hotspot.style.display = 'none';
+          if (desktop) desktop.style.display = 'none';
+        } catch (_) {}
+        return;
+      }
 
       let selectedIcon = null;
       let iconsInitialized = false;
@@ -2650,7 +2667,6 @@
       }
 
       let shown = false, menuOpen = false, hoverTimer = null;
-      const ENABLE_XP_SCROLL_REVEAL = false;
       // Disable scroll-to-Windows for the first 2 seconds after load
       const XP_SCROLL_ENABLE_AT = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 3200;
 
@@ -2856,7 +2872,6 @@
       // Wheel: down shows, up hides
       let wheelCooldown = false;
       window.addEventListener('wheel', (e) => {
-        if (!ENABLE_XP_SCROLL_REVEAL) return;
         if (wheelCooldown) return;
         const nowTs = (typeof performance !== 'undefined' ? performance.now() : Date.now());
         if (nowTs < XP_SCROLL_ENABLE_AT) return;
@@ -2866,10 +2881,7 @@
       }, { passive:true });
 
       // Hotspot hover
-      hotspot.addEventListener('mouseenter', () => {
-        if (!ENABLE_XP_SCROLL_REVEAL) return;
-        hoverTimer = setTimeout(showBar, 550);
-      });
+      hotspot.addEventListener('mouseenter', () => { hoverTimer = setTimeout(showBar, 550); });
       hotspot.addEventListener('mouseleave', () => { if (hoverTimer){ clearTimeout(hoverTimer); hoverTimer=null; } });
 
       // Start toggles menu
@@ -2895,7 +2907,6 @@
       let touchStartY = null;
       window.addEventListener('touchstart', (e)=>{ touchStartY = e.touches[0]?.clientY ?? null; }, { passive:true });
       window.addEventListener('touchmove', (e)=>{
-        if (!ENABLE_XP_SCROLL_REVEAL) return;
         if (touchStartY==null) return;
         const nowTs = (typeof performance !== 'undefined' ? performance.now() : Date.now());
         if (nowTs < XP_SCROLL_ENABLE_AT) return;

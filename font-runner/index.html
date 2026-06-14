@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Font Runner - Niklas Tsalkos</title>
+  <link rel="icon" href="../Images/numbersgame.png" type="image/png">
+  <script>document.documentElement.classList.add('js');</script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fbfbfb;
+      font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 12px;
+      line-height: 1.2;
+      color: #000;
+      overflow-x: hidden;
+    }
+
+    .page {
+      display: block;
+      padding-left: 280px;
+      padding-right: 20px;
+    }
+
+    .left {
+      position: fixed;
+      top: 0;
+      left: 40px;
+      width: 200px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      background: transparent;
+      mix-blend-mode: difference;
+      color: white;
+      font-size: 12px;
+      line-height: 1.2;
+      isolation: isolate;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: translateZ(0);
+    }
+
+    .left-top { padding-top: 20px; }
+    .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
+    .name { font-weight: 600; font-size: 12px; letter-spacing: -0.02em; }
+
+    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight 0.2s ease; }
+    .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+    .unstyled-link.is-active { font-weight: 600; font-variation-settings: 'wght' 600; }
+    .no-hover-link { all: unset; cursor: pointer; color: inherit; }
+
+    .animated-text { position: relative; display: inline-block; white-space: nowrap; }
+    .animated-word-inner { display: inline-block; }
+    .animated-word-inner::after {
+      content: '|';
+      display: inline-block;
+      position: relative;
+      top: -1px;
+      color: #fff;
+      margin-left: -1.5px;
+      animation: blink-caret .75s step-end infinite;
+      vertical-align: top;
+    }
+    .animated-text.is-deleting .animated-word-inner::after,
+    .animated-text.is-empty .animated-word-inner::after { opacity: 0; }
+    @keyframes blink-caret { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+    .left .animated-text {
+      margin-right: -0.15em;
+      margin-top: -2px;
+    }
+
+    .nav-block {
+      margin: 0 0 24px 0;
+      text-align: left;
+      font-weight: 400;
+    }
+
+    .hero {
+      width: min(560px, 100%);
+      margin: 20px 0 12px auto;
+      background: transparent;
+    }
+
+    .hero video {
+      width: 100%;
+      display: block;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .intro-copy {
+      margin: 0 0 12px;
+      padding: 60px 0;
+      max-width: 1120px;
+      font-size: 30px;
+      line-height: 33.3px;
+      font-weight: 400;
+    }
+
+    .media-copy {
+      grid-column: 1 / -1;
+      margin: 0 0 12px;
+      padding: 60px 0;
+      max-width: 1140px;
+      font-size: 30px;
+      line-height: 33.3px;
+      font-weight: 400;
+    }
+
+    @keyframes dropIn {
+      0%   { opacity: 0; transform: translateY(-32px); filter: drop-shadow(0 8px 0 rgba(0,0,0,0)); }
+      60%  { opacity: 1; transform: translateY(2px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .js .hero,
+    .js .grid .project-row {
+      opacity: 0;
+      transform: translateY(-32px);
+      will-change: transform, opacity;
+    }
+
+    .js .hero.reveal-in,
+    .js .grid .project-row.reveal-in {
+      animation: dropIn .8s cubic-bezier(.2,.8,.2,1) forwards;
+      animation-delay: var(--stagger, 0ms);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .js .hero,
+      .js .grid .project-row {
+        opacity: 1;
+        transform: none;
+      }
+      .js .hero.reveal-in,
+      .js .grid .project-row.reveal-in {
+        animation: none !important;
+      }
+    }
+
+    .grid {
+      padding-top: 0;
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 12px;
+      position: relative;
+    }
+
+    .project-row {
+      position: relative;
+      display: block;
+      grid-column: span 12;
+    }
+
+    .card {
+      width: 100%;
+      overflow: hidden;
+      background: transparent;
+      display: block;
+    }
+
+    .card img,
+    .card video {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .logo-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12%;
+    }
+
+    .logo-card img {
+      width: 76%;
+      max-width: 520px;
+    }
+
+    .type-exchange-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+      padding: 10%;
+    }
+
+    .type-exchange-card img {
+      width: 52%;
+      max-width: 260px;
+      transform: translateY(26%);
+    }
+
+    .moving-poster-row {
+      grid-column: 4 / span 6;
+    }
+
+    .project-row:nth-of-type(1) { grid-column: 1 / span 8; }
+
+    .project-row:nth-of-type(2) { grid-column: 6 / span 7; }
+
+    .project-row:nth-of-type(3) { grid-column: 1 / span 6; }
+
+    .project-row:nth-of-type(4) { grid-column: 7 / span 6; }
+
+    .project-row:nth-of-type(5) { grid-column: 1 / span 6; }
+
+    .project-row:nth-of-type(6) { grid-column: 7 / span 6; }
+
+    .project-row:nth-of-type(7) { grid-column: 2 / span 10; }
+
+    .project-row:nth-of-type(8) { grid-column: 1 / span 6; }
+
+    .project-row:nth-of-type(9) { grid-column: 7 / span 6; }
+
+    .project-row:nth-of-type(10) { grid-column: 1 / span 8; }
+
+    .project-row:nth-of-type(11) { grid-column: 5 / span 8; }
+
+    .project-row:nth-of-type(12) { grid-column: 2 / span 10; }
+
+    .project-row.poster-row {
+      grid-column: 4 / span 6;
+    }
+
+    .poster-row .card {
+      width: 94%;
+    }
+
+    .project-row.moving-poster-row {
+      grid-column: 4 / span 6;
+    }
+
+    @media (max-width: 900px) {
+      .page { padding-left: 0; padding-right: 0; }
+      .left {
+        position: fixed;
+        top: 8px;
+        left: 16px;
+        width: calc(100vw - 32px);
+        height: auto;
+        padding: 0;
+        color: black;
+        mix-blend-mode: normal;
+      }
+      .left p { margin: 0; }
+      .nav-block { margin: 0; }
+      .left-top {
+        padding-top: 16px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .left-top p:first-child a { font-size: 12px; line-height: 1.1; }
+      .left-top p:first-child a br { display: none; }
+      .left-top p:first-child .animated-text { display: inline-block; white-space: nowrap; }
+      .left-top p:first-child .name { font-size: 12px; line-height: 1.1; display: block; }
+      .nav-links { text-align: right; white-space: nowrap; }
+      .nav-links br { display: none; }
+      .nav-links a + a::before { content: " / "; }
+
+      .hero {
+        width: auto;
+        margin: 120px 16px 14px;
+      }
+      .intro-copy {
+        margin: 0 16px 14px;
+        padding: 12px 0;
+        font-size: 30px;
+        line-height: 33.3px;
+      }
+      .media-copy {
+        margin: 0;
+        padding: 12px 0;
+        max-width: none;
+        font-size: 30px;
+        line-height: 33.3px;
+      }
+      .grid { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 14px; }
+      .project-row { position: static; }
+      .card { width: 100%; }
+    }
+  </style>
+  <script defer src="/ga-init.js"></script>
+  <script defer src="/analytics.js"></script>
+</head>
+<body>
+  <div class="page">
+    <div class="left">
+      <div class="left-top">
+        <p class="nav-block">
+          <a href="/" class="unstyled-link no-hover-link">
+            <span class="name">Niklas Tsalkos</span><br>
+            <span class="animated-text"><span class="animated-word-inner"></span></span> Designer
+          </a>
+        </p>
+        <div class="nav-block nav-links">
+          <a href="/" class="unstyled-link">About</a><br>
+          <a href="/project/" class="unstyled-link is-active" aria-current="page">Projects</a><br>
+          <a href="/experimental/" class="unstyled-link">Experimental</a>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <section class="hero">
+        <video src="assets/FontRunner%20SoMeReel.mp4" autoplay muted loop playsinline></video>
+      </section>
+
+      <p class="intro-copy">Font Runner is my bachelor project, a digital platform that turns running routes into custom letters, patterns and gear. The project started as a way to rethink how activity is usually shown back to us. Instead of another dashboard built around pace, distance and performance, Font Runner uses the shape of the route itself as the main material.</p>
+
+      <section class="grid">
+        <section class="project-row poster-row">
+          <div class="card website">
+            <img src="assets/Font%20Runner%20Poster.png" alt="Font Runner poster">
+          </div>
+        </section>
+
+        <p class="media-copy">Users can turn the paths they run into letterforms, generate patterns from their movement and unlock clothing shaped by the places they have been. A run becomes less like a result, and more like a trace, something personal you can collect, wear and build on.</p>
+
+        <section class="project-row">
+          <div class="card website">
+            <img src="assets/FontRunner%20Spread.png" alt="Font Runner spread">
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <img src="assets/FontRunnerJacket.png" alt="Font Runner jacket">
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <img src="assets/FontRunnerHatDirty.png" alt="Font Runner hat">
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <img src="assets/FontRunnerManTie.png" alt="Font Runner tie mockup">
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <img src="assets/FontRunner%20Pricetag.png" alt="Font Runner price tag">
+          </div>
+        </section>
+
+        <p class="media-copy">The visual world of Font Runner is built around direction, wayfinding and outdoor movement. Route lines, sharp marks, distorted type and rough field imagery create a system that feels somewhere between a running app, a map, a type specimen and gear made for being outside. I wanted the project to feel like you are not just tracking where you went, but slowly building your own world from it.</p>
+
+        <section class="project-row">
+          <div class="card website logo-card">
+            <img src="assets/FontRunnerLogo.png" alt="Font Runner logo">
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website type-exchange-card">
+            <img src="assets/FontRunnerTypeExchange.png" alt="Font Runner exchange type specimen">
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website spin-logo-card">
+            <video src="assets/FontRunnerSpinLogo-bgmatch.mp4" autoplay muted loop playsinline></video>
+          </div>
+        </section>
+
+        <section class="project-row">
+          <div class="card website">
+            <video src="assets/FontRunnerPapir.mp4" autoplay muted loop playsinline></video>
+          </div>
+        </section>
+
+        <section class="project-row moving-poster-row">
+          <div class="card website">
+            <video src="assets/FontRunnerMovingPoster.mp4" autoplay muted loop playsinline></video>
+          </div>
+        </section>
+
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const revealItems = Array.from(document.querySelectorAll('.hero, .grid .project-row'));
+
+      if (!revealItems.length) return;
+
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) {
+        revealItems.forEach(el => el.classList.add('reveal-in'));
+        return;
+      }
+
+      const baseDelay = 140;
+
+      (async () => {
+        for (const [index, el] of revealItems.entries()) {
+          el.style.setProperty('--stagger', '0ms');
+          requestAnimationFrame(() => el.classList.add('reveal-in'));
+          await new Promise(r => setTimeout(r, index === 0 ? 60 : baseDelay));
+        }
+      })();
+
+      const animatedTextContainer = document.querySelector('.animated-text');
+      const animatedWordInner = document.querySelector('.animated-word-inner');
+      const words = ['Interactive', 'Graphic', 'Motion'];
+      const STORAGE_KEY = 'navDesignerWordIndex';
+      let currentIndex = 0;
+      let hasSavedIndex = false;
+
+      try {
+        const savedIndex = Number.parseInt(sessionStorage.getItem(STORAGE_KEY) || '', 10);
+        if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < words.length) {
+          currentIndex = savedIndex;
+          hasSavedIndex = true;
+        }
+      } catch (_) {}
+
+      const typingSpeed = 70, deletingSpeed = 40, wordDisplayTime = 3000, pauseBeforeTyping = 300;
+      if (!animatedTextContainer || !animatedWordInner) return;
+
+      const measuringDiv = document.createElement('div');
+      Object.assign(measuringDiv.style, { position: 'absolute', visibility: 'hidden', whiteSpace: 'nowrap' });
+      document.body.appendChild(measuringDiv);
+
+      function getTextWidth(text) {
+        measuringDiv.textContent = text;
+        return measuringDiv.offsetWidth;
+      }
+
+      function saveCurrentIndex() {
+        try { sessionStorage.setItem(STORAGE_KEY, String(currentIndex)); } catch (_) {}
+      }
+
+      function typeWord(word, cb) {
+        let i = 0;
+        animatedTextContainer.classList.remove('is-deleting', 'is-empty');
+        animatedWordInner.textContent = '';
+        const iv = setInterval(() => {
+          if (i < word.length) {
+            animatedWordInner.textContent += word[i++];
+            animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+          } else {
+            clearInterval(iv);
+            if (cb) cb();
+          }
+        }, typingSpeed);
+      }
+
+      function deleteWord(cb) {
+        let text = animatedWordInner.textContent;
+        animatedTextContainer.classList.add('is-deleting');
+        const iv = setInterval(() => {
+          if (text.length) {
+            text = text.slice(0, -1);
+            animatedWordInner.textContent = text;
+            animatedTextContainer.style.width = `${getTextWidth(text)}px`;
+          } else {
+            clearInterval(iv);
+            animatedTextContainer.classList.add('is-empty');
+            animatedTextContainer.style.width = '0px';
+            if (cb) cb();
+          }
+        }, deletingSpeed);
+      }
+
+      function loop() {
+        const currentWord = words[currentIndex];
+        typeWord(currentWord, () => {
+          setTimeout(() => {
+            deleteWord(() => {
+              setTimeout(() => {
+                currentIndex = (currentIndex + 1) % words.length;
+                saveCurrentIndex();
+                loop();
+              }, pauseBeforeTyping);
+            });
+          }, wordDisplayTime);
+        });
+      }
+
+      if (hasSavedIndex) {
+        animatedTextContainer.classList.remove('is-deleting', 'is-empty');
+        animatedWordInner.textContent = words[currentIndex];
+        animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+        setTimeout(() => {
+          deleteWord(() => {
+            setTimeout(() => {
+              currentIndex = (currentIndex + 1) % words.length;
+              saveCurrentIndex();
+              loop();
+            }, pauseBeforeTyping);
+          });
+        }, wordDisplayTime);
+      } else {
+        saveCurrentIndex();
+        loop();
+      }
+    });
+  </script>
+</body>
+</html>
