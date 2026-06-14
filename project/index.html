@@ -463,6 +463,28 @@
   <!-- Typewriter JS + Trickle-down reveal -->
   <script>
     document.addEventListener('DOMContentLoaded',()=>{
+      (function applyProjectEdgeStart(){
+        const KEY = 'projectEdgeStart';
+        let start = '';
+        try {
+          start = sessionStorage.getItem(KEY) || '';
+          sessionStorage.removeItem(KEY);
+        } catch (_) {}
+
+        if (start !== 'bottom') return;
+
+        function scrollToBottom(){
+          const doc = document.documentElement;
+          const max = Math.max(0, doc.scrollHeight - window.innerHeight);
+          window.scrollTo({ top: max, left: 0, behavior: 'instant' });
+        }
+
+        requestAnimationFrame(scrollToBottom);
+        window.addEventListener('load', scrollToBottom, { once: true });
+        setTimeout(scrollToBottom, 240);
+        setTimeout(scrollToBottom, 900);
+      })();
+
       /* ===== Typewriter (unchanged) ===== */
       const animatedTextContainer=document.querySelector('.animated-text');
       const animatedWordInner=document.querySelector('.animated-word-inner');
@@ -604,6 +626,7 @@
         function go(path, direction){
           if (navLocked || !path) return;
           navLocked = true;
+          try { sessionStorage.setItem('projectEdgeStart', direction === 'next' ? 'bottom' : 'top'); } catch (_) {}
           setProgress(1);
           document.body.classList.add(direction === 'prev' ? 'project-leaving-prev' : 'project-leaving-next');
           window.setTimeout(() => {
