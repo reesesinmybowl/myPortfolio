@@ -62,7 +62,7 @@ body {
 }
 
 .name {
-  font-weight: 600;
+  font-weight: 400;
   font-size: 12px;
   letter-spacing: -0.02em;
 }
@@ -79,8 +79,13 @@ body {
   font-weight: 700;
 }
 .unstyled-link.is-active {
-  font-weight: 600;
-  font-variation-settings: 'wght' 600;
+  font-weight: 400;
+  font-variation-settings: 'wght' 400;
+  box-shadow: inset 0 0 0 999px rgba(128, 128, 128, 0.28);
+}
+.unstyled-link.is-active:hover {
+  font-weight: 400;
+  font-variation-settings: 'wght' 400;
 }
 
 .no-hover-link {
@@ -262,7 +267,7 @@ body {
   left: 40px;
   width: 220px;
   font-size: 12px;
-  line-height: 1.35;
+  line-height: 1.2;
   color: #fff;
   background: transparent;
   mix-blend-mode: difference;
@@ -277,6 +282,9 @@ body {
 .bottom p + p {
   margin-top: 32px;
 }
+.contact-swap .hover-text { display: none; }
+.contact-swap:hover .default-text { display: none; }
+.contact-swap:hover .hover-text { display: inline; }
 
 /* === RESPONSIVE === */
 @media (max-width: 1024px) {
@@ -517,7 +525,10 @@ body {
 
   <div class="bottom">
     <p>
-      <a href="mailto:nikl2229us@gmail.com" class="unstyled-link">Contact</a><br>
+      <a href="mailto:nikl2229us@gmail.com" class="unstyled-link contact-swap">
+        <span class="default-text">Contact</span>
+        <span class="hover-text">nikl2229us@gmail.com</span>
+      </a><br>
       <a href="https://instagram.com/niklastsalkos" target="_blank" class="unstyled-link">Instagram</a><br>
       <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
     </p>
@@ -530,8 +541,10 @@ body {
       const animatedWordInner = document.querySelector('.animated-word-inner');
       const words = ['Interactive', 'Graphic', 'Motion'];
       const STORAGE_KEY = 'navDesignerWordIndex';
+      const STARTED_KEY = 'navDesignerWordStartedAt';
       let currentIndex = 0;
       let hasSavedIndex = false;
+      let savedWordStartedAt = 0;
 
       try {
         const savedIndex = Number.parseInt(sessionStorage.getItem(STORAGE_KEY) || '', 10);
@@ -539,6 +552,7 @@ body {
           currentIndex = savedIndex;
           hasSavedIndex = true;
         }
+        savedWordStartedAt = Number.parseInt(sessionStorage.getItem(STARTED_KEY) || '0', 10) || 0;
       } catch (_) {}
       const typingSpeed = 70, deletingSpeed = 40, wordDisplayTime = 3000, pauseBeforeTyping = 300;
 
@@ -559,7 +573,10 @@ body {
 
         const getTextWidth = (text) => { measuringDiv.textContent = text; return measuringDiv.offsetWidth; };
         const saveCurrentIndex = () => {
-          try { sessionStorage.setItem(STORAGE_KEY, String(currentIndex)); } catch (_) {}
+          try {
+            sessionStorage.setItem(STORAGE_KEY, String(currentIndex));
+            sessionStorage.setItem(STARTED_KEY, String(Date.now()));
+          } catch (_) {}
         };
 
         const typeWord = (word, done) => {
@@ -594,11 +611,11 @@ body {
         const loop = () => {
           const currentWord = words[currentIndex];
           typeWord(currentWord, () => {
+            saveCurrentIndex();
             setTimeout(() => {
               deleteWord(() => {
                 setTimeout(() => {
                   currentIndex = (currentIndex + 1) % words.length;
-                  saveCurrentIndex();
                   loop();
                 }, pauseBeforeTyping);
               });
@@ -610,15 +627,15 @@ body {
           animatedTextContainer.classList.remove('is-deleting', 'is-empty');
           animatedWordInner.textContent = words[currentIndex];
           animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+          const remainingDisplayTime = Math.max(0, wordDisplayTime - (Date.now() - savedWordStartedAt));
           setTimeout(() => {
             deleteWord(() => {
               setTimeout(() => {
                 currentIndex = (currentIndex + 1) % words.length;
-                saveCurrentIndex();
                 loop();
               }, pauseBeforeTyping);
             });
-          }, wordDisplayTime);
+          }, remainingDisplayTime);
         } else {
           saveCurrentIndex();
           loop();

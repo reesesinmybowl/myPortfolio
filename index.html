@@ -81,7 +81,7 @@
     }
     .left-top { padding-top: 20px; }
     .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
-    .name { font-weight: 600; font-size: 12px; letter-spacing: -0.02em; }
+    .name { font-weight: 400; font-size: 12px; letter-spacing: -0.02em; }
 
     /* Links */
     .unstyled-link {
@@ -92,12 +92,17 @@
     }
     .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
     .unstyled-link.is-active {
-      font-weight: 600;
-      font-variation-settings: 'wght' 600;
+      font-weight: 400;
+      font-variation-settings: 'wght' 400;
+      box-shadow: inset 0 0 0 999px rgba(128, 128, 128, 0.28);
+    }
+    .unstyled-link.is-active:hover {
+      font-weight: 400;
+      font-variation-settings: 'wght' 400;
     }
 
     /* Ensure name is always bold and unaffected by hover */
-    .left .name { font-weight: 600; font-variation-settings: 'wght' 600; }
+    .left .name { font-weight: 400; font-variation-settings: 'wght' 400; }
     .no-hover-link { all: unset; cursor: pointer; color: inherit; }
 
     /* Bottom links: match left sidebar hover behavior */
@@ -183,6 +188,7 @@
     /* Optional tracking for split text (kerning-like) */
     .intro-text {
       --track: 0em;
+      font-family: 'Inter', sans-serif;
       user-select: none;
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -230,7 +236,7 @@
       left: 40px;
       width: 220px;
       font-size: 12px;
-      line-height: 1.35;
+      line-height: 1.2;
       color: #fff;
       background: transparent; /* no white background */
       mix-blend-mode: difference;
@@ -1217,8 +1223,10 @@
       const animatedWordInner = document.querySelector('.animated-word-inner');
       const words = ['Interactive', 'Graphic', 'Motion'];
       const STORAGE_KEY = 'navDesignerWordIndex';
+      const STARTED_KEY = 'navDesignerWordStartedAt';
       let currentIndex = 0;
       let hasSavedIndex = false;
+      let savedWordStartedAt = 0;
 
       try {
         const savedIndex = Number.parseInt(sessionStorage.getItem(STORAGE_KEY) || '', 10);
@@ -1226,6 +1234,7 @@
           currentIndex = savedIndex;
           hasSavedIndex = true;
         }
+        savedWordStartedAt = Number.parseInt(sessionStorage.getItem(STARTED_KEY) || '0', 10) || 0;
       } catch (_) {}
 
       const typingSpeed = 70, deletingSpeed = 40, wordDisplayTime = 3000, pauseBeforeTyping = 300;
@@ -1247,7 +1256,10 @@
 
         const getTextWidth = (text) => { measuringDiv.textContent = text; return measuringDiv.offsetWidth; };
         const saveCurrentIndex = () => {
-          try { sessionStorage.setItem(STORAGE_KEY, String(currentIndex)); } catch (_) {}
+          try {
+            sessionStorage.setItem(STORAGE_KEY, String(currentIndex));
+            sessionStorage.setItem(STARTED_KEY, String(Date.now()));
+          } catch (_) {}
         };
 
         const typeWord = (word, done) => {
@@ -1280,29 +1292,31 @@
 
         const loop = () =>
           typeWord(words[currentIndex], () =>
-            setTimeout(() =>
-              deleteWord(() =>
-                setTimeout(() => {
-                  currentIndex = (currentIndex + 1) % words.length;
-                  saveCurrentIndex();
-                  loop();
-                }, pauseBeforeTyping)
-              ), wordDisplayTime)
+            {
+              saveCurrentIndex();
+              setTimeout(() =>
+                deleteWord(() =>
+                  setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % words.length;
+                    loop();
+                  }, pauseBeforeTyping)
+                ), wordDisplayTime);
+            }
           );
 
         if (hasSavedIndex) {
           animatedTextContainer.classList.remove('is-deleting', 'is-empty');
           animatedWordInner.textContent = words[currentIndex];
           animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+          const remainingDisplayTime = Math.max(0, wordDisplayTime - (Date.now() - savedWordStartedAt));
           setTimeout(() => {
             deleteWord(() =>
               setTimeout(() => {
                 currentIndex = (currentIndex + 1) % words.length;
-                saveCurrentIndex();
                 loop();
               }, pauseBeforeTyping)
             );
-          }, wordDisplayTime);
+          }, remainingDisplayTime);
         } else {
           saveCurrentIndex();
           loop();
