@@ -641,7 +641,7 @@
       function go(path, direction){
         if (navLocked || !path) return;
         navLocked = true;
-        try { sessionStorage.setItem('projectEdgeStart', direction === 'prev' ? 'bottom' : 'top'); } catch (_) {}
+        try { sessionStorage.setItem('projectEdgeStart', direction === 'next' ? 'bottom' : 'top'); } catch (_) {}
         setProgress(1);
         document.body.classList.add(direction === 'prev' ? 'project-leaving-prev' : 'project-leaving-next');
         window.setTimeout(() => {
