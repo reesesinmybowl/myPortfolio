@@ -164,6 +164,75 @@
       display: block;
     }
 
+    .hero video,
+    .card img,
+    .card video,
+    main {
+      transition: opacity .22s ease, transform .28s cubic-bezier(.22,.61,.36,1);
+    }
+
+    .project-edge-indicator {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      width: 120px;
+      height: 1px;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-50%) scaleX(var(--edge-progress, 0));
+      transform-origin: 50% 50%;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 1600;
+    }
+
+    .project-edge-flash {
+      position: fixed;
+      inset: 0;
+      background: #fbfbfb;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1500;
+    }
+
+    body.project-edge-primed .project-edge-indicator {
+      opacity: calc(.12 + (var(--edge-progress, 0) * .62));
+    }
+
+    body.project-edge-primed .hero video,
+    body.project-edge-primed .card img,
+    body.project-edge-primed .card video {
+      opacity: calc(1 - (var(--edge-progress, 0) * .48));
+    }
+
+    body.project-leaving-next main {
+      transform: translateY(-18px);
+    }
+
+    body.project-leaving-prev main {
+      transform: translateY(18px);
+    }
+
+    body.project-leaving-next .hero video,
+    body.project-leaving-next .card img,
+    body.project-leaving-next .card video,
+    body.project-leaving-prev .hero video,
+    body.project-leaving-prev .card img,
+    body.project-leaving-prev .card video {
+      opacity: .18;
+    }
+
+    body.project-leaving-next .project-edge-flash,
+    body.project-leaving-prev .project-edge-flash {
+      animation: projectFlash .24s ease forwards;
+    }
+
+    @keyframes projectFlash {
+      0% { opacity: 0; }
+      42% { opacity: .72; }
+      100% { opacity: 0; }
+    }
+
     .tile {
       background: #fff;
       min-height: 140px;
@@ -238,6 +307,8 @@
   <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
+  <div class="project-edge-flash" aria-hidden="true"></div>
+  <div class="project-edge-indicator" aria-hidden="true"></div>
   <div class="page">
     <div class="left">
       <div class="left-top">
@@ -425,6 +496,103 @@
         saveCurrentIndex();
         loop();
       }
+
+      (function projectDetailEdgeNav(){
+        const PREV_PATH = '/font-runner/';
+        const NEXT_PATH = '/project/';
+        const EDGE_TOP = 4;
+        const EDGE_BOTTOM = 6;
+        const WHEEL_THRESHOLD = 300;
+        const SWIPE_THRESHOLD = 90;
+        let navLocked = false;
+        let wheelAccum = 0;
+        let touchStartY = null;
+
+        function atTop(){
+          const y = window.scrollY || document.documentElement.scrollTop || 0;
+          return y <= EDGE_TOP;
+        }
+
+        function atBottom(){
+          const doc = document.documentElement;
+          const y = window.scrollY || doc.scrollTop || 0;
+          const max = Math.max(0, doc.scrollHeight - window.innerHeight);
+          return y >= max - EDGE_BOTTOM;
+        }
+
+        function setProgress(progress){
+          const p = Math.max(0, Math.min(1, progress));
+          document.body.style.setProperty('--edge-progress', String(p));
+          document.body.classList.toggle('project-edge-primed', p > 0.02);
+        }
+
+        function resetProgress(){
+          wheelAccum = 0;
+          setProgress(0);
+        }
+
+        function go(path, direction){
+          if (navLocked || !path) return;
+          navLocked = true;
+          setProgress(1);
+          document.body.classList.add(direction === 'prev' ? 'project-leaving-prev' : 'project-leaving-next');
+          window.setTimeout(() => {
+            window.location.href = path;
+          }, 170);
+        }
+
+        window.addEventListener('wheel', (e) => {
+          if (navLocked) return;
+          const dy = e.deltaY || 0;
+          if (Math.abs(dy) < 2) return;
+
+          if (dy < 0 && atTop()) {
+            wheelAccum += Math.max(dy, -80);
+            setProgress(Math.abs(wheelAccum) / WHEEL_THRESHOLD);
+            if (Math.abs(wheelAccum) >= WHEEL_THRESHOLD) go(PREV_PATH, 'prev');
+            return;
+          }
+
+          if (dy > 0 && atBottom()) {
+            wheelAccum += Math.min(dy, 80);
+            setProgress(wheelAccum / WHEEL_THRESHOLD);
+            if (wheelAccum >= WHEEL_THRESHOLD) go(NEXT_PATH, 'next');
+            return;
+          }
+
+          resetProgress();
+        }, { passive: true });
+
+        window.addEventListener('touchstart', (e) => {
+          touchStartY = e.touches[0]?.clientY ?? null;
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+          if (navLocked || touchStartY == null) return;
+          const y = e.touches[0]?.clientY ?? touchStartY;
+          const delta = touchStartY - y;
+          if ((delta < 0 && atTop()) || (delta > 0 && atBottom())) {
+            setProgress(Math.abs(delta) / SWIPE_THRESHOLD);
+          }
+        }, { passive: true });
+
+        window.addEventListener('touchend', (e) => {
+          if (navLocked || touchStartY == null) return;
+          const endY = e.changedTouches[0]?.clientY ?? touchStartY;
+          const delta = touchStartY - endY;
+          touchStartY = null;
+
+          if (atTop() && delta <= -SWIPE_THRESHOLD) {
+            go(PREV_PATH, 'prev');
+            return;
+          }
+          if (atBottom() && delta >= SWIPE_THRESHOLD) {
+            go(NEXT_PATH, 'next');
+            return;
+          }
+          resetProgress();
+        }, { passive: true });
+      })();
     });
   </script>
 </body>

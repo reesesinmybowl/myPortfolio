@@ -176,6 +176,72 @@
       animation: dropIn .8s cubic-bezier(.2,.8,.2,1) forwards;
       animation-delay: var(--stagger, 0ms);
     }
+
+    .grid,
+    .grid .project-row,
+    .grid .card img,
+    .grid .card video {
+      transition: opacity .22s ease, transform .28s cubic-bezier(.22,.61,.36,1);
+    }
+
+    .project-edge-indicator {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      width: 120px;
+      height: 1px;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-50%) scaleX(var(--edge-progress, 0));
+      transform-origin: 50% 50%;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 1600;
+    }
+
+    .project-edge-flash {
+      position: fixed;
+      inset: 0;
+      background: #fbfbfb;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1500;
+    }
+
+    body.project-edge-primed .project-edge-indicator {
+      opacity: calc(.12 + (var(--edge-progress, 0) * .62));
+    }
+
+    body.project-edge-primed .grid .card img,
+    body.project-edge-primed .grid .card video {
+      opacity: calc(1 - (var(--edge-progress, 0) * .48));
+    }
+
+    body.project-leaving-next .grid {
+      transform: translateY(-18px);
+    }
+
+    body.project-leaving-prev .grid {
+      transform: translateY(18px);
+    }
+
+    body.project-leaving-next .grid .card img,
+    body.project-leaving-next .grid .card video,
+    body.project-leaving-prev .grid .card img,
+    body.project-leaving-prev .grid .card video {
+      opacity: .18;
+    }
+
+    body.project-leaving-next .project-edge-flash,
+    body.project-leaving-prev .project-edge-flash {
+      animation: projectFlash .24s ease forwards;
+    }
+
+    @keyframes projectFlash {
+      0% { opacity: 0; }
+      42% { opacity: .72; }
+      100% { opacity: 0; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .js .grid .project-row { opacity: 1; transform: none; }
       .js .grid .project-row.reveal-in { animation: none !important; }
@@ -217,6 +283,8 @@
   <script defer src="/analytics.js"></script>
 </head>
 <body>
+  <div class="project-edge-flash" aria-hidden="true"></div>
+  <div class="project-edge-indicator" aria-hidden="true"></div>
   <div class="page">
     <!-- SIDEBAR -->
     <div class="left">
@@ -522,10 +590,25 @@
           return y >= max - EDGE_BOTTOM;
         }
 
-        function go(path){
+        function setProgress(progress){
+          const p = Math.max(0, Math.min(1, progress));
+          document.body.style.setProperty('--edge-progress', String(p));
+          document.body.classList.toggle('project-edge-primed', p > 0.02);
+        }
+
+        function resetProgress(){
+          wheelAccum = 0;
+          setProgress(0);
+        }
+
+        function go(path, direction){
           if (navLocked || !path) return;
           navLocked = true;
-          window.location.href = path;
+          setProgress(1);
+          document.body.classList.add(direction === 'prev' ? 'project-leaving-prev' : 'project-leaving-next');
+          window.setTimeout(() => {
+            window.location.href = path;
+          }, 170);
         }
 
         window.addEventListener('wheel', (e) => {
@@ -537,21 +620,38 @@
           const nearBottom = atBottom();
 
           if ((dy < 0 && !nearTop) || (dy > 0 && !nearBottom)) {
-            wheelAccum = 0;
+            resetProgress();
             return;
           }
 
           if (dy < 0 && nearTop) {
             wheelAccum += Math.max(dy, -80);
-            if (wheelAccum <= -WHEEL_UP_THRESHOLD) go(PREV_PATH);
+            setProgress(Math.abs(wheelAccum) / WHEEL_UP_THRESHOLD);
+            if (wheelAccum <= -WHEEL_UP_THRESHOLD) go(PREV_PATH, 'prev');
           } else if (dy > 0 && nearBottom) {
             wheelAccum += Math.min(dy, 80);
-            if (wheelAccum >= WHEEL_DOWN_THRESHOLD) go(NEXT_PATH);
+            setProgress(wheelAccum / WHEEL_DOWN_THRESHOLD);
+            if (wheelAccum >= WHEEL_DOWN_THRESHOLD) go(NEXT_PATH, 'next');
           }
         }, { passive: true });
 
         window.addEventListener('touchstart', (e) => {
           touchStartY = e.touches[0]?.clientY ?? null;
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+          if (navLocked || touchStartY == null) return;
+          const y = e.touches[0]?.clientY ?? touchStartY;
+          const delta = touchStartY - y;
+          if (atTop() && delta < 0) {
+            setProgress(Math.abs(delta) / SWIPE_UP_THRESHOLD);
+            return;
+          }
+          if (atBottom() && delta > 0) {
+            setProgress(delta / SWIPE_DOWN_THRESHOLD);
+            return;
+          }
+          setProgress(0);
         }, { passive: true });
 
         window.addEventListener('touchend', (e) => {
@@ -561,12 +661,14 @@
           touchStartY = null;
 
           if (atTop() && delta <= -SWIPE_UP_THRESHOLD) {
-            go(PREV_PATH);
+            go(PREV_PATH, 'prev');
             return;
           }
           if (atBottom() && delta >= SWIPE_DOWN_THRESHOLD) {
-            go(NEXT_PATH);
+            go(NEXT_PATH, 'next');
+            return;
           }
+          resetProgress();
         }, { passive: true });
       })();
 
