@@ -6,8 +6,6 @@
   <title>Experimental — Niklas Tsalkos</title>
   <meta name="description" content="Experimental projects by Niklas Tsalkos – Interactive Design, Motion, Type, and more.">
   <link rel="icon" href="../Images/numbersgame.png" type="image/png">
-  <link rel="prefetch" href="/project/" as="document">
-  <link rel="prefetch" href="/" as="document">
   <script>document.documentElement.classList.add('js');</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -47,6 +45,10 @@ body {
   mix-blend-mode: difference;
   color: white;
   font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  isolation: isolate;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .left-top {
@@ -77,10 +79,6 @@ body {
   font-weight: 700;
 }
 .unstyled-link.is-active {
-  font-weight: 700;
-}
-
-.left .name {
   font-weight: 600;
   font-variation-settings: 'wght' 600;
 }
@@ -205,17 +203,10 @@ body {
   aspect-ratio: 4 / 5;
 }
 
-.card.aspect-natural video,
-.card.aspect-natural img,
-.card.aspect-natural iframe {
-  aspect-ratio: auto;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-}
-
-.card.aspect-natural {
+.card.kindagarden-card {
   grid-column: span 1;
+  width: 100%;
+  justify-self: stretch;
 }
 
 .card.aspect-1-1.large {
@@ -304,14 +295,26 @@ body {
     position: fixed;
     top: 8px;
     left: 16px;
-    width: auto;
+    width: calc(100vw - 32px);
     padding: 0;
     color: black;
     mix-blend-mode: normal;
   }
-  .left p { margin: 0 0 4px 0; }
-  .left-top { padding-top: 16px; }
-  .left p + p { padding-top: 24px; }
+  .left p { margin: 0; }
+  .left-top {
+    padding-top: 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .left-top p:first-child a { font-size: 12px; line-height: 1.1; }
+  .left-top p:first-child a br { display: none; }
+  .left-top p:first-child .animated-text { display: inline-block; white-space: nowrap; }
+  .left-top p:first-child .name { font-size: 12px; line-height: 1.1; display: block; }
+  .left p + p { padding-top: 0; text-align: right; white-space: nowrap; }
+  .left p + p br { display: none; }
+  .left p + p a + a::before { content: " / "; }
 
   .experimental-grid {
     margin-left: 0;
@@ -358,7 +361,7 @@ body {
       </p>
 
       <p>
-        <a href="/" class="unstyled-link">About Me</a><br>
+        <a href="/" class="unstyled-link">About</a><br>
         <a href="/project/" class="unstyled-link">Projects</a><br>
         <a href="/experimental/" class="unstyled-link is-active" aria-current="page">Experimental</a>
       </p>
@@ -413,26 +416,26 @@ body {
       </div>
     </a>
 
-        <a class="card aspect-natural">
-          <div class="media-wrapper">
-            <video autoplay muted loop playsinline>
-              <source src="../Videos/kindagarden1.mp4" type="video/mp4">
-            </video>
-          </div>
-        </a>
-
-        <a class="card aspect-natural">
-          <div class="media-wrapper">
-            <video autoplay muted loop playsinline>
-              <source src="../Videos/kindagarden2.mp4" type="video/mp4">
-            </video>
-          </div>
-        </a>
-
             <a class="card aspect-16-9">
       <div class="media-wrapper">
         <video autoplay muted loop playsinline>
           <source src="../Videos/exp6.mp4" type="video/mp4">
+        </video>
+      </div>
+    </a>
+
+    <a class="card aspect-4-5 kindagarden-card">
+      <div class="media-wrapper">
+        <video autoplay muted loop playsinline>
+          <source src="../Videos/kindagarden1.mp4" type="video/mp4">
+        </video>
+      </div>
+    </a>
+
+    <a class="card aspect-4-5 kindagarden-card">
+      <div class="media-wrapper">
+        <video autoplay muted loop playsinline>
+          <source src="../Videos/kindagarden2.mp4" type="video/mp4">
         </video>
       </div>
     </a>
@@ -526,7 +529,17 @@ body {
       const animatedTextContainer = document.querySelector('.animated-text');
       const animatedWordInner = document.querySelector('.animated-word-inner');
       const words = ['Interactive', 'Graphic', 'Motion'];
+      const STORAGE_KEY = 'navDesignerWordIndex';
       let currentIndex = 0;
+      let hasSavedIndex = false;
+
+      try {
+        const savedIndex = Number.parseInt(sessionStorage.getItem(STORAGE_KEY) || '', 10);
+        if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < words.length) {
+          currentIndex = savedIndex;
+          hasSavedIndex = true;
+        }
+      } catch (_) {}
       const typingSpeed = 70, deletingSpeed = 40, wordDisplayTime = 3000, pauseBeforeTyping = 300;
 
       if (animatedTextContainer && animatedWordInner) {
@@ -545,6 +558,9 @@ body {
         });
 
         const getTextWidth = (text) => { measuringDiv.textContent = text; return measuringDiv.offsetWidth; };
+        const saveCurrentIndex = () => {
+          try { sessionStorage.setItem(STORAGE_KEY, String(currentIndex)); } catch (_) {}
+        };
 
         const typeWord = (word, done) => {
           let i = 0;
@@ -582,6 +598,7 @@ body {
               deleteWord(() => {
                 setTimeout(() => {
                   currentIndex = (currentIndex + 1) % words.length;
+                  saveCurrentIndex();
                   loop();
                 }, pauseBeforeTyping);
               });
@@ -589,121 +606,53 @@ body {
           });
         };
 
-        loop();
+        if (hasSavedIndex) {
+          animatedTextContainer.classList.remove('is-deleting', 'is-empty');
+          animatedWordInner.textContent = words[currentIndex];
+          animatedTextContainer.style.width = `${getTextWidth(animatedWordInner.textContent)}px`;
+          setTimeout(() => {
+            deleteWord(() => {
+              setTimeout(() => {
+                currentIndex = (currentIndex + 1) % words.length;
+                saveCurrentIndex();
+                loop();
+              }, pauseBeforeTyping);
+            });
+          }, wordDisplayTime);
+        } else {
+          saveCurrentIndex();
+          loop();
+        }
       }
 
-      // Defer heavier media outside the first fold for snappier page transitions.
-      document.querySelectorAll('.experimental-grid .card').forEach((card, idx) => {
-        const img = card.querySelector('img');
-        const vid = card.querySelector('video');
-        const iframe = card.querySelector('iframe');
-
-        if (img && idx > 1) {
-          img.loading = 'lazy';
-          img.decoding = 'async';
-        }
-
-        if (iframe && idx > 1) {
-          iframe.loading = 'lazy';
-        }
-
-        if (vid) {
-          vid.preload = idx < 2 ? 'metadata' : 'none';
-        }
-      });
-
-      /* ===== Edge scroll navigation: Projects -> Experimental ===== */
-      (function edgeScrollNavigation(){
-        const FLOW_KEY = '__flowNavTransition';
+      /* ===== Edge scroll: Experimental -> Projects ===== */
+      (function experimentalEdgeNav(){
         const PREV_PATH = '/project/';
-        const EDGE_TOLERANCE = 24;
-        const WHEEL_THRESHOLD = 90;
-        const SWIPE_THRESHOLD = 60;
-
+        const EDGE_TOP = 14;
+        const WHEEL_UP_THRESHOLD = 120;
+        const SWIPE_THRESHOLD = 64;
         let navLocked = false;
         let wheelAccum = 0;
         let touchStartY = null;
 
-        function getTransitionTarget() {
-          return document.querySelector('.experimental-grid') || document.body;
-        }
-
-        function applyIncomingTransition() {
-          let payload = null;
-          try {
-            const raw = sessionStorage.getItem(FLOW_KEY);
-            if (raw) payload = JSON.parse(raw);
-            sessionStorage.removeItem(FLOW_KEY);
-          } catch (_) {}
-
-          if (!payload || !payload.direction) return;
-
-          const target = getTransitionTarget();
-          const enterFrom = payload.direction === 'down' ? 8 : -8;
-          target.style.transition = 'none';
-          target.style.transform = `translateY(${enterFrom}px)`;
-          target.style.opacity = '0';
-
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              target.style.transition = 'transform 90ms cubic-bezier(.22,.61,.36,1), opacity 70ms ease';
-              target.style.transform = 'translateY(0px)';
-              target.style.opacity = '1';
-              setTimeout(() => {
-                target.style.removeProperty('transition');
-                target.style.removeProperty('transform');
-                target.style.removeProperty('opacity');
-              }, 95);
-            });
-          });
-        }
-
-        function atTop() {
+        function atTop(){
           const y = window.scrollY || document.documentElement.scrollTop || 0;
-          return y <= EDGE_TOLERANCE;
+          return y <= EDGE_TOP;
         }
 
-        function navigate(path) {
-          if (navLocked || !path) return;
-          flowNavigate(path, 'up');
-        }
-
-        function flowNavigate(path, direction) {
-          if (navLocked || !path) return;
+        function goPrev(){
+          if (navLocked) return;
           navLocked = true;
-          try {
-            sessionStorage.setItem(FLOW_KEY, JSON.stringify({ direction, ts: Date.now() }));
-          } catch (_) {}
-
-          const target = getTransitionTarget();
-          const exitTo = direction === 'down' ? -8 : 8;
-          target.style.willChange = 'transform, opacity';
-          target.style.transition = 'transform 70ms cubic-bezier(.4,0,.2,1), opacity 55ms ease';
-          target.style.transform = `translateY(${exitTo}px)`;
-          target.style.opacity = '0';
-
-          setTimeout(() => {
-            window.location.href = path;
-          }, 45);
+          try { sessionStorage.setItem('projectEdgeStart', 'bottom'); } catch (_) {}
+          window.location.href = PREV_PATH;
         }
-
-        applyIncomingTransition();
 
         window.addEventListener('wheel', (e) => {
           if (navLocked) return;
-
           const dy = e.deltaY || 0;
-          if (Math.abs(dy) < 2) return;
-
-          const nearTop = atTop();
-          if (dy < 0 && nearTop) {
-            wheelAccum += dy;
-            if (wheelAccum <= -WHEEL_THRESHOLD) {
-              flowNavigate(PREV_PATH, 'up');
-            }
-          } else {
-            wheelAccum = 0;
-          }
+          if (dy >= 0 || !atTop()) { wheelAccum = 0; return; }
+          wheelAccum += Math.max(dy, -80);
+          if (wheelAccum <= -WHEEL_UP_THRESHOLD) goPrev();
         }, { passive: true });
 
         window.addEventListener('touchstart', (e) => {
@@ -715,17 +664,13 @@ body {
           const endY = e.changedTouches[0]?.clientY ?? touchStartY;
           const delta = touchStartY - endY;
           touchStartY = null;
-
-          if (atTop() && delta <= -SWIPE_THRESHOLD) {
-            flowNavigate(PREV_PATH, 'up');
-          }
+          if (atTop() && delta <= -SWIPE_THRESHOLD) goPrev();
         }, { passive: true });
       })();
 
       /* ===== Trickle-down load-in for experimental tiles (match Projects) ===== */
       const cards = Array.from(document.querySelectorAll('.experimental-grid .card'));
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const FAST_REVEAL = true;
 
       // Reset the interactive "signal" iframe when leaving its card
       const signalIframe = document.querySelector('.experimental-grid .card iframe[src*="index_no_curtain.html"]');
@@ -742,15 +687,6 @@ body {
       }
 
       if (!cards.length) return;
-
-      if (FAST_REVEAL) {
-        cards.forEach(el => {
-          el.classList.add('reveal-in');
-          el.style.opacity = '1';
-          el.style.transform = 'none';
-        });
-        return;
-      }
 
       // Helper: wait for card's primary media (img/video) to be ready
       function waitForCardMedia(card, timeoutMs = 2000) {

@@ -73,10 +73,10 @@
   let FONT_WEIGHT = 400;
   let ALL_TEXT_SIZE_PX = 20;
 
-  let SCROLL_SENSITIVITY = 0.004;
-  let MAX_VELOCITY = 0.4;
-  let DAMPING = 0.86;
-  let LERP_TO_TARGET = 0.18;
+  let SCROLL_SENSITIVITY = 0.0085;
+  let MAX_VELOCITY = 0.8;
+  let DAMPING = 0.92;
+  let LERP_TO_TARGET = 0.21;
   let SNAP_IDLE_MS = 160;
   let SNAP_STRENGTH = 0.25;
   let SPACING_FACTOR = 0.05;
@@ -101,7 +101,7 @@
   let idxMinStart=0, idxMinEnd=0;
 
   let idx1975 = 0;
-  let idx2025 = 0;
+  let idx2026 = 0;
 
   // State
   let offset = 0, targetOffset = 0, velocity = 0;
@@ -128,10 +128,10 @@
     MIN_GAP_PX = Math.round(clamp(minSide * 0.035, 12, 40));
     MAX_GAP_PX = Math.round(clamp(minSide * 0.45, 120, mobile ? 120 : 160));
 
-    // Slightly faster scroll than the original, but easy to control
-    SCROLL_SENSITIVITY = mobile ? 0.0025 : 0.004;
-    MAX_VELOCITY       = mobile ? 0.3    : 0.4;
-    DAMPING            = mobile ? 0.9    : 0.86;
+    // Faster, more immediate scroll response
+    SCROLL_SENSITIVITY = mobile ? 0.006 : 0.0085;
+    MAX_VELOCITY       = mobile ? 0.65   : 0.8;
+    DAMPING            = mobile ? 0.93   : 0.92;
 
     // Apply to overlay
     $center.style.fontVariationSettings = `"wght" ${FONT_WEIGHT}`;
@@ -150,7 +150,7 @@
 
     // YEARS
     idxYearStart = items.length;
-    for(let y=1975; y<=2025; y++){ items.push(String(y)); }
+    for(let y=1975; y<=2026; y++){ items.push(String(y)); }
     idxYearEnd = items.length - 1;
 
     // MONTHS (up to current month)
@@ -179,7 +179,7 @@
     idxMinEnd = items.length - 1;
 
     idx1975 = items.indexOf('1975');
-    idx2025 = items.indexOf('2025');
+    idx2026 = items.indexOf('2026');
   }
 
   function setup() {
@@ -248,7 +248,7 @@
 
     // Which segment is active right now?
     let active = 'minute';
-    if (globalIndex <= idx2025) active = 'year';
+    if (globalIndex <= idx2026) active = 'year';
     else if (globalIndex <= idxMonthEnd) active = 'month';
     else if (globalIndex <= idxDayEnd) active = 'day';
     else if (globalIndex <= idxWkEnd) active = 'weekday';
@@ -259,7 +259,7 @@
     let Y=null, M=null, D=null, W=null, H=null, Min=null;
 
     // YEAR
-    if (active === 'year') { Y = items[globalIndex]; } else { Y = '2025'; }
+    if (active === 'year') { Y = items[globalIndex]; } else { Y = '2026'; }
 
     // MONTH
     if (globalIndex < idxMonthStart) { M = null; }

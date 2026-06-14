@@ -164,13 +164,6 @@
       display: block;
     }
 
-    .hero video,
-    .card img,
-    .card video,
-    main {
-      transition: opacity .22s ease, transform .28s cubic-bezier(.22,.61,.36,1);
-    }
-
     .project-edge-indicator {
       position: fixed;
       left: 50%;
@@ -186,51 +179,8 @@
       z-index: 1600;
     }
 
-    .project-edge-flash {
-      position: fixed;
-      inset: 0;
-      background: #fbfbfb;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 1500;
-    }
-
     body.project-edge-primed .project-edge-indicator {
       opacity: calc(.12 + (var(--edge-progress, 0) * .62));
-    }
-
-    body.project-edge-primed .hero video,
-    body.project-edge-primed .card img,
-    body.project-edge-primed .card video {
-      opacity: calc(1 - (var(--edge-progress, 0) * .48));
-    }
-
-    body.project-leaving-next main {
-      transform: translateY(-18px);
-    }
-
-    body.project-leaving-prev main {
-      transform: translateY(18px);
-    }
-
-    body.project-leaving-next .hero video,
-    body.project-leaving-next .card img,
-    body.project-leaving-next .card video,
-    body.project-leaving-prev .hero video,
-    body.project-leaving-prev .card img,
-    body.project-leaving-prev .card video {
-      opacity: .18;
-    }
-
-    body.project-leaving-next .project-edge-flash,
-    body.project-leaving-prev .project-edge-flash {
-      animation: projectFlash .24s ease forwards;
-    }
-
-    @keyframes projectFlash {
-      0% { opacity: 0; }
-      42% { opacity: .72; }
-      100% { opacity: 0; }
     }
 
     .tile {
@@ -307,7 +257,6 @@
   <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
-  <div class="project-edge-flash" aria-hidden="true"></div>
   <div class="project-edge-indicator" aria-hidden="true"></div>
   <div class="page">
     <div class="left">
@@ -400,7 +349,6 @@
         requestAnimationFrame(scrollToBottom);
         window.addEventListener('load', scrollToBottom, { once: true });
         setTimeout(scrollToBottom, 240);
-        setTimeout(scrollToBottom, 900);
       })();
 
       const revealItems = Array.from(document.querySelectorAll('.hero, .grid .project-row'));
@@ -557,11 +505,7 @@
           if (navLocked || !path) return;
           navLocked = true;
           try { sessionStorage.setItem('projectEdgeStart', direction === 'prev' ? 'bottom' : 'top'); } catch (_) {}
-          setProgress(1);
-          document.body.classList.add(direction === 'prev' ? 'project-leaving-prev' : 'project-leaving-next');
-          window.setTimeout(() => {
-            window.location.href = path;
-          }, 170);
+          window.location.href = path;
         }
 
         window.addEventListener('wheel', (e) => {

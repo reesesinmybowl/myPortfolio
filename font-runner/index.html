@@ -5,7 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Font Runner - Niklas Tsalkos</title>
   <link rel="icon" href="../Images/numbersgame.png" type="image/png">
-  <script>document.documentElement.classList.add('js');</script>
+  <script>
+    document.documentElement.classList.add('js');
+    try {
+      if (sessionStorage.getItem('projectEdgeStart') === 'bottom') {
+        document.documentElement.classList.add('edge-start-pending');
+      }
+    } catch (_) {}
+  </script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -22,6 +29,10 @@
       display: block;
       padding-left: 280px;
       padding-right: 20px;
+    }
+
+    .edge-start-pending .page {
+      opacity: 0;
     }
 
     .left {
@@ -118,27 +129,35 @@
       100% { opacity: 1; transform: translateY(0); }
     }
 
+    .js .intro-copy,
     .js .hero,
-    .js .grid .project-row {
+    .js .grid .project-row,
+    .js .grid .media-copy {
       opacity: 0;
       transform: translateY(-32px);
       will-change: transform, opacity;
     }
 
+    .js .intro-copy.reveal-in,
     .js .hero.reveal-in,
-    .js .grid .project-row.reveal-in {
+    .js .grid .project-row.reveal-in,
+    .js .grid .media-copy.reveal-in {
       animation: dropIn .8s cubic-bezier(.2,.8,.2,1) forwards;
       animation-delay: var(--stagger, 0ms);
     }
 
     @media (prefers-reduced-motion: reduce) {
+      .js .intro-copy,
       .js .hero,
-      .js .grid .project-row {
+      .js .grid .project-row,
+      .js .grid .media-copy {
         opacity: 1;
         transform: none;
       }
+      .js .intro-copy.reveal-in,
       .js .hero.reveal-in,
-      .js .grid .project-row.reveal-in {
+      .js .grid .project-row.reveal-in,
+      .js .grid .media-copy.reveal-in {
         animation: none !important;
       }
     }
@@ -172,13 +191,6 @@
       display: block;
     }
 
-    .hero video,
-    .card img,
-    .card video,
-    main {
-      transition: opacity .22s ease, transform .28s cubic-bezier(.22,.61,.36,1);
-    }
-
     .project-edge-indicator {
       position: fixed;
       left: 50%;
@@ -194,51 +206,8 @@
       z-index: 1600;
     }
 
-    .project-edge-flash {
-      position: fixed;
-      inset: 0;
-      background: #fbfbfb;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 1500;
-    }
-
     body.project-edge-primed .project-edge-indicator {
       opacity: calc(.12 + (var(--edge-progress, 0) * .62));
-    }
-
-    body.project-edge-primed .hero video,
-    body.project-edge-primed .card img,
-    body.project-edge-primed .card video {
-      opacity: calc(1 - (var(--edge-progress, 0) * .48));
-    }
-
-    body.project-leaving-next main {
-      transform: translateY(-18px);
-    }
-
-    body.project-leaving-prev main {
-      transform: translateY(18px);
-    }
-
-    body.project-leaving-next .hero video,
-    body.project-leaving-next .card img,
-    body.project-leaving-next .card video,
-    body.project-leaving-prev .hero video,
-    body.project-leaving-prev .card img,
-    body.project-leaving-prev .card video {
-      opacity: .18;
-    }
-
-    body.project-leaving-next .project-edge-flash,
-    body.project-leaving-prev .project-edge-flash {
-      animation: projectFlash .24s ease forwards;
-    }
-
-    @keyframes projectFlash {
-      0% { opacity: 0; }
-      42% { opacity: .72; }
-      100% { opacity: 0; }
     }
 
     .logo-card {
@@ -307,10 +276,6 @@
       grid-column: 4 / span 6;
     }
 
-    .project-row.papir-row {
-      grid-column: 4 / span 6;
-    }
-
     @media (max-width: 900px) {
       .page { padding-left: 0; padding-right: 0; }
       .left {
@@ -366,7 +331,6 @@
   <script defer src="/analytics.js"></script>
 </head>
 <body>
-  <div class="project-edge-flash" aria-hidden="true"></div>
   <div class="project-edge-indicator" aria-hidden="true"></div>
   <div class="page">
     <div class="left">
@@ -451,7 +415,7 @@
           </div>
         </section>
 
-        <section class="project-row papir-row">
+        <section class="project-row">
           <div class="card website">
             <video src="assets/FontRunnerPapir.mp4" autoplay muted loop playsinline></video>
           </div>
@@ -479,19 +443,19 @@
 
         if (start !== 'bottom') return;
 
-        function scrollToBottom(){
+        function scrollToBottom(reveal){
           const doc = document.documentElement;
           const max = Math.max(0, doc.scrollHeight - window.innerHeight);
           window.scrollTo({ top: max, left: 0, behavior: 'instant' });
+          if (reveal) document.documentElement.classList.remove('edge-start-pending');
         }
 
         requestAnimationFrame(scrollToBottom);
-        window.addEventListener('load', scrollToBottom, { once: true });
-        setTimeout(scrollToBottom, 240);
-        setTimeout(scrollToBottom, 900);
+        window.addEventListener('load', () => scrollToBottom(true), { once: true });
+        setTimeout(() => scrollToBottom(true), 240);
       })();
 
-      const revealItems = Array.from(document.querySelectorAll('.hero, .grid .project-row'));
+      const revealItems = Array.from(document.querySelectorAll('.hero, .intro-copy, .grid .project-row, .grid .media-copy'));
 
       if (!revealItems.length) return;
 
@@ -645,12 +609,11 @@
       function go(path, direction){
         if (navLocked || !path) return;
         navLocked = true;
-        try { sessionStorage.setItem('projectEdgeStart', direction === 'prev' ? 'bottom' : 'top'); } catch (_) {}
-        setProgress(1);
-        document.body.classList.add(direction === 'prev' ? 'project-leaving-prev' : 'project-leaving-next');
-        window.setTimeout(() => {
-          window.location.href = path;
-        }, 170);
+        try {
+          const start = path === '/project/' ? 'top' : (direction === 'prev' ? 'bottom' : 'top');
+          sessionStorage.setItem('projectEdgeStart', start);
+        } catch (_) {}
+        window.location.href = path;
       }
 
       window.addEventListener('wheel', (e) => {
