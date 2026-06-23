@@ -48,8 +48,17 @@
     .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
     .name { font-weight: 400; font-size: 12px; letter-spacing: -0.02em; }
 
-    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight 0.2s ease; }
-    .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; }
+    .left .unstyled-link {
+      display: inline-block;
+      line-height: 1.2;
+    }
+    .left .nav-block .unstyled-link {
+      min-height: 14px;
+    }
+    .left .nav-links {
+      cursor: pointer;
+    }
     .unstyled-link.is-active {
       font-weight: 400;
       font-variation-settings: 'wght' 400;
@@ -89,7 +98,7 @@
     }
 
     .hero {
-      margin: 20px 0 12px;
+      margin: 72px 0 12px;
       border: 1px solid #e0e0e0;
       background: #fff;
     }
@@ -175,20 +184,59 @@
     .project-edge-indicator {
       position: fixed;
       left: 50%;
-      bottom: 24px;
-      width: 120px;
-      height: 1px;
+      bottom: 28px;
+      width: 100vw;
+      height: 3px;
       background: #000;
       opacity: 0;
       pointer-events: none;
       transform: translateX(-50%) scaleX(var(--edge-progress, 0));
       transform-origin: 50% 50%;
-      transition: opacity .18s ease, transform .18s ease;
+      transition: opacity .28s ease, transform .34s cubic-bezier(.2,.8,.2,1);
       z-index: 1600;
     }
 
+    body.project-edge-prev .project-edge-indicator {
+      top: 28px;
+      bottom: auto;
+    }
+
+    .project-edge-label {
+      all: unset;
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      z-index: 1600;
+      color: #000;
+      font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.2;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      cursor: pointer;
+      width: 100vw;
+      height: 96px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 0;
+    }
+
+    body.project-edge-prev .project-edge-label {
+      top: 0;
+      bottom: auto;
+    }
+
+    body.project-edge-primed .project-edge-label {
+      opacity: calc(.22 + (var(--edge-progress, 0) * .78));
+      pointer-events: auto;
+    }
+
     body.project-edge-primed .project-edge-indicator {
-      opacity: calc(.12 + (var(--edge-progress, 0) * .62));
+      opacity: calc(.22 + (var(--edge-progress, 0) * .78));
     }
 
     .tile {
@@ -266,6 +314,7 @@
 </head>
 <body>
   <div class="project-edge-indicator" aria-hidden="true"></div>
+  <button type="button" class="project-edge-label" aria-label="Projects">Projects</button>
   <div class="page">
     <div class="left">
       <div class="left-top">
@@ -481,16 +530,23 @@
         loop();
       }
 
-      (function projectDetailEdgeNav(){
+    });
+
+    (function projectDetailEdgeNav(){
         const PREV_PATH = '/font-runner/';
         const NEXT_PATH = '/project/';
         const EDGE_TOP = 4;
         const EDGE_BOTTOM = 6;
-        const WHEEL_THRESHOLD = 300;
-        const SWIPE_THRESHOLD = 90;
+        const WHEEL_THRESHOLD = 760;
+        const SWIPE_THRESHOLD = 210;
+        const EDGE_ARM_DELAY = 260;
         let navLocked = false;
         let wheelAccum = 0;
+        let edgeDirection = '';
+        let edgeArmed = false;
+        let edgeArmedAt = 0;
         let touchStartY = null;
+        const edgeLabel = document.querySelector('.project-edge-label');
 
         function atTop(){
           const y = window.scrollY || document.documentElement.scrollTop || 0;
@@ -510,9 +566,22 @@
           document.body.classList.toggle('project-edge-primed', p > 0.02);
         }
 
+        function setDirection(direction){
+          document.body.classList.toggle('project-edge-prev', direction === 'prev');
+          if (edgeLabel) {
+            const label = direction === 'prev' ? 'Previous project' : 'Projects';
+            edgeLabel.textContent = label;
+            edgeLabel.setAttribute('aria-label', label);
+          }
+        }
+
         function resetProgress(){
           wheelAccum = 0;
+          edgeDirection = '';
+          edgeArmed = false;
+          edgeArmedAt = 0;
           setProgress(0);
+          setDirection('');
         }
 
         function go(path, direction){
@@ -522,22 +591,54 @@
           window.location.href = path;
         }
 
+        function handleEdgeWheel(direction, path, dy){
+          const now = Date.now();
+          setDirection(direction);
+          if (edgeDirection !== direction || !edgeArmed) {
+            edgeDirection = direction;
+            wheelAccum = 0;
+            edgeArmed = true;
+            edgeArmedAt = now;
+            setProgress(0);
+            return;
+          }
+
+          if (now - edgeArmedAt < EDGE_ARM_DELAY) {
+            setProgress(0);
+            return;
+          }
+
+          if (direction === 'prev') {
+            wheelAccum += Math.max(dy, -55);
+            setProgress(Math.abs(wheelAccum) / WHEEL_THRESHOLD);
+            if (Math.abs(wheelAccum) >= WHEEL_THRESHOLD) go(path, direction);
+            return;
+          }
+
+          wheelAccum += Math.min(dy, 55);
+          setProgress(wheelAccum / WHEEL_THRESHOLD);
+          if (wheelAccum >= WHEEL_THRESHOLD) go(path, direction);
+        }
+
+        if (edgeLabel) {
+          edgeLabel.addEventListener('click', () => {
+            const isPrev = document.body.classList.contains('project-edge-prev');
+            go(isPrev ? PREV_PATH : NEXT_PATH, isPrev ? 'prev' : 'next');
+          });
+        }
+
         window.addEventListener('wheel', (e) => {
           if (navLocked) return;
           const dy = e.deltaY || 0;
           if (Math.abs(dy) < 2) return;
 
           if (dy < 0 && atTop()) {
-            wheelAccum += Math.max(dy, -80);
-            setProgress(Math.abs(wheelAccum) / WHEEL_THRESHOLD);
-            if (Math.abs(wheelAccum) >= WHEEL_THRESHOLD) go(PREV_PATH, 'prev');
+            handleEdgeWheel('prev', PREV_PATH, dy);
             return;
           }
 
           if (dy > 0 && atBottom()) {
-            wheelAccum += Math.min(dy, 80);
-            setProgress(wheelAccum / WHEEL_THRESHOLD);
-            if (wheelAccum >= WHEEL_THRESHOLD) go(NEXT_PATH, 'next');
+            handleEdgeWheel('next', NEXT_PATH, dy);
             return;
           }
 
@@ -546,6 +647,7 @@
 
         window.addEventListener('touchstart', (e) => {
           touchStartY = e.touches[0]?.clientY ?? null;
+          edgeArmed = false;
         }, { passive: true });
 
         window.addEventListener('touchmove', (e) => {
@@ -553,6 +655,7 @@
           const y = e.touches[0]?.clientY ?? touchStartY;
           const delta = touchStartY - y;
           if ((delta < 0 && atTop()) || (delta > 0 && atBottom())) {
+            setDirection(delta < 0 ? 'prev' : 'next');
             setProgress(Math.abs(delta) / SWIPE_THRESHOLD);
           }
         }, { passive: true });
@@ -573,8 +676,7 @@
           }
           resetProgress();
         }, { passive: true });
-      })();
-    });
+    })();
   </script>
 </body>
 </html>

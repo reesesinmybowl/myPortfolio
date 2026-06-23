@@ -6,7 +6,7 @@
   <title>Font Runner - Niklas Tsalkos</title>
   <link rel="icon" href="../Images/numbersgame.png" type="image/png">
   <script>
-    document.documentElement.classList.add('js');
+    document.documentElement.classList.add('js', 'asset-loading');
     try {
       if (sessionStorage.getItem('projectEdgeStart') === 'bottom') {
         document.documentElement.classList.add('edge-start-pending');
@@ -35,6 +35,45 @@
       opacity: 0;
     }
 
+    .js.asset-loading .page {
+      opacity: 0;
+    }
+
+    .asset-loader {
+      display: none;
+    }
+
+    .js.asset-loading .asset-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 2400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fbfbfb;
+      color: #000;
+    }
+
+    .js.assets-ready .asset-loader {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s ease;
+    }
+
+    .asset-loader::before {
+      content: "";
+      display: block;
+      width: 120px;
+      height: 1px;
+      background: #000;
+      animation: loaderPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes loaderPulse {
+      0%, 100% { transform: scaleX(.28); opacity: .2; }
+      50% { transform: scaleX(1); opacity: .72; }
+    }
+
     .left {
       position: fixed;
       top: 0;
@@ -59,8 +98,17 @@
     .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
     .name { font-weight: 400; font-size: 12px; letter-spacing: -0.02em; }
 
-    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight 0.2s ease; }
-    .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; }
+    .left .unstyled-link {
+      display: inline-block;
+      line-height: 1.2;
+    }
+    .left .nav-block .unstyled-link {
+      min-height: 14px;
+    }
+    .left .nav-links {
+      cursor: pointer;
+    }
     .unstyled-link.is-active {
       font-weight: 400;
       font-variation-settings: 'wght' 400;
@@ -101,7 +149,7 @@
 
     .hero {
       width: min(560px, 100%);
-      margin: 20px 0 12px auto;
+      margin: 72px 0 12px auto;
       background: transparent;
     }
 
@@ -202,20 +250,59 @@
     .project-edge-indicator {
       position: fixed;
       left: 50%;
-      bottom: 24px;
-      width: 120px;
-      height: 1px;
+      bottom: 28px;
+      width: 100vw;
+      height: 3px;
       background: #000;
       opacity: 0;
       pointer-events: none;
       transform: translateX(-50%) scaleX(var(--edge-progress, 0));
       transform-origin: 50% 50%;
-      transition: opacity .18s ease, transform .18s ease;
+      transition: opacity .28s ease, transform .34s cubic-bezier(.2,.8,.2,1);
       z-index: 1600;
     }
 
+    body.project-edge-prev .project-edge-indicator {
+      top: 28px;
+      bottom: auto;
+    }
+
+    .project-edge-label {
+      all: unset;
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      z-index: 1600;
+      color: #000;
+      font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.2;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      cursor: pointer;
+      width: 100vw;
+      height: 96px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 0;
+    }
+
+    body.project-edge-prev .project-edge-label {
+      top: 0;
+      bottom: auto;
+    }
+
+    body.project-edge-primed .project-edge-label {
+      opacity: calc(.22 + (var(--edge-progress, 0) * .78));
+      pointer-events: auto;
+    }
+
     body.project-edge-primed .project-edge-indicator {
-      opacity: calc(.12 + (var(--edge-progress, 0) * .62));
+      opacity: calc(.22 + (var(--edge-progress, 0) * .78));
     }
 
     .logo-card {
@@ -242,10 +329,6 @@
       width: 52%;
       max-width: 260px;
       transform: translateY(26%);
-    }
-
-    .moving-poster-row {
-      grid-column: 4 / span 6;
     }
 
     .project-row:nth-of-type(1) { grid-column: 1 / span 8; }
@@ -276,12 +359,43 @@
       grid-column: 4 / span 6;
     }
 
+    .project-row.spread-row { grid-column: 6 / span 7; }
+    .project-row.jacket-row { grid-column: 1 / span 6; }
+    .project-row.hat-row { grid-column: 7 / span 6; }
+    .project-row.tie-row { grid-column: 1 / span 6; }
+    .project-row.pricetag-row { grid-column: 7 / span 6; }
+    .project-row.logo-row { grid-column: 2 / span 10; }
+    .project-row.type-row { grid-column: 1 / span 6; }
+    .project-row.spin-row { grid-column: 7 / span 6; }
+
     .poster-row .card {
       width: 94%;
     }
 
-    .project-row.moving-poster-row {
-      grid-column: 4 / span 6;
+    .project-row.strava-row {
+      grid-column: 6 / span 7;
+    }
+
+    .project-row.video-poster-small-row {
+      grid-column: 5 / span 8;
+      margin-bottom: 180px;
+    }
+
+    .video-poster-small-pair {
+      width: 130%;
+      margin-left: -37%;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+
+    .video-poster-small-pair .card:first-child {
+      grid-column: auto;
+    }
+
+    .video-poster-small-pair .card:last-child {
+      grid-column: auto;
     }
 
     @media (max-width: 900px) {
@@ -333,13 +447,26 @@
       .grid { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 14px; }
       .project-row { position: static; }
       .card { width: 100%; }
+      .project-row.video-poster-small-row { margin-bottom: 120px; }
+      .video-poster-small-pair {
+        width: 100%;
+        margin-left: 0;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .video-poster-small-pair .card:first-child,
+      .video-poster-small-pair .card:last-child {
+        grid-column: auto;
+      }
     }
   </style>
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
 </head>
 <body>
+  <div class="asset-loader" aria-label="Loading Font Runner"></div>
   <div class="project-edge-indicator" aria-hidden="true"></div>
+  <button type="button" class="project-edge-label" aria-label="Next project">Next project</button>
   <div class="page">
     <div class="left">
       <div class="left-top">
@@ -359,7 +486,7 @@
 
     <main>
       <section class="hero">
-        <video src="assets/FontRunner%20SoMeReel.mp4" autoplay muted loop playsinline></video>
+        <video data-src="assets/FontRunner%20SoMeReel.mp4" width="1080" height="1350" autoplay muted loop playsinline preload="auto"></video>
       </section>
 
       <p class="intro-copy">Font Runner is my bachelor project, a digital platform that turns running routes into custom letters, patterns and gear. The project started as a way to rethink how activity is usually shown back to us. Instead of another dashboard built around pace, distance and performance, Font Runner uses the shape of the route itself as the main material.</p>
@@ -367,71 +494,76 @@
       <section class="grid">
         <section class="project-row poster-row">
           <div class="card website">
-            <img src="assets/Font%20Runner%20Poster.png" alt="Font Runner poster">
+            <img data-src="assets/Font%20Runner%20Poster.png" width="1684" height="2384" alt="Font Runner poster">
           </div>
         </section>
 
         <p class="media-copy">Users can turn the paths they run into letterforms, generate patterns from their movement and unlock clothing shaped by the places they have been. A run becomes less like a result, and more like a trace, something personal you can collect, wear and build on.</p>
 
-        <section class="project-row">
+        <section class="project-row spread-row">
           <div class="card website">
-            <img src="assets/FontRunner%20Spread.png" alt="Font Runner spread">
+            <img data-src="assets/FontRunner%20Spread.png" width="1254" height="1254" alt="Font Runner spread">
           </div>
         </section>
 
-        <section class="project-row">
+        <section class="project-row strava-row">
           <div class="card website">
-            <img src="assets/FontRunnerJacket.png" alt="Font Runner jacket">
+            <video data-src="assets/Main/fontrunnerxstravavideo.mp4" width="1080" height="1350" autoplay muted loop playsinline preload="auto"></video>
           </div>
         </section>
 
-        <section class="project-row">
+        <section class="project-row jacket-row">
           <div class="card website">
-            <img src="assets/FontRunnerHatDirty.png" alt="Font Runner hat">
+            <img data-src="assets/FontRunnerJacket.png" width="1122" height="1402" alt="Font Runner jacket">
           </div>
         </section>
 
-        <section class="project-row">
+        <section class="project-row hat-row">
           <div class="card website">
-            <img src="assets/FontRunnerManTie.png" alt="Font Runner tie mockup">
+            <img data-src="assets/FontRunnerHatDirty.png" width="1122" height="1402" alt="Font Runner hat">
           </div>
         </section>
 
-        <section class="project-row">
+        <section class="project-row tie-row">
           <div class="card website">
-            <img src="assets/FontRunner%20Pricetag.png" alt="Font Runner price tag">
+            <img data-src="assets/FontRunnerManTie.png" width="1122" height="1402" alt="Font Runner tie mockup">
+          </div>
+        </section>
+
+        <section class="project-row pricetag-row">
+          <div class="card website">
+            <img data-src="assets/FontRunner%20Pricetag.png" width="1222" height="1526" alt="Font Runner price tag">
           </div>
         </section>
 
         <p class="media-copy">The visual world of Font Runner is built around direction, wayfinding and outdoor movement. Route lines, sharp marks, distorted type and rough field imagery create a system that feels somewhere between a running app, a map, a type specimen and gear made for being outside. I wanted the project to feel like you are not just tracking where you went, but slowly building your own world from it.</p>
 
-        <section class="project-row">
+        <section class="project-row logo-row">
           <div class="card website logo-card">
-            <img src="assets/FontRunnerLogo.png" alt="Font Runner logo">
+            <img data-src="assets/FontRunnerLogo.png" width="943" height="966" alt="Font Runner logo">
           </div>
         </section>
 
-        <section class="project-row">
+        <section class="project-row type-row">
           <div class="card website type-exchange-card">
-            <img src="assets/FontRunnerTypeExchange.png" alt="Font Runner exchange type specimen">
+            <img data-src="assets/FontRunnerTypeExchange.png" width="270" height="480" alt="Font Runner exchange type specimen">
           </div>
         </section>
 
-        <section class="project-row">
+        <section class="project-row spin-row">
           <div class="card website spin-logo-card">
-            <video src="assets/FontRunnerSpinLogo-bgmatch.mp4" autoplay muted loop playsinline></video>
+            <video data-src="assets/FontRunnerSpinLogo-bgmatch.mp4" width="1080" height="1350" autoplay muted loop playsinline preload="auto"></video>
           </div>
         </section>
 
-        <section class="project-row">
-          <div class="card website">
-            <video src="assets/FontRunnerPapir.mp4" autoplay muted loop playsinline></video>
-          </div>
-        </section>
-
-        <section class="project-row moving-poster-row">
-          <div class="card website">
-            <video src="assets/FontRunnerMovingPoster.mp4" autoplay muted loop playsinline></video>
+        <section class="project-row video-poster-small-row">
+          <div class="video-poster-small-pair">
+            <div class="card website">
+              <video data-src="assets/FontRunnerVideoPosterSmall.mp4" width="1684" height="2384" autoplay muted loop playsinline preload="auto"></video>
+            </div>
+            <div class="card website">
+              <video data-src="assets/Comp%201/FontRunnerVideoSmall2.mp4" width="1684" height="2384" autoplay muted loop playsinline preload="auto"></video>
+            </div>
           </div>
         </section>
 
@@ -441,6 +573,65 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const assetLoader = document.querySelector('.asset-loader');
+      const pageAssets = Array.from(document.querySelectorAll('.page [data-src]'));
+
+      function waitForImage(img) {
+        if (img.complete && img.naturalWidth > 0) {
+          return img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+        }
+
+        return new Promise(resolve => {
+          img.addEventListener('load', () => {
+            if (img.decode) {
+              img.decode().catch(() => {}).finally(resolve);
+              return;
+            }
+            resolve();
+          }, { once: true });
+          img.addEventListener('error', resolve, { once: true });
+        });
+      }
+
+      function waitForVideo(video) {
+        video.preload = 'auto';
+        if (video.readyState >= 2) return Promise.resolve();
+
+        return new Promise(resolve => {
+          video.addEventListener('loadeddata', resolve, { once: true });
+          video.addEventListener('canplay', resolve, { once: true });
+          video.addEventListener('error', resolve, { once: true });
+          try {
+            video.load();
+          } catch (_) {}
+        });
+      }
+
+      async function preloadAsset(asset) {
+        const src = asset.dataset.src;
+        if (!src) return;
+
+        try {
+          const response = await fetch(src);
+          if (!response.ok) throw new Error(`Failed to load ${src}`);
+          const blob = await response.blob();
+          asset.src = URL.createObjectURL(blob);
+        } catch (_) {
+          asset.src = src;
+        }
+
+        if (asset.tagName === 'IMG') return waitForImage(asset);
+        if (asset.tagName === 'VIDEO') return waitForVideo(asset);
+      }
+
+      const assetsReady = Promise.all(pageAssets.map(preloadAsset)).then(() => {
+        document.documentElement.classList.remove('asset-loading');
+        document.documentElement.classList.add('assets-ready');
+        if (assetLoader) {
+          setTimeout(() => assetLoader.remove(), 260);
+        }
+      });
+
       (function applyProjectEdgeStart(){
         const KEY = 'projectEdgeStart';
         let start = '';
@@ -455,15 +646,17 @@
           const doc = document.documentElement;
           const max = Math.max(0, doc.scrollHeight - window.innerHeight);
           window.scrollTo({ top: max, left: 0, behavior: 'instant' });
-          if (reveal) document.documentElement.classList.remove('edge-start-pending');
+          if (reveal) {
+            assetsReady.then(() => document.documentElement.classList.remove('edge-start-pending'));
+          }
         }
 
-        requestAnimationFrame(scrollToBottom);
-        window.addEventListener('load', () => scrollToBottom(true), { once: true });
-        setTimeout(() => scrollToBottom(true), 240);
+        assetsReady.then(() => requestAnimationFrame(() => scrollToBottom(true)));
       })();
 
-      const revealItems = Array.from(document.querySelectorAll('.hero, .intro-copy, .grid .project-row, .grid .media-copy'));
+      const mediaRevealItems = Array.from(document.querySelectorAll('.hero, .grid .project-row'));
+      const copyRevealItems = Array.from(document.querySelectorAll('.intro-copy, .grid .media-copy'));
+      const revealItems = [...mediaRevealItems, ...copyRevealItems];
 
       if (!revealItems.length) return;
 
@@ -475,11 +668,18 @@
 
       const baseDelay = 140;
 
-      (async () => {
-        for (const [index, el] of revealItems.entries()) {
+      assetsReady.then(async () => {
+        mediaRevealItems.forEach((el, index) => {
+          el.style.setProperty('--stagger', '0ms');
+          setTimeout(() => el.classList.add('reveal-in'), index === 0 ? 0 : index * 70);
+        });
+
+        await new Promise(r => setTimeout(r, 180));
+
+        for (const el of copyRevealItems) {
           el.style.setProperty('--stagger', '0ms');
           requestAnimationFrame(() => el.classList.add('reveal-in'));
-          await new Promise(r => setTimeout(r, index === 0 ? 60 : baseDelay));
+          await new Promise(r => setTimeout(r, baseDelay));
         }
       })();
 
@@ -591,11 +791,16 @@
       const NEXT_PATH = '/much-project/';
       const EDGE_TOP = 4;
       const EDGE_BOTTOM = 6;
-      const WHEEL_THRESHOLD = 300;
-      const SWIPE_THRESHOLD = 90;
+      const WHEEL_THRESHOLD = 760;
+      const SWIPE_THRESHOLD = 210;
+      const EDGE_ARM_DELAY = 260;
       let navLocked = false;
       let wheelAccum = 0;
+      let edgeDirection = '';
+      let edgeArmed = false;
+      let edgeArmedAt = 0;
       let touchStartY = null;
+      const edgeLabel = document.querySelector('.project-edge-label');
 
       function atTop(){
         const y = window.scrollY || document.documentElement.scrollTop || 0;
@@ -615,9 +820,22 @@
         document.body.classList.toggle('project-edge-primed', p > 0.02);
       }
 
+      function setDirection(direction){
+        document.body.classList.toggle('project-edge-prev', direction === 'prev');
+        if (edgeLabel) {
+          const label = direction === 'prev' ? 'Projects' : 'Next project';
+          edgeLabel.textContent = label;
+          edgeLabel.setAttribute('aria-label', label);
+        }
+      }
+
       function resetProgress(){
         wheelAccum = 0;
+        edgeDirection = '';
+        edgeArmed = false;
+        edgeArmedAt = 0;
         setProgress(0);
+        setDirection('');
       }
 
       function go(path, direction){
@@ -630,22 +848,54 @@
         window.location.href = path;
       }
 
+      function handleEdgeWheel(direction, path, dy){
+        const now = Date.now();
+        setDirection(direction);
+        if (edgeDirection !== direction || !edgeArmed) {
+          edgeDirection = direction;
+          wheelAccum = 0;
+          edgeArmed = true;
+          edgeArmedAt = now;
+          setProgress(0);
+          return;
+        }
+
+        if (now - edgeArmedAt < EDGE_ARM_DELAY) {
+          setProgress(0);
+          return;
+        }
+
+        if (direction === 'prev') {
+          wheelAccum += Math.max(dy, -55);
+          setProgress(Math.abs(wheelAccum) / WHEEL_THRESHOLD);
+          if (Math.abs(wheelAccum) >= WHEEL_THRESHOLD) go(path, direction);
+          return;
+        }
+
+        wheelAccum += Math.min(dy, 55);
+        setProgress(wheelAccum / WHEEL_THRESHOLD);
+        if (wheelAccum >= WHEEL_THRESHOLD) go(path, direction);
+      }
+
+      if (edgeLabel) {
+        edgeLabel.addEventListener('click', () => {
+          const isPrev = document.body.classList.contains('project-edge-prev');
+          go(isPrev ? PREV_PATH : NEXT_PATH, isPrev ? 'prev' : 'next');
+        });
+      }
+
       window.addEventListener('wheel', (e) => {
         if (navLocked) return;
         const dy = e.deltaY || 0;
         if (Math.abs(dy) < 2) return;
 
         if (dy < 0 && atTop()) {
-          wheelAccum += Math.max(dy, -80);
-          setProgress(Math.abs(wheelAccum) / WHEEL_THRESHOLD);
-          if (Math.abs(wheelAccum) >= WHEEL_THRESHOLD) go(PREV_PATH, 'prev');
+          handleEdgeWheel('prev', PREV_PATH, dy);
           return;
         }
 
         if (dy > 0 && atBottom()) {
-          wheelAccum += Math.min(dy, 80);
-          setProgress(wheelAccum / WHEEL_THRESHOLD);
-          if (wheelAccum >= WHEEL_THRESHOLD) go(NEXT_PATH, 'next');
+          handleEdgeWheel('next', NEXT_PATH, dy);
           return;
         }
 
@@ -654,6 +904,7 @@
 
       window.addEventListener('touchstart', (e) => {
         touchStartY = e.touches[0]?.clientY ?? null;
+        edgeArmed = false;
       }, { passive: true });
 
       window.addEventListener('touchmove', (e) => {
@@ -661,6 +912,7 @@
         const y = e.touches[0]?.clientY ?? touchStartY;
         const delta = touchStartY - y;
         if ((delta < 0 && atTop()) || (delta > 0 && atBottom())) {
+          setDirection(delta < 0 ? 'prev' : 'next');
           setProgress(Math.abs(delta) / SWIPE_THRESHOLD);
         }
       }, { passive: true });

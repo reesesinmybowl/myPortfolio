@@ -51,12 +51,21 @@
     .left p { margin: 0 0 24px 0; text-align: left; font-weight: 400; }
 	    .name { font-weight: 400; font-size: 12px; letter-spacing: -0.02em; }
 
-    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; transition: font-weight 0.2s ease; }
-    .unstyled-link:not(.no-hover-link):hover { font-weight: 700; }
+    .unstyled-link { all: unset; cursor: pointer; font-weight: 400; }
+    .left .unstyled-link {
+      display: inline-block;
+      line-height: 1.2;
+    }
+    .left .nav-block .unstyled-link {
+      min-height: 14px;
+    }
+    .left-top > p:nth-child(2) {
+      cursor: pointer;
+    }
     .unstyled-link.is-active {
       font-weight: 400;
       font-variation-settings: 'wght' 400;
-      box-shadow: inset 0 0 0 999px rgba(128, 128, 128, 0.28);
+      box-shadow: inset 0 0 0 999px rgba(128, 128, 128, 0.5);
     }
     .unstyled-link.is-active:hover {
       font-weight: 400;
@@ -269,7 +278,7 @@
       <section id="proj13" class="project-row">
         <div class="meta">
           <h3>Font Runner <span class="year">2026</span></h3>
-          <p>Font Runner is my bachelor project, a digital platform that turns your Strava activity into custom letters, patterns and gear. Less about pace, distance and performance. More about making movement feel personal.</p>
+          <p>Font Runner is a project about how a run can become something more than just movement.</p>
         </div>
         <a href="../font-runner/" class="card website">
           <img src="../Images/Font Runner Poster.png" alt="Font Runner Poster Project">

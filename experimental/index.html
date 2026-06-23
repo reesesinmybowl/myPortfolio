@@ -72,11 +72,16 @@ body {
   all: unset;
   cursor: pointer;
   font-weight: 400;
-  transition: font-weight 0.2s ease;
 }
-
-.unstyled-link:not(.no-hover-link):hover {
-  font-weight: 700;
+.left .unstyled-link {
+  display: inline-block;
+  line-height: 1.2;
+}
+.left .nav-block .unstyled-link {
+  min-height: 14px;
+}
+.left-top > p:nth-child(2) {
+  cursor: pointer;
 }
 .unstyled-link.is-active {
   font-weight: 400;
