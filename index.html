@@ -12,6 +12,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
+    @font-face {
+      font-family: "ABC Monument Grotesk Trial";
+      src: url("fonts/ABCMonumentGroteskTrial-Regular.otf") format("opentype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     /* ===== Base / reset ===== */
     * { box-sizing: border-box; }
     html { height: 100%; overflow-y: scroll; }
@@ -32,6 +40,8 @@
       --about-photo-width: clamp(160px, 28vw, 420px);
       --about-photo-1-right: clamp(20px, 18vw, 20px);
       --about-photo-2-right: 600px;
+      --about-text-top: 230px;
+      --about-text-width: 1190px;
     }
 
     body.xp-mode {
@@ -156,20 +166,23 @@
     /* ===== Right column ===== */
     .right {
       position: relative;
-      max-width: 900px;
-      padding: 180px 24px 120px;
-      margin: 0 auto;
+      --page-left-offset: 280px;
+      width: min(var(--about-text-width), calc(100vw - 48px));
+      max-width: none;
+      padding: var(--about-text-top) 24px 120px;
+      margin-left: calc((100vw - min(var(--about-text-width), calc(100vw - 48px))) / 2 - var(--page-left-offset));
+      margin-right: 0;
     }
 
     /* Big intro paragraph — fluid size so it works across different laptop resolutions */
     .right p {
-      font-size: clamp(32px, 4vw, 48px);
-      line-height: 1.05;
+      font-size: 49px;
+      line-height: 1.0;
       margin: 4px 0 0 0;
-      letter-spacing: -3px;
+      letter-spacing: -2px;
+      text-align: center;
       position: relative;
       z-index: 1;
-      margin-left: clamp(-160px, -8vw, -80px);
     }
 
     /* Keep layout stable when JS wraps text */
@@ -196,7 +209,7 @@
     /* Optional tracking for split text (kerning-like) */
     .intro-text {
       --track: 0em;
-      font-family: 'Inter', sans-serif;
+      font-family: "ABC Monument Grotesk Trial", "Monument Grotesk", "Inter", Arial, sans-serif;
       user-select: none;
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -222,11 +235,6 @@
       pointer-events: none;
       user-select: none;
       will-change: clip-path, transform;
-    }
-    .text-behind-img.first {
-      position: fixed;
-      right: var(--about-photo-1-right);
-      top: var(--about-photo-1-top);
     }
     .text-behind-img.second {
       position: fixed;
@@ -307,7 +315,10 @@
     /* ===== Responsive ===== */
     @media (max-width: 1024px) {
       .page { padding-left: 240px; }
-      .right { padding-top: 160px; }
+      .right {
+        --page-left-offset: 240px;
+        --about-text-top: 190px;
+      }
     }
 
     @media (max-width: 900px) {
@@ -353,6 +364,7 @@
       .left-top p:last-child a + a::before { content: " / "; }
 
       .right {
+        width: auto;
         margin-left: 0;
         /* Mobile: keep text high on screen, with modest bottom padding */
         padding: 132px 16px 24px;
@@ -937,7 +949,6 @@
       pointer-events: none; /* don't block underlying UI when hidden */
     }
     /* Individual starting positions for each image window */
-    #imageWindow { left: clamp(12px, 12vw, 200px); top: clamp(140px, 16vh, 280px); }
     #imageWindow2 { left: clamp(240px, 28vw, 520px); top: clamp(220px, 26vh, 380px); }
     /* Make the third image window narrower by default */
     #imageWindow3 { width: clamp(120px, 28vw, 420px); }
@@ -1071,27 +1082,6 @@
         <div class="resize-handle bottom" data-side="bottom" aria-hidden="true"></div>
       </div>
 
-      <!-- Image preview window (draggable) -->
-      <div class="image-window" id="imageWindow" aria-hidden="true">
-        <div class="notepad-titlebar" id="imageTitle" data-draggable="true">
-          <div class="notepad-icon" aria-hidden="true"></div>
-          <div class="title">during-ride.jpeg</div>
-          <div class="spacer"></div>
-          <div class="notepad-controls" aria-hidden="true">
-            <div class="np-btn" title="Minimize" data-action="min"></div>
-            <div class="np-btn" title="Maximize" data-action="max"></div>
-            <div class="np-btn" title="Close" data-action="close"></div>
-          </div>
-        </div>
-        <div class="image-body">
-          <img id="imagePreview" src="/Images/selfie.JPG" alt="Preview" draggable="false"/>
-        </div>
-        <div class="resize-handle left" data-side="left" aria-hidden="true"></div>
-        <div class="resize-handle right" data-side="right" aria-hidden="true"></div>
-        <div class="resize-handle top" data-side="top" aria-hidden="true"></div>
-        <div class="resize-handle bottom" data-side="bottom" aria-hidden="true"></div>
-      </div>
-
       <!-- Second image preview window (draggable) -->
       <div class="image-window" id="imageWindow2" aria-hidden="true">
         <div class="notepad-titlebar" id="imageTitle2" data-draggable="true">
@@ -1134,8 +1124,7 @@
         <div class="resize-handle bottom" data-side="bottom" aria-hidden="true"></div>
       </div>
 
-      <!-- Inline images (hidden in XP mode). Replace src for the second image as needed. -->
-      <img src="Images/selfie.JPG" alt="Decorative" class="text-behind-img first" draggable="false">
+      <!-- Inline images (hidden in XP mode). -->
       <img src="Images/selfie2.JPG" alt="Decorative" class="text-behind-img second" draggable="false">
     </div>
   </div>
@@ -1151,7 +1140,6 @@
       <div class="xp-taskarea" id="xpTasks">
         <div class="task active">About – Niklas</div>
         <div class="task" id="taskNotepad" style="display:none">a-lil-about-me - Notepad</div>
-        <div class="task" id="taskImage" style="display:none">during-ride.jpeg</div>
         <div class="task" id="taskImage2" style="display:none">pre-ride.jpeg</div>
         <div class="task" id="taskImage3" style="display:none">NANpost-ride.jpeg</div>
       </div>
@@ -2141,7 +2129,6 @@
     (function sideResize(){
       const wins = [
         document.getElementById('notepad'),
-        document.getElementById('imageWindow'),
         document.getElementById('imageWindow2'),
         document.getElementById('imageWindow3')
       ].filter(Boolean);
@@ -2357,83 +2344,6 @@
         const xp = document.body.classList.contains('xp-mode');
         if (xp) { task.style.display = ''; win.classList.remove('minimized'); }
         else { task.style.display = 'none'; win.classList.add('minimized'); }
-      });
-      mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    })();
-
-    /* ===== Draggable controls for Image Preview window ===== */
-    (function imageWindow(){
-      const win = document.getElementById('imageWindow');
-      const title = document.getElementById('imageTitle');
-      const task = document.getElementById('taskImage');
-      const imgEl = document.getElementById('imagePreview');
-      const trigger = document.querySelector('.text-behind-img.first');
-      if (!win || !title || !task || !imgEl) return;
-
-      let dragging = false; let startX = 0, startY = 0; let baseLeft = null, baseTop = null;
-      function clearActive(){ document.querySelectorAll('.notepad-window, .image-window').forEach(w => w.classList.remove('active')); }
-      function bringToFront(){ clearActive(); win.classList.add('active'); }
-      function toPixels(v){ return typeof v === 'number' ? v : parseFloat(String(v||'0')); }
-
-      title.addEventListener('mousedown', (e) => {
-        if (!document.body.classList.contains('xp-mode')) return;
-        dragging = true; title.setAttribute('data-dragging','true'); bringToFront();
-        const rect = win.getBoundingClientRect();
-        win.style.right = 'auto';
-        win.style.left = `${rect.left}px`;
-        win.style.top = `${rect.top}px`;
-        baseLeft = toPixels(win.style.left); baseTop = toPixels(win.style.top);
-        startX = e.clientX; startY = e.clientY;
-        e.preventDefault();
-      });
-      window.addEventListener('mousemove', (e) => {
-        if (!dragging) return;
-        const dx = e.clientX - startX; const dy = e.clientY - startY;
-        let nx = baseLeft + dx; let ny = baseTop + dy;
-        const rectNow = win.getBoundingClientRect();
-        const margin = 0; const taskbarH = 44;
-        const maxX = Math.max(0, window.innerWidth - rectNow.width - margin);
-        const maxY = Math.max(0, window.innerHeight - rectNow.height - taskbarH);
-        nx = Math.max(margin, Math.min(nx, maxX));
-        ny = Math.max(margin, Math.min(ny, maxY));
-        win.style.left = `${nx}px`; win.style.top = `${ny}px`;
-      });
-      window.addEventListener('mouseup', () => { if (dragging){ dragging=false; title.removeAttribute('data-dragging'); } });
-
-      // Controls
-      win.addEventListener('click', (e) => {
-        const btn = e.target.closest('.np-btn'); if (!btn) return;
-        const act = btn.getAttribute('data-action');
-        if (act === 'min') { win.classList.add('minimized'); task.style.display = ''; }
-        if (act === 'max') { win.classList.toggle('maximized'); bringToFront(); }
-        if (act === 'close') { win.classList.remove('visible'); win.classList.add('minimized'); task.style.display = 'none'; win.setAttribute('aria-hidden','true'); }
-      });
-      task.addEventListener('click', () => {
-        if (win.classList.contains('minimized') || !win.classList.contains('visible')) {
-          win.classList.add('visible'); win.classList.remove('minimized'); win.setAttribute('aria-hidden','false'); bringToFront();
-        } else {
-          win.classList.add('minimized');
-        }
-      });
-
-      // Open from clicking the underlying image when in XP mode
-      if (trigger) {
-        trigger.addEventListener('click', () => {
-          if (!document.body.classList.contains('xp-mode')) return;
-          try { imgEl.src = trigger.getAttribute('src') || imgEl.src; } catch(_) {}
-          win.classList.add('visible');
-          win.classList.remove('minimized');
-          win.setAttribute('aria-hidden','false');
-          task.style.display = '';
-          bringToFront();
-        });
-      }
-
-      // Sync with XP mode
-      const mo = new MutationObserver(() => {
-        const xp = document.body.classList.contains('xp-mode');
-        if (xp) { task.style.display = ''; /* start minimized until opened */ }
-        else { task.style.display = 'none'; win.classList.add('minimized'); win.classList.remove('visible'); win.setAttribute('aria-hidden','true'); }
       });
       mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
     })();
@@ -2695,7 +2605,6 @@
       // Easy starting positions (edit these numbers)
       const START_POS = {
         notepad: { left: 800,  top: 320 },
-        image1:  { left: 120, top: 20 },
         image2:  { left: 420, top: 65 },
         image3:  { left: 480, top: 490 }
       };
@@ -2773,17 +2682,6 @@
           }
         } catch(_) {}
         try {
-          const imgWin = document.getElementById('imageWindow');
-          const imgTask = document.getElementById('taskImage');
-          if (imgWin && imgTask) {
-            imgWin.style.left = START_POS.image1.left + 'px';
-            imgWin.style.top  = START_POS.image1.top + 'px';
-            imgWin.style.opacity = '';
-            imgWin.classList.add('visible');
-            imgWin.classList.remove('minimized');
-            imgWin.setAttribute('aria-hidden','false');
-            imgTask.style.display = '';
-          }
           const imgWin2 = document.getElementById('imageWindow2');
           const imgTask2 = document.getElementById('taskImage2');
           if (imgWin2 && imgTask2) {
@@ -2834,15 +2732,6 @@
         try { window.XP_MORPH_SET && window.XP_MORPH_SET(0); } catch(_) {}
         try { document.getElementById('notepad')?.setAttribute('aria-hidden','true'); } catch(_) {}
         try {
-          const imgWin = document.getElementById('imageWindow');
-          const imgTask = document.getElementById('taskImage');
-          if (imgWin && imgTask) {
-            if (window.gsap) gsap.set(imgWin, { opacity: 0 });
-            imgWin.classList.remove('visible');
-            imgWin.classList.add('minimized');
-            imgWin.setAttribute('aria-hidden','true');
-            imgTask.style.display = 'none';
-          }
           const imgWin2 = document.getElementById('imageWindow2');
           const imgTask2 = document.getElementById('taskImage2');
           if (imgWin2 && imgTask2) {
