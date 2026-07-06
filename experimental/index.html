@@ -203,6 +203,22 @@ body {
   aspect-ratio: 9 / 16;
 }
 
+.card.spotlight-card {
+  grid-column: span 2;
+}
+
+.spotlight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.spotlight-grid video {
+  aspect-ratio: 9 / 16;
+  height: auto;
+}
+
 .card.aspect-1-1 video,
 .card.aspect-1-1 img {
   aspect-ratio: 1 / 1;
@@ -339,6 +355,10 @@ body {
     grid-column: span 1 !important;
   }
 
+  .spotlight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .card.aspect-16-9 .media-wrapper { aspect-ratio: 16 / 9; }
   .card iframe { height: 100%; }
   .card.no-curtain iframe {
@@ -382,10 +402,22 @@ body {
   </div>
 
   <div class="experimental-grid">
-    <a class="card aspect-16-9">
-      <div class="media-wrapper">
+    <a class="card spotlight-card">
+      <div class="spotlight-grid">
         <video autoplay muted loop playsinline>
-          <source src="../Videos/goodstuff.mp4" type="video/mp4">
+          <source src="../Videos/spotlight.mp4" type="video/mp4">
+        </video>
+        <video autoplay muted loop playsinline>
+          <source src="../Videos/spotlight-2.mp4" type="video/mp4">
+        </video>
+        <video autoplay muted loop playsinline>
+          <source src="../Videos/spotlight-3.mp4" type="video/mp4">
+        </video>
+        <video autoplay muted loop playsinline>
+          <source src="../Videos/spotlight-4.mp4" type="video/mp4">
+        </video>
+        <video autoplay muted loop playsinline>
+          <source src="../Videos/spotlight-5.mp4" type="video/mp4">
         </video>
       </div>
     </a>
@@ -650,9 +682,9 @@ body {
       /* ===== Edge scroll: Experimental -> Projects ===== */
       (function experimentalEdgeNav(){
         const PREV_PATH = '/project/';
-        const EDGE_TOP = 14;
-        const WHEEL_UP_THRESHOLD = 120;
-        const SWIPE_THRESHOLD = 64;
+        const EDGE_TOP = 2;
+        const WHEEL_UP_THRESHOLD = 360;
+        const SWIPE_THRESHOLD = 140;
         let navLocked = false;
         let wheelAccum = 0;
         let touchStartY = null;
@@ -669,10 +701,14 @@ body {
           window.location.href = PREV_PATH;
         }
 
+        function resetEdgeIntent(){
+          wheelAccum = 0;
+        }
+
         window.addEventListener('wheel', (e) => {
           if (navLocked) return;
           const dy = e.deltaY || 0;
-          if (dy >= 0 || !atTop()) { wheelAccum = 0; return; }
+          if (dy >= 0 || !atTop()) { resetEdgeIntent(); return; }
           wheelAccum += Math.max(dy, -80);
           if (wheelAccum <= -WHEEL_UP_THRESHOLD) goPrev();
         }, { passive: true });
@@ -686,7 +722,11 @@ body {
           const endY = e.changedTouches[0]?.clientY ?? touchStartY;
           const delta = touchStartY - endY;
           touchStartY = null;
-          if (atTop() && delta <= -SWIPE_THRESHOLD) goPrev();
+          if (atTop() && delta <= -SWIPE_THRESHOLD) {
+            goPrev();
+            return;
+          }
+          resetEdgeIntent();
         }, { passive: true });
       })();
 

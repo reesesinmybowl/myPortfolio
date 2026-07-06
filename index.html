@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>About – Niklas Tsalkos</title>
+  <title>Niklas Tsalkos</title>
   <link rel="icon" href="Images/numbersgame.png" type="image/png">
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
@@ -180,7 +180,7 @@
       line-height: 1.0;
       margin: 4px 0 0 0;
       letter-spacing: -2px;
-      text-align: center;
+      text-align: left;
       position: relative;
       z-index: 1;
     }
@@ -1370,10 +1370,14 @@
           window.location.href = NEXT_PATH;
         }
 
+        function resetEdgeIntent() {
+          wheelAccum = 0;
+        }
+
         window.addEventListener('wheel', (e) => {
           if (navLocked) return;
           const dy = e.deltaY || 0;
-          if (dy <= 0) { wheelAccum = 0; return; }
+          if (dy <= 0) { resetEdgeIntent(); return; }
           wheelAccum += Math.min(dy, 80);
           if (wheelAccum >= WHEEL_THRESHOLD) goNext();
         }, { passive: true });
@@ -1387,7 +1391,11 @@
           const endY = e.changedTouches[0]?.clientY ?? touchStartY;
           const delta = touchStartY - endY;
           touchStartY = null;
-          if (delta >= SWIPE_THRESHOLD) goNext();
+          if (delta >= SWIPE_THRESHOLD) {
+            goNext();
+            return;
+          }
+          resetEdgeIntent();
         }, { passive: true });
       })();
 

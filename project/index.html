@@ -621,11 +621,11 @@
           }
 
           if (dy < 0 && nearTop) {
-            wheelAccum += Math.max(dy, -80);
+            wheelAccum = Math.min(0, wheelAccum) + Math.max(dy, -80);
             setProgress(Math.abs(wheelAccum) / WHEEL_UP_THRESHOLD);
             if (wheelAccum <= -WHEEL_UP_THRESHOLD) go(PREV_PATH, 'prev');
           } else if (dy > 0 && nearBottom) {
-            wheelAccum += Math.min(dy, 80);
+            wheelAccum = Math.max(0, wheelAccum) + Math.min(dy, 80);
             setProgress(wheelAccum / WHEEL_DOWN_THRESHOLD);
             if (wheelAccum >= WHEEL_DOWN_THRESHOLD) go(NEXT_PATH, 'next');
           }
