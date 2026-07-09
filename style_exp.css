@@ -122,21 +122,20 @@ body {
   margin-top: -2px;
 }
 
-/* ===== Trickle-down load-in (match Projects) ===== */
+/* ===== Top-to-bottom load-in ===== */
 @keyframes dropIn {
-  0%   { opacity: 0; transform: translateY(-32px); filter: drop-shadow(0 8px 0 rgba(0,0,0,0)); }
-  60%  { opacity: 1; transform: translateY(2px); }
+  0%   { opacity: 0; transform: translateY(18px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
 /* Start hidden only when JS is present */
 .js .experimental-grid .card {
   opacity: 0;
-  transform: translateY(-32px);
+  transform: translateY(18px);
   will-change: transform, opacity;
 }
 .js .experimental-grid .card.reveal-in {
-  animation: dropIn .8s cubic-bezier(.2,.8,.2,1) forwards;
+  animation: dropIn .45s cubic-bezier(.2,.8,.2,1) forwards;
   animation-delay: var(--stagger, 0ms);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -182,6 +181,7 @@ body {
   pointer-events: auto;
   opacity: 1;
   transition: opacity 0.5s ease-out;
+  background: #f0f0f0;
 }
 
 .card.aspect-16-9 video,

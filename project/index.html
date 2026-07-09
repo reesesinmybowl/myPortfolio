@@ -181,16 +181,15 @@
     .contact-swap:hover .default-text { display: none; }
     .contact-swap:hover .hover-text { display: inline; }
 
-    /* ===== Trickle-down load-in ===== */
+    /* ===== Top-to-bottom load-in ===== */
     @keyframes dropIn {
-      0%   { opacity: 0; transform: translateY(-32px); filter: drop-shadow(0 8px 0 rgba(0,0,0,0)); }
-      60%  { opacity: 1; transform: translateY(2px); }
+      0%   { opacity: 0; transform: translateY(18px); }
       100% { opacity: 1; transform: translateY(0); }
     }
     /* Start hidden only when JS is present */
-    .js .grid .project-row { opacity: 0; transform: translateY(-32px); will-change: transform, opacity; }
+    .js .grid .project-row { opacity: 0; transform: translateY(18px); will-change: transform, opacity; }
     .js .grid .project-row.reveal-in {
-      animation: dropIn .8s cubic-bezier(.2,.8,.2,1) forwards;
+      animation: dropIn .45s cubic-bezier(.2,.8,.2,1) forwards;
       animation-delay: var(--stagger, 0ms);
     }
 
@@ -432,7 +431,7 @@
     </p>
   </div>
 
-  <!-- Typewriter JS + Trickle-down reveal -->
+  <!-- Typewriter JS + top-to-bottom reveal -->
   <script>
     document.addEventListener('DOMContentLoaded',()=>{
       (function applyProjectEdgeStart(){
@@ -668,84 +667,18 @@
         }, { passive: true });
       })();
 
-      /* ===== Trickle-down project reveal (deterministic order) ===== */
+      /* ===== Top-to-bottom project reveal ===== */
       const rows = Array.from(document.querySelectorAll('.grid .project-row'));
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       if (!rows.length) return;
 
-      // Helper: wait for row's primary media (img/video) to decode/be ready
-      function waitForRowMedia(row, timeoutMs = 2000) {
-        const img = row.querySelector('img');
-        const vid = row.querySelector('video');
-        let p = Promise.resolve();
-        if (img) {
-          if (img.complete && img.naturalWidth > 0) {
-            p = Promise.resolve();
-          } else if ('decode' in img) {
-            p = img.decode().catch(() => {});
-          }
-        } else if (vid) {
-          if (vid.readyState >= 2) {
-            p = Promise.resolve();
-          } else {
-            p = new Promise(res => {
-              const onReady = () => { cleanup(); res(); };
-              const cleanup = () => { vid.removeEventListener('loadeddata', onReady); vid.removeEventListener('canplay', onReady); };
-              vid.addEventListener('loadeddata', onReady, { once: true });
-              vid.addEventListener('canplay', onReady, { once: true });
-            });
-          }
-        }
-        // Fallback timeout to avoid stalling on slow networks
-        return Promise.race([
-          p,
-          new Promise(res => setTimeout(res, timeoutMs))
-        ]);
-      }
-
-      // If reduced motion, reveal without animation and skip waiting
-      if (prefersReduced) {
-        rows.forEach(el => el.classList.add('reveal-in'));
-        return;
-      }
-
-      const baseDelay = 140; // ms between items within a batch
-
-      // Sequentially reveal the first N rows in DOM order after media is ready
-      const initialCount = Math.min(3, rows.length);
-      (async () => {
-        for (let i = 0; i < initialCount; i++) {
-          const el = rows[i];
-          await waitForRowMedia(el);
-          el.style.setProperty('--stagger', '0ms'); // sequential timing handled here
-          requestAnimationFrame(() => el.classList.add('reveal-in'));
-          await new Promise(r => setTimeout(r, baseDelay));
-        }
-      })();
-
-      // IntersectionObserver: when batches enter, reveal in DOM order, each waiting for its media
-      const io = new IntersectionObserver(async (entries) => {
-        const intersecting = entries
-          .filter(e => e.isIntersecting && !e.target.classList.contains('reveal-in'))
-          .sort((a,b) => rows.indexOf(a.target) - rows.indexOf(b.target))
-          .map(e => e.target);
-
-        for (const el of intersecting) {
-          io.unobserve(el);
-          await waitForRowMedia(el);
-          el.style.setProperty('--stagger', '0ms');
-          requestAnimationFrame(() => el.classList.add('reveal-in'));
-          await new Promise(r => setTimeout(r, baseDelay));
-        }
-      }, {
-        root: null,
-        rootMargin: '0px 0px -20% 0px',
-        threshold: 0.2
+      requestAnimationFrame(() => {
+        rows.forEach((row, index) => {
+          row.style.setProperty('--stagger', prefersReduced ? '0ms' : `${Math.min(index * 60, 720)}ms`);
+          row.classList.add('reveal-in');
+        });
       });
-
-      // Observe rows after the initial ones
-      rows.slice(initialCount).forEach(el => io.observe(el));
     });
   </script>
 </body>
