@@ -400,21 +400,21 @@ body {
   </div>
 
   <div class="experimental-grid">
-    <a class="card spotlight-card" data-hydrate-delay="4500">
+    <a class="card spotlight-card">
       <div class="spotlight-grid">
-        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-1.webp">
+        <video autoplay muted loop playsinline>
           <source data-src="../Videos/spotlight.mp4" type="video/mp4">
         </video>
-        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-2.webp">
+        <video autoplay muted loop playsinline>
           <source data-src="../Videos/spotlight-2.mp4" type="video/mp4">
         </video>
-        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-3.webp">
+        <video autoplay muted loop playsinline>
           <source data-src="../Videos/spotlight-3.mp4" type="video/mp4">
         </video>
-        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-4.webp">
+        <video autoplay muted loop playsinline>
           <source data-src="../Videos/spotlight-4.mp4" type="video/mp4">
         </video>
-        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-5.webp">
+        <video autoplay muted loop playsinline>
           <source data-src="../Videos/spotlight-5.mp4" type="video/mp4">
         </video>
       </div>
@@ -806,14 +806,6 @@ body {
       });
 
       cards.forEach(card => {
-        const hydrateDelay = Number.parseInt(card.dataset.hydrateDelay || '0', 10) || 0;
-        if (hydrateDelay > 0) {
-          setTimeout(() => hydrateCardMedia(card), hydrateDelay);
-          card.addEventListener('mouseenter', () => hydrateCardMedia(card), { once: true });
-          card.addEventListener('focusin', () => hydrateCardMedia(card), { once: true });
-          return;
-        }
-
         hydrateObserver.observe(card);
         card.addEventListener('mouseenter', () => hydrateCardMedia(card), { once: true });
         card.addEventListener('focusin', () => hydrateCardMedia(card), { once: true });
