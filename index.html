@@ -9,7 +9,7 @@
   <script defer src="/analytics.js"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
     @font-face {
@@ -1014,6 +1014,13 @@
 <body>
   <!-- White preloader overlay to avoid janky first paint -->
   <div class="preloader" id="preloader" aria-hidden="true"></div>
+  <script>
+    requestAnimationFrame(() => {
+      const preloader = document.getElementById('preloader');
+      preloader?.classList.add('is-hidden');
+      setTimeout(() => preloader?.remove(), 450);
+    });
+  </script>
   <noscript><style>.preloader{display:none}</style></noscript>
   <div class="page">
     <!-- LEFT SIDEBAR --> 
@@ -1095,7 +1102,7 @@
           </div>
         </div>
         <div class="image-body">
-          <img id="imagePreview2" src="Images/selfie2.JPG" alt="Preview 2" draggable="false"/>
+          <img id="imagePreview2" src="Images/selfie2.JPG" alt="Preview 2" draggable="false" loading="lazy" decoding="async"/>
         </div>
         <div class="resize-handle left" data-side="left" aria-hidden="true"></div>
         <div class="resize-handle right" data-side="right" aria-hidden="true"></div>
@@ -1125,7 +1132,7 @@
       </div>
 
       <!-- Inline images (hidden in XP mode). -->
-      <img src="Images/selfie2.JPG" alt="Decorative" class="text-behind-img second" draggable="false">
+      <img src="Images/selfie2.JPG" alt="Decorative" class="text-behind-img second" draggable="false" loading="lazy" decoding="async">
     </div>
   </div>
 
@@ -2357,12 +2364,8 @@
     })();
 
     /* ===== GSAP Load-in animation (with preloader) ===== */
-    window.addEventListener('load', async () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const preloader = document.getElementById('preloader');
-
-      if (document.fonts && document.fonts.ready) {
-        try { await document.fonts.ready; } catch (e) {}
-      }
 
       if (!window.gsap) {
         preloader?.classList.add('is-hidden');
@@ -2434,10 +2437,10 @@
             gsap.set('.intro-text .word', { opacity: 0, y: 8, scale: 0.99, transformOrigin: '0% 80%' });
             tl.to('.intro-text .word', {
               keyframes: [
-                { opacity: 1, y: 0, scale: 1.015, duration: 0.28, ease: 'power2.out' },
-                { scale: 1.0, duration: 0.12, ease: 'power1.out' }
+                { opacity: 1, y: 0, scale: 1.006, duration: 0.16, ease: 'power2.out' },
+                { scale: 1.0, duration: 0.08, ease: 'power1.out' }
               ],
-              stagger: { each: 0.06, from: 'start' }
+              stagger: { each: 0.012, from: 'start' }
             });
             break;
           }
