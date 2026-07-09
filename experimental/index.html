@@ -7,7 +7,6 @@
   <meta name="description" content="Experimental projects by Niklas Tsalkos – Interactive Design, Motion, Type, and more.">
   <link rel="icon" href="../Images/numbersgame.png" type="image/png">
   <script>document.documentElement.classList.add('js');</script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
 /* === RESET === */
 * {
@@ -376,7 +375,6 @@ body {
   }
 }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
 </head>
@@ -402,21 +400,21 @@ body {
   </div>
 
   <div class="experimental-grid">
-    <a class="card spotlight-card">
+    <a class="card spotlight-card" data-hydrate-delay="4500">
       <div class="spotlight-grid">
-        <video autoplay muted loop playsinline>
+        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-1.webp">
           <source data-src="../Videos/spotlight.mp4" type="video/mp4">
         </video>
-        <video autoplay muted loop playsinline>
+        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-2.webp">
           <source data-src="../Videos/spotlight-2.mp4" type="video/mp4">
         </video>
-        <video autoplay muted loop playsinline>
+        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-3.webp">
           <source data-src="../Videos/spotlight-3.mp4" type="video/mp4">
         </video>
-        <video autoplay muted loop playsinline>
+        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-4.webp">
           <source data-src="../Videos/spotlight-4.mp4" type="video/mp4">
         </video>
-        <video autoplay muted loop playsinline>
+        <video autoplay muted loop playsinline preload="none" poster="../Images/experimental-posters/spotlight-5.webp">
           <source data-src="../Videos/spotlight-5.mp4" type="video/mp4">
         </video>
       </div>
@@ -793,11 +791,6 @@ body {
         cards.forEach((card, index) => revealCard(card, index));
       });
 
-      const initialMediaCount = Math.min(3, cards.length);
-      cards.slice(0, initialMediaCount).forEach((card, index) => {
-        setTimeout(() => hydrateCardMedia(card), index * 160);
-      });
-
       const hydrateObserver = new IntersectionObserver((entries) => {
         entries
           .filter(e => e.isIntersecting)
@@ -812,7 +805,15 @@ body {
         threshold: 0.01
       });
 
-      cards.slice(initialMediaCount).forEach(card => {
+      cards.forEach(card => {
+        const hydrateDelay = Number.parseInt(card.dataset.hydrateDelay || '0', 10) || 0;
+        if (hydrateDelay > 0) {
+          setTimeout(() => hydrateCardMedia(card), hydrateDelay);
+          card.addEventListener('mouseenter', () => hydrateCardMedia(card), { once: true });
+          card.addEventListener('focusin', () => hydrateCardMedia(card), { once: true });
+          return;
+        }
+
         hydrateObserver.observe(card);
         card.addEventListener('mouseenter', () => hydrateCardMedia(card), { once: true });
         card.addEventListener('focusin', () => hydrateCardMedia(card), { once: true });
