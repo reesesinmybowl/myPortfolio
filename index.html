@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Niklas Tsalkos</title>
   <link rel="icon" href="Images/numbersgame.png" type="image/png">
+  <script>document.documentElement.classList.add('js');</script>
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
 
@@ -241,6 +242,21 @@
       right: var(--about-photo-2-right);
       top: var(--about-photo-2-top);
       display: none;
+    }
+    .js .intro-text {
+      opacity: 0;
+    }
+    .js .left {
+      opacity: 0;
+      transform: translateY(-24px);
+    }
+    .js .bottom,
+    .js .corner-year {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .js .text-behind-img {
+      clip-path: inset(0% 100% 0% 0%);
     }
     /* In XP mode, hide the original inline image (use the window instead) */
     .xp-mode .text-behind-img { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
@@ -2368,6 +2384,7 @@
       const preloader = document.getElementById('preloader');
 
       if (!window.gsap) {
+        document.documentElement.classList.remove('js');
         preloader?.classList.add('is-hidden');
         setTimeout(() => preloader?.remove(), 600);
         return;
@@ -2386,10 +2403,12 @@
       } catch(_) {}
 
       if (SKIP_SIDE_UI) {
+        gsap.set('.intro-text', { opacity: 1 });
         gsap.set('.left', { opacity: 1, y: 0 });
         gsap.set(['.bottom', '.corner-year'], { opacity: 1, y: 0 });
         gsap.set('.text-behind-img', { clipPath: 'inset(0% 0% 0% 0%)' });
       } else {
+        gsap.set('.intro-text', { opacity: 1 });
         gsap.set('.left', { opacity: 0, y: -24 });
         gsap.set(['.bottom', '.corner-year'], { opacity: 0, y: 20 });
         gsap.set('.text-behind-img', { clipPath: 'inset(0% 100% 0% 0%)' });
