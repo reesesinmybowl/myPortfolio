@@ -76,7 +76,7 @@
       display: inline-block;
       transform: translateX(-0.078em);
       outline: 0;
-      caret-color: var(--type);
+      caret-color: transparent;
     }
     .hi-h,
     .there-t {
@@ -98,6 +98,22 @@
       transform: translateY(var(--solid-y));
       background: var(--solid);
       z-index: -1;
+    }
+    .cursor {
+      position: absolute;
+      left: var(--caret-x, calc(100% + 0.08em));
+      top: calc(var(--caret-y, 0px) + 0.16em);
+      display: block;
+      width: 0.065em;
+      height: 0.82em;
+      background: var(--type);
+      pointer-events: none;
+      z-index: 2;
+      animation: blink 900ms steps(1, end) infinite;
+    }
+    @keyframes blink {
+      0%, 48% { opacity: 1; }
+      49%, 100% { opacity: 0; }
     }
     .site-meta,
     .site-nav {
@@ -165,6 +181,7 @@
     <div class="text-wrap" id="textWrap">
       <div class="sentence">
         <span class="type-line"><span class="line-text" id="visibleText"><span class="hi-h">w</span>ww<span class="there-t">.</span>niklastsalkos.com</span></span>
+        <span class="cursor" id="customCursor" aria-hidden="true"></span>
       </div>
     </div>
   </main>
@@ -185,6 +202,7 @@
   <script>
     const textWrap = document.getElementById("textWrap");
     const visibleText = document.getElementById("visibleText");
+    const customCursor = document.getElementById("customCursor");
     const measure = document.getElementById("measure");
     const localClock = document.getElementById("localClock");
     const weatherTemp = document.getElementById("weatherTemp");
@@ -203,6 +221,7 @@
 
     function updateScale() {
       textWrap.style.transform = `scale(${fitScale(visibleText.textContent)})`;
+      requestAnimationFrame(updateCustomCaret);
     }
 
     function moveCaretToEnd() {
@@ -236,6 +255,35 @@
     });
 
     visibleText.addEventListener("input", updateScale);
+    visibleText.addEventListener("keyup", updateCustomCaret);
+    visibleText.addEventListener("mouseup", updateCustomCaret);
+    document.addEventListener("selectionchange", updateCustomCaret);
+
+    function updateCustomCaret() {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || !visibleText.contains(selection.anchorNode)) {
+        return;
+      }
+
+      const range = selection.getRangeAt(0).cloneRange();
+      range.collapse(false);
+      let rect = range.getBoundingClientRect();
+
+      if (!rect || (rect.width === 0 && rect.height === 0)) {
+        const marker = document.createElement("span");
+        marker.textContent = "\u200b";
+        range.insertNode(marker);
+        rect = marker.getBoundingClientRect();
+        marker.remove();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      const hostRect = document.querySelector(".sentence").getBoundingClientRect();
+      const scale = fitScale(visibleText.textContent);
+      customCursor.style.setProperty("--caret-x", `${(rect.left - hostRect.left) / scale}px`);
+      customCursor.style.setProperty("--caret-y", `${(rect.top - hostRect.top) / scale}px`);
+    }
 
     function updateLocalClock() {
       localClock.textContent = new Intl.DateTimeFormat("en-GB", {
@@ -282,6 +330,7 @@
     updateScale();
     visibleText.focus({ preventScroll: true });
     moveCaretToEnd();
+    updateCustomCaret();
     window.addEventListener("resize", updateScale);
     updateLocalClock();
     window.setInterval(updateLocalClock, 1000);
