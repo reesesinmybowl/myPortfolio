@@ -96,6 +96,16 @@
       --solid-y: var(--post-solid-y);
     }
 
+    body.post-image-mode .sentence {
+      top: 50%;
+      transform: translate(-50%, -50%);
+      line-height: 1;
+    }
+
+    body.post-image-mode .cursor {
+      display: none;
+    }
+
     body.post-mode .palette-bar {
       display: none;
     }
@@ -163,6 +173,14 @@
 
     .line-text.active {
       animation: letterSnap 180ms cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .post-image {
+      display: block;
+      width: min(100vw, 612px);
+      height: auto;
+      max-height: calc(100vh - 28px);
+      object-fit: contain;
     }
 
     .site-meta {
@@ -473,18 +491,8 @@
     const exportMode = params.has("export");
     const postMode = params.has("post");
     const postText = params.get("post") || "www.niklastsalkos.com";
-    const hiddenPostPath = "/superdupertopsecrethidingspot/";
-    const isHiddenPostConfig =
-      postMode &&
-      postText === "www.niklastsalkos.com" &&
-      params.get("solidHeightPx") === "114" &&
-      params.get("solidY") === "7" &&
-      params.get("solidLeft") === "10" &&
-      params.get("solidRight") === "-10";
-
-    if (isHiddenPostConfig && window.location.pathname !== hiddenPostPath) {
-      window.history.replaceState(null, "", hiddenPostPath);
-    }
+    const postImage = params.get("postImage");
+    const postImageMode = postMode && postImage;
 
     const defaultLines = [
       "Hi There! My name is Niklas,",
@@ -556,6 +564,9 @@
       document.body.classList.add("post-mode");
       startFinished = true;
       skipProjectPeek = true;
+    }
+    if (postImageMode) {
+      document.body.classList.add("post-image-mode");
     }
 
     function cssLength(value, unit = "px") {
@@ -681,6 +692,11 @@
     }
 
     function renderTypedLines(visibleLines, showCursor = false) {
+      if (postImageMode) {
+        renderPostImage();
+        return;
+      }
+
       visibleText.replaceChildren(
         ...visibleLines.map((line, index) => {
           const span = document.createElement("span");
@@ -728,6 +744,17 @@
           return span;
         })
       );
+    }
+
+    function renderPostImage() {
+      const image = document.createElement("img");
+      image.className = "post-image";
+      image.src = postImage;
+      image.alt = "";
+      visibleText.replaceChildren(image);
+      cursor.classList.remove("done");
+      textWrap.style.transform = "none";
+      currentScale = 1;
     }
 
     function render(now) {
@@ -836,6 +863,11 @@
     };
 
     function renderFullText() {
+      if (postImageMode) {
+        renderPostImage();
+        return;
+      }
+
       const text = lines.join("\n");
 
       renderTypedLines(lines, true);
