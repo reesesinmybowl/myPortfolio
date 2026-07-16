@@ -1210,6 +1210,9 @@
       navLocked = true;
       document.body.classList.remove("is-peeking");
       clearTimeout(peekTimer);
+      try {
+        sessionStorage.setItem("projectNavHiddenUntilUp", "1");
+      } catch (_) {}
       window.location.href = PROJECTS_PATH;
     }
 

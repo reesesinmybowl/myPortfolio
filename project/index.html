@@ -573,12 +573,24 @@
       setInterval(updateClock, 1000);
       updateWeather();
       setInterval(updateWeather, 10 * 60 * 1000);
+      let navHiddenUntilUp = false;
+      try {
+        navHiddenUntilUp = sessionStorage.getItem('projectNavHiddenUntilUp') === '1';
+        sessionStorage.removeItem('projectNavHiddenUntilUp');
+      } catch (_) {}
+      if (navHiddenUntilUp) {
+        document.body.classList.add('nav-hidden');
+      }
+
       let lastScrollY = window.scrollY;
       window.addEventListener('scroll', () => {
         const currentY = window.scrollY;
         const delta = currentY - lastScrollY;
 
-        if (currentY <= 16 || delta < -4) {
+        if (navHiddenUntilUp && delta >= -4) {
+          document.body.classList.add('nav-hidden');
+        } else if (currentY <= 16 || delta < -4) {
+          navHiddenUntilUp = false;
           document.body.classList.remove('nav-hidden');
         } else if (currentY > 96 && delta > 4) {
           document.body.classList.add('nav-hidden');
