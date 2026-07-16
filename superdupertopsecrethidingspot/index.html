@@ -3,13 +3,241 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0; url=/?post&solidHeightPx=114&solidY=7&solidLeft=10&solidRight=-10">
   <title>Niklas Tsalkos</title>
-  <script>
-    window.location.replace("/?post&solidHeightPx=114&solidY=7&solidLeft=10&solidRight=-10");
-  </script>
+  <link rel="icon" href="../assets/img/i-023.png" type="image/png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --paper: #482714;
+      --type: #FBCDCF;
+      --solid: #ff6aa7;
+      --tracking: -0.08em;
+    }
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      background: var(--paper);
+      color: var(--type);
+      font-family: Helvetica, Arial, sans-serif;
+    }
+    @font-face {
+      font-family: "ABC Monument Grotesk Trial";
+      src: url("../fonts/ABCMonumentGroteskTrial-Regular.otf") format("opentype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    main {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: var(--paper);
+    }
+    .text-wrap {
+      position: relative;
+      width: 1px;
+      height: 1px;
+      transform-origin: center center;
+    }
+    .sentence {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: max-content;
+      transform: translate(-50%, -50%);
+      font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
+      font-size: 160px;
+      font-weight: normal;
+      font-synthesis: none;
+      line-height: .8;
+      letter-spacing: var(--tracking);
+      white-space: pre;
+      color: var(--type);
+      --solid-y: 7px;
+      --solid-height: 114px;
+      --solid-left: 10px;
+      --solid-right: -10px;
+    }
+    .type-line {
+      display: block;
+      width: fit-content;
+      position: relative;
+      white-space: pre;
+    }
+    .line-text {
+      display: inline-block;
+    }
+    .type-line::before {
+      content: "";
+      position: absolute;
+      left: calc(var(--solid-left) * -1);
+      right: calc(var(--solid-right) * -1);
+      top: 0;
+      height: var(--solid-height);
+      transform: translateY(var(--solid-y));
+      background: var(--solid);
+      z-index: -1;
+    }
+    .site-meta,
+    .site-nav {
+      position: fixed;
+      top: 6px;
+      z-index: 8;
+      color: var(--type);
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.1;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .site-meta.left-meta { left: 6px; }
+    .site-meta.right-meta {
+      right: 6px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .site-meta a,
+    .site-nav a {
+      color: inherit;
+      text-decoration: none;
+      position: relative;
+    }
+    .site-nav {
+      left: 50%;
+      text-align: center;
+      transform: translateX(-50%);
+    }
+    .site-nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 1px;
+      background: currentColor;
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 180ms ease;
+    }
+    .site-nav a:hover::after,
+    .site-nav .is-active::after {
+      transform: scaleX(1);
+    }
+    .measure {
+      position: fixed;
+      left: -10000px;
+      top: -10000px;
+      visibility: hidden;
+      width: max-content;
+      font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
+      font-size: 160px;
+      font-weight: normal;
+      font-synthesis: none;
+      letter-spacing: var(--tracking);
+      line-height: .8;
+      white-space: pre;
+    }
+  </style>
 </head>
 <body>
-  <a href="/?post&solidHeightPx=114&solidY=7&solidLeft=10&solidRight=-10">Continue</a>
+  <main aria-label="www.niklastsalkos.com">
+    <div class="text-wrap" id="textWrap">
+      <div class="sentence">
+        <span class="type-line"><span class="line-text" id="visibleText">www.niklastsalkos.com</span></span>
+      </div>
+    </div>
+  </main>
+  <div class="site-meta left-meta" aria-label="Contact information">
+    <a href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a> /
+    <a href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
+  </div>
+  <div class="site-meta right-meta" aria-label="Local information">
+    <span>Denmark, Copenhagen</span> <span id="localClock">--:--</span>
+    <span id="weatherTemp">--&deg;C</span> <span id="weatherCondition">--</span>
+  </div>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <a href="/">About</a> /
+    <a href="/project/">Projects</a> /
+    <a href="/experimental/">Experimental</a>
+  </nav>
+  <div class="measure" id="measure"></div>
+  <script>
+    const textWrap = document.getElementById("textWrap");
+    const visibleText = document.getElementById("visibleText");
+    const measure = document.getElementById("measure");
+    const localClock = document.getElementById("localClock");
+    const weatherTemp = document.getElementById("weatherTemp");
+    const weatherCondition = document.getElementById("weatherCondition");
+
+    function fitScale(text) {
+      measure.textContent = text || " ";
+      const bounds = measure.getBoundingClientRect();
+      const padding = 24;
+      return Math.min(
+        8.5,
+        window.innerWidth * 0.96 / (bounds.width + padding),
+        window.innerHeight * 0.94 / (bounds.height + padding)
+      );
+    }
+
+    function updateScale() {
+      textWrap.style.transform = `scale(${fitScale(visibleText.textContent)})`;
+    }
+
+    function updateLocalClock() {
+      localClock.textContent = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/Copenhagen",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZoneName: "short"
+      }).format(new Date());
+    }
+
+    function weatherCodeLabel(code) {
+      if (code === 0) return "clear";
+      if ([1, 2].includes(code)) return "partly cloudy";
+      if (code === 3) return "cloudy";
+      if ([45, 48].includes(code)) return "fog";
+      if ([51, 53, 55].includes(code)) return "drizzle";
+      if ([56, 57].includes(code)) return "freezing drizzle";
+      if ([61, 63, 65].includes(code)) return code === 61 ? "slight rain" : "rain";
+      if ([66, 67].includes(code)) return "freezing rain";
+      if ([71, 73, 75].includes(code)) return code === 71 ? "slight snow" : "snow";
+      if (code === 77) return "snow grains";
+      if ([80, 81, 82].includes(code)) return code === 80 ? "rain showers" : "heavy showers";
+      if ([85, 86].includes(code)) return "snow showers";
+      if ([95, 96, 99].includes(code)) return "thunderstorm";
+      return "--";
+    }
+
+    async function updateWeather() {
+      try {
+        const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=55.6761&longitude=12.5683&current=temperature_2m,weather_code&timezone=Europe%2FCopenhagen", { cache: "no-store" });
+        if (!response.ok) throw new Error("Weather request failed");
+        const data = await response.json();
+        const temperature = data.current?.temperature_2m;
+        const unit = data.current_units?.temperature_2m || "\u00b0C";
+        weatherTemp.textContent = typeof temperature === "number" ? `${Math.round(temperature)}${unit}` : "--\u00b0C";
+        weatherCondition.textContent = weatherCodeLabel(data.current?.weather_code);
+      } catch (_) {
+        weatherTemp.textContent = "--\u00b0C";
+        weatherCondition.textContent = "--";
+      }
+    }
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    updateLocalClock();
+    window.setInterval(updateLocalClock, 1000);
+    updateWeather();
+    window.setInterval(updateWeather, 10 * 60 * 1000);
+  </script>
 </body>
 </html>
