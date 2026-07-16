@@ -473,6 +473,19 @@
     const exportMode = params.has("export");
     const postMode = params.has("post");
     const postText = params.get("post") || "www.niklastsalkos.com";
+    const hiddenPostPath = "/superdupertopsecrethidingspot/";
+    const isHiddenPostConfig =
+      postMode &&
+      postText === "www.niklastsalkos.com" &&
+      params.get("solidHeightPx") === "114" &&
+      params.get("solidY") === "7" &&
+      params.get("solidLeft") === "10" &&
+      params.get("solidRight") === "-10";
+
+    if (isHiddenPostConfig && window.location.pathname !== hiddenPostPath) {
+      window.history.replaceState(null, "", hiddenPostPath);
+    }
+
     const defaultLines = [
       "Hi There! My name is Niklas,",
       "I'm an Interactive Designer",
