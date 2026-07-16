@@ -43,7 +43,7 @@ body {
   background: transparent;
   mix-blend-mode: difference;
   color: white;
-  font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   isolation: isolate;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -97,6 +97,69 @@ body {
   cursor: pointer;
   color: inherit;
 }
+
+.site-meta,
+.site-nav {
+  position: fixed;
+  top: 6px;
+  z-index: 1200;
+  color: #111;
+  font-size: 12px;
+  line-height: 1.1;
+  letter-spacing: 0;
+  font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.site-meta.left-meta { left: 6px; }
+.site-meta.right-meta {
+  right: 6px;
+  text-align: right;
+  width: auto;
+  max-width: calc(100vw - 12px);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.site-meta a,
+.site-nav a { color: inherit; text-decoration: none; position: relative; }
+.location-full { display: none; }
+.location-short { display: inline; }
+.site-nav {
+  left: 50%;
+  text-align: center;
+  transform: translateX(-50%);
+  transition: opacity 180ms ease, transform 180ms ease;
+  white-space: nowrap;
+}
+body.nav-hidden .site-nav {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -8px);
+}
+body.nav-hidden .site-meta {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+}
+.site-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 180ms ease;
+}
+.site-nav a:hover::after,
+.site-nav .is-active::after {
+  transform: scaleX(1);
+}
+.left,
+.bottom { display: none; }
 
 /* === ANIMATED TEXT === */
 .animated-text { position: relative; display: inline-block; white-space: nowrap; }
@@ -157,7 +220,7 @@ body {
 /* === GRID === */
 .experimental-grid {
   margin-left: 300px;
-  padding: 24px;
+  padding: 42px 24px 24px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
@@ -319,6 +382,15 @@ body {
 }
 
 @media (max-width: 900px) {
+  .site-meta.right-meta {
+    top: 21px;
+    left: 6px;
+    right: auto;
+    width: calc(100vw - 12px);
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .left {
     position: fixed;
     top: 8px;
@@ -379,6 +451,20 @@ body {
   <script defer src="/analytics.js"></script>
 </head>
 <body>
+
+  <div class="site-meta left-meta" aria-label="Contact information">
+    <a href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a> /
+    <a href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
+  </div>
+  <div class="site-meta right-meta" aria-label="Local information">
+    <span class="location-full">Denmark, Copenhagen</span><span class="location-short">CPH</span> <span class="local-clock">--:--</span>
+    <span class="weather-temp">--&deg;C</span> <span class="weather-condition">--</span>
+  </div>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <a href="/">About</a> /
+    <a href="/project/">Projects</a> /
+    <a href="/experimental/" class="is-active" aria-current="page">Experimental</a>
+  </nav>
 
   <div class="left">
     <div class="left-top">
@@ -566,6 +652,79 @@ body {
       <a href="https://youtube.com/@niklastsalkos" target="_blank" class="unstyled-link">Youtube</a>
     </p>
   </div>
+
+  <script>
+    (function siteMeta(){
+      const clocks = document.querySelectorAll('.local-clock');
+      const temps = document.querySelectorAll('.weather-temp');
+      const conditions = document.querySelectorAll('.weather-condition');
+
+      function setAll(nodes, text) {
+        nodes.forEach(node => { node.textContent = text; });
+      }
+
+      function updateClock() {
+        const time = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Europe/Copenhagen',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZoneName: 'short'
+        }).format(new Date());
+        setAll(clocks, time);
+      }
+
+      function weatherCodeLabel(code) {
+        if (code === 0) return 'clear';
+        if ([1, 2].includes(code)) return 'partly cloudy';
+        if (code === 3) return 'cloudy';
+        if ([45, 48].includes(code)) return 'fog';
+        if ([51, 53, 55].includes(code)) return 'drizzle';
+        if ([56, 57].includes(code)) return 'freezing drizzle';
+        if ([61, 63, 65].includes(code)) return code === 61 ? 'slight rain' : 'rain';
+        if ([66, 67].includes(code)) return 'freezing rain';
+        if ([71, 73, 75].includes(code)) return code === 71 ? 'slight snow' : 'snow';
+        if (code === 77) return 'snow grains';
+        if ([80, 81, 82].includes(code)) return code === 80 ? 'rain showers' : 'heavy showers';
+        if ([85, 86].includes(code)) return 'snow showers';
+        if ([95, 96, 99].includes(code)) return 'thunderstorm';
+        return '--';
+      }
+
+      async function updateWeather() {
+        try {
+          const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=55.6761&longitude=12.5683&current=temperature_2m,weather_code&timezone=Europe%2FCopenhagen', { cache: 'no-store' });
+          if (!response.ok) throw new Error('Weather request failed');
+          const data = await response.json();
+          const temperature = data.current?.temperature_2m;
+          const unit = data.current_units?.temperature_2m || '\u00b0C';
+          setAll(temps, typeof temperature === 'number' ? `${Math.round(temperature)}${unit}` : '--\u00b0C');
+          setAll(conditions, weatherCodeLabel(data.current?.weather_code));
+        } catch (_) {
+          setAll(temps, '--\u00b0C');
+          setAll(conditions, '--');
+        }
+      }
+
+      updateClock();
+      setInterval(updateClock, 1000);
+      updateWeather();
+      setInterval(updateWeather, 10 * 60 * 1000);
+      let lastScrollY = window.scrollY;
+      window.addEventListener('scroll', () => {
+        const currentY = window.scrollY;
+        const delta = currentY - lastScrollY;
+
+        if (currentY <= 16 || delta < -4) {
+          document.body.classList.remove('nav-hidden');
+        } else if (currentY > 96 && delta > 4) {
+          document.body.classList.add('nav-hidden');
+        }
+
+        lastScrollY = currentY;
+      }, { passive: true });
+    })();
+  </script>
 
   <script>
     // Typewriter for the "Designer" label (same behavior as other pages)
