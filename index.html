@@ -21,9 +21,8 @@
       --cursor: #81cf49;
       --selection: #81cf49;
       --tracking: -0.08em;
-      --hi-gap: -.02em;
+      --hi-gap: -.01em;
       --there-gap: 0.015em;
-      --interactive-it-gap: 0.01em;
       --designer-gn-gap: -0.028em;
     }
 
@@ -116,7 +115,6 @@
 
     .hi-h,
     .there-t,
-    .interactive-i,
     .designer-g {
       display: inline-block;
     }
@@ -127,10 +125,6 @@
 
     .there-t {
       margin-right: var(--there-gap);
-    }
-
-    .interactive-i {
-      margin-right: var(--interactive-it-gap);
     }
 
     .designer-g {
@@ -179,7 +173,7 @@
       bottom: 0;
       z-index: 5;
       display: flex;
-      height: 10px;
+      height: 140px;
       gap: 0;
       margin: 0;
       padding: 0;
@@ -194,6 +188,17 @@
       margin: 0;
       padding: 0;
       cursor: pointer;
+      background: transparent;
+      position: relative;
+    }
+
+    .palette::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 10px;
       background: var(--swatch);
     }
 
@@ -306,12 +311,6 @@
         font-size: 136px;
       }
     }
-
-    @media (hover: none), (pointer: coarse) {
-      .cursor {
-        display: none;
-      }
-    }
   </style>
 </head>
 <body>
@@ -381,6 +380,7 @@
     let editable = false;
     let currentScale = 1;
     let peekTimer = 0;
+    let lastTouchAt = 0;
 
     if (exportMode) {
       document.body.classList.add("exporting");
@@ -450,21 +450,15 @@
               document.createTextNode(line.slice(4))
             );
           } else if (index === 1) {
-            const itPairIndex = line.indexOf("it");
-            const gnPairIndex = line.indexOf("gn");
-            if (itPairIndex !== -1 && gnPairIndex !== -1) {
+            const pairIndex = line.indexOf("gn");
+            if (pairIndex !== -1) {
               text.append(
-                document.createTextNode(line.slice(0, itPairIndex)),
-                Object.assign(document.createElement("span"), {
-                  className: "interactive-i",
-                  textContent: line.charAt(itPairIndex)
-                }),
-                document.createTextNode(line.slice(itPairIndex + 1, gnPairIndex)),
+                document.createTextNode(line.slice(0, pairIndex)),
                 Object.assign(document.createElement("span"), {
                   className: "designer-g",
-                  textContent: line.charAt(gnPairIndex)
+                  textContent: line.charAt(pairIndex)
                 }),
-                document.createTextNode(line.slice(gnPairIndex + 1))
+                document.createTextNode(line.slice(pairIndex + 1))
               );
             } else {
               text.textContent = line;
@@ -864,8 +858,15 @@
       }, delay);
     }
 
+    function canRestartFromClick() {
+      const desktopPointer = matchMedia("(hover: hover) and (pointer: fine)").matches;
+      const hasTouch = navigator.maxTouchPoints > 0 || "ontouchstart" in window;
+      const recentTouch = Date.now() - lastTouchAt < 900;
+      return desktopPointer && !hasTouch && !recentTouch;
+    }
+
     stage.addEventListener("click", () => {
-      if (!editable && matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      if (!editable && canRestartFromClick()) {
         restart();
       }
     });
@@ -912,6 +913,7 @@
     }, { passive: false });
 
     window.addEventListener("touchstart", (event) => {
+      lastTouchAt = Date.now();
       touchStartY = event.touches[0]?.clientY ?? null;
     }, { passive: true });
 
