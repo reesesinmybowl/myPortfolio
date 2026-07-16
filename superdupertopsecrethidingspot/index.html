@@ -12,6 +12,8 @@
       --type: #FBCDCF;
       --solid: #ff6aa7;
       --tracking: -0.08em;
+      --hi-gap: -.01em;
+      --there-gap: 0.015em;
     }
     html,
     body {
@@ -61,23 +63,34 @@
       color: var(--type);
       --solid-y: 7px;
       --solid-height: 114px;
-      --solid-left: 10px;
-      --solid-right: -10px;
     }
     .type-line {
       display: block;
       width: fit-content;
       position: relative;
       white-space: pre;
+      --solid-left: 10px;
+      --solid-right: -10px;
     }
     .line-text {
       display: inline-block;
+      transform: translateX(-0.078em);
+    }
+    .hi-h,
+    .there-t {
+      display: inline-block;
+    }
+    .hi-h {
+      margin-right: var(--hi-gap);
+    }
+    .there-t {
+      margin-right: var(--there-gap);
     }
     .type-line::before {
       content: "";
       position: absolute;
-      left: calc(var(--solid-left) * -1);
-      right: calc(var(--solid-right) * -1);
+      left: calc(var(--solid-left, 0px) * -1);
+      right: calc(var(--solid-right, 0px) * -1);
       top: 0;
       height: var(--solid-height);
       transform: translateY(var(--solid-y));
@@ -149,7 +162,7 @@
   <main aria-label="www.niklastsalkos.com">
     <div class="text-wrap" id="textWrap">
       <div class="sentence">
-        <span class="type-line"><span class="line-text" id="visibleText">www.niklastsalkos.com</span></span>
+        <span class="type-line"><span class="line-text" id="visibleText"><span class="hi-h">w</span>ww<span class="there-t">.</span>niklastsalkos.com</span></span>
       </div>
     </div>
   </main>
