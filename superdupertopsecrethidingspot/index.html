@@ -75,6 +75,8 @@
     .line-text {
       display: inline-block;
       transform: translateX(-0.078em);
+      outline: 0;
+      caret-color: var(--type);
     }
     .hi-h,
     .there-t {
@@ -203,6 +205,38 @@
       textWrap.style.transform = `scale(${fitScale(visibleText.textContent)})`;
     }
 
+    function moveCaretToEnd() {
+      const range = document.createRange();
+      const selection = window.getSelection();
+      range.selectNodeContents(visibleText);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    function setEditableText(text) {
+      visibleText.textContent = text;
+      updateScale();
+    }
+
+    visibleText.contentEditable = "plaintext-only";
+    visibleText.setAttribute("spellcheck", "false");
+    visibleText.setAttribute("aria-label", "Editable post text");
+
+    visibleText.addEventListener("beforeinput", (event) => {
+      if (event.inputType === "insertParagraph" || event.inputType === "insertLineBreak") {
+        event.preventDefault();
+      }
+    });
+
+    visibleText.addEventListener("paste", (event) => {
+      event.preventDefault();
+      const text = event.clipboardData.getData("text/plain").replace(/\s+/g, " ");
+      document.execCommand("insertText", false, text);
+    });
+
+    visibleText.addEventListener("input", updateScale);
+
     function updateLocalClock() {
       localClock.textContent = new Intl.DateTimeFormat("en-GB", {
         timeZone: "Europe/Copenhagen",
@@ -246,6 +280,8 @@
     }
 
     updateScale();
+    visibleText.focus({ preventScroll: true });
+    moveCaretToEnd();
     window.addEventListener("resize", updateScale);
     updateLocalClock();
     window.setInterval(updateLocalClock, 1000);
