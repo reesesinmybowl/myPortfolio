@@ -603,6 +603,9 @@
           if (navLocked || !path) return;
           navLocked = true;
           try { sessionStorage.setItem('projectEdgeStart', direction === 'next' ? 'bottom' : 'top'); } catch (_) {}
+          if (direction === 'prev' && path === PREV_PATH) {
+            try { sessionStorage.setItem('aboutIntroFinished', '1'); } catch (_) {}
+          }
           window.location.href = path;
         }
 

@@ -23,6 +23,14 @@
       --tracking: -0.08em;
     }
 
+    @font-face {
+      font-family: "ABC Monument Grotesk Trial";
+      src: url("fonts/ABCMonumentGroteskTrial-Regular.otf") format("opentype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     html,
     body {
       width: 100%;
@@ -62,9 +70,10 @@
       top: 50%;
       width: max-content;
       transform: translate(-50%, -50%);
-      font-family: Helvetica, Arial, sans-serif;
+      font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
       font-size: 160px;
-      font-weight: 400;
+      font-weight: normal;
+      font-synthesis: none;
       line-height: .8;
       letter-spacing: var(--tracking);
       white-space: pre;
@@ -125,7 +134,7 @@
     .cursor {
       position: absolute;
       left: var(--caret-x, calc(100% + 0.08em));
-      top: calc(var(--caret-y, 0px) + 0.1em);
+      top: calc(var(--caret-y, 0px) + 0.16em);
       display: block;
       width: 0.065em;
       height: 0.82em;
@@ -193,9 +202,10 @@
       top: -10000px;
       visibility: hidden;
       width: max-content;
-      font-family: Helvetica, Arial, sans-serif;
+      font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
       font-size: 160px;
-      font-weight: 400;
+      font-weight: normal;
+      font-synthesis: none;
       letter-spacing: var(--tracking);
       line-height: .8;
       white-space: pre;
@@ -306,7 +316,7 @@
     ];
     const textOffsets = [
       "-0.078em",
-      "-0.098em",
+      "-0.075em",
       "-0.056em",
       "-0.011em",
       "-0.006em",
@@ -330,6 +340,9 @@
     const introHold = 620;
     const introDuration = 520;
     const debugNoAnimation = false;
+    const ABOUT_INTRO_FINISHED_KEY = "aboutIntroFinished";
+    let startFinished = false;
+    let skipProjectPeek = false;
     let start = performance.now();
     let frame = 0;
     let editable = false;
@@ -339,6 +352,12 @@
     if (exportMode) {
       document.body.classList.add("exporting");
     }
+
+    try {
+      startFinished = sessionStorage.getItem(ABOUT_INTRO_FINISHED_KEY) === "1";
+      skipProjectPeek = startFinished;
+      sessionStorage.removeItem(ABOUT_INTRO_FINISHED_KEY);
+    } catch (_) {}
 
     function measureText(text) {
       measure.textContent = text || sentence.charAt(0);
@@ -396,7 +415,8 @@
     }
 
     function render(now) {
-      if (debugNoAnimation) {
+      if (debugNoAnimation || startFinished) {
+        startFinished = false;
         renderFullText();
         return;
       }
@@ -746,11 +766,14 @@
       visibleText.removeAttribute("aria-label");
       document.body.classList.remove("is-peeking");
       clearTimeout(peekTimer);
-      scheduleProjectPeek();
+      if (!skipProjectPeek) {
+        scheduleProjectPeek();
+      }
       cursor.classList.remove("done");
       cancelAnimationFrame(frame);
 
-      if (debugNoAnimation) {
+      if (debugNoAnimation || startFinished) {
+        startFinished = false;
         renderFullText();
         return;
       }
