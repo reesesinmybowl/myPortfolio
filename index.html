@@ -212,7 +212,114 @@
 
     .site-meta a {
       color: inherit;
+      display: inline-flex;
+      align-items: center;
+      min-height: 18px;
+      padding: 2px 5px 3px;
       text-decoration: none;
+      position: relative;
+      isolation: isolate;
+      transform: translateY(0) rotate(0deg);
+      transition: color 140ms linear, transform 180ms cubic-bezier(.2, 1.4, .34, 1);
+      vertical-align: middle;
+    }
+
+    .site-meta a::before,
+    .site-meta a::after {
+      content: "";
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        opacity 120ms ease,
+        transform 190ms cubic-bezier(.16, 1.6, .34, 1),
+        background 140ms linear,
+        box-shadow 140ms linear;
+    }
+
+    .site-meta a::before {
+      inset: -2px -4px -3px;
+      z-index: -1;
+      border: 1px solid currentColor;
+      border-radius: 5px;
+      background: var(--paper);
+      box-shadow: 3px 3px 0 currentColor;
+      transform: translate(-1px, 2px) rotate(2deg) scale(.86, .72);
+    }
+
+    .site-meta a::after {
+      z-index: 1;
+    }
+
+    .site-meta a:hover,
+    .site-meta a:focus-visible {
+      transform: translateY(-1px) rotate(1.2deg);
+      outline: none;
+    }
+
+    .site-meta a:hover::before,
+    .site-meta a:focus-visible::before,
+    .site-meta a:hover::after,
+    .site-meta a:focus-visible::after {
+      opacity: 1;
+    }
+
+    .site-meta .instagram-link::after {
+      right: -10px;
+      bottom: -8px;
+      width: 12px;
+      height: 12px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      background:
+        radial-gradient(circle at 73% 27%, currentColor 0 1px, transparent 1.5px),
+        radial-gradient(circle at 50% 53%, transparent 0 2.5px, currentColor 2.8px 3.5px, transparent 3.8px),
+        var(--paper);
+      transform: translate(-3px, 4px) rotate(-12deg) scale(.55);
+    }
+
+    .site-meta .instagram-link:hover::before,
+    .site-meta .instagram-link:focus-visible::before {
+      transform: translate(0, 0) rotate(2deg) scale(1.04, .96);
+    }
+
+    .site-meta .instagram-link:hover::after,
+    .site-meta .instagram-link:focus-visible::after {
+      transform: translate(0, 0) rotate(-12deg) scale(1);
+    }
+
+    .site-meta .email-link {
+      transform-origin: 35% 50%;
+    }
+
+    .site-meta .email-link:hover,
+    .site-meta .email-link:focus-visible {
+      transform: translateY(-1px) rotate(-1.4deg);
+    }
+
+    .site-meta .email-link::after {
+      right: -12px;
+      bottom: -7px;
+      width: 15px;
+      height: 10px;
+      border: 1px solid currentColor;
+      border-radius: 2px;
+      background:
+        linear-gradient(30deg, transparent 45%, currentColor 47% 53%, transparent 55%) 0 0 / 50% 100% no-repeat,
+        linear-gradient(150deg, transparent 45%, currentColor 47% 53%, transparent 55%) 100% 0 / 50% 100% no-repeat,
+        var(--paper);
+      box-shadow: 2px 2px 0 currentColor;
+      transform: translate(-4px, 4px) rotate(10deg) scale(.55);
+    }
+
+    .site-meta .email-link:hover::before,
+    .site-meta .email-link:focus-visible::before {
+      transform: translate(0, 0) rotate(-2deg) scale(1.04, .96);
+    }
+
+    .site-meta .email-link:hover::after,
+    .site-meta .email-link:focus-visible::after {
+      transform: translate(0, 0) rotate(10deg) scale(1);
     }
 
     .location-full { display: inline; }
@@ -256,16 +363,42 @@
 
     .site-nav a {
       color: inherit;
+      display: inline-flex;
+      align-items: center;
+      min-height: 18px;
+      padding: 2px 5px 3px;
       text-decoration: none;
       position: relative;
+      isolation: isolate;
+      transform: translateY(0) rotate(0deg);
+      transition: color 140ms linear, transform 180ms cubic-bezier(.2, 1.4, .34, 1);
+      vertical-align: middle;
+    }
+
+    .site-nav a::before {
+      content: "";
+      position: absolute;
+      inset: -2px -4px -3px;
+      z-index: -1;
+      border: 1px solid currentColor;
+      border-radius: 5px;
+      background: var(--paper);
+      box-shadow: 3px 3px 0 currentColor;
+      opacity: 0;
+      transform: translate(-1px, 2px) rotate(-2deg) scale(.86, .72);
+      transition:
+        opacity 120ms ease,
+        transform 190ms cubic-bezier(.16, 1.6, .34, 1),
+        background 140ms linear,
+        box-shadow 140ms linear;
     }
 
     .site-nav a::after {
       content: "";
       position: absolute;
-      left: 0;
-      right: 0;
-      bottom: -1px;
+      left: 5px;
+      right: 5px;
+      bottom: 1px;
       height: 1px;
       background: currentColor;
       transform: scaleX(0);
@@ -273,9 +406,35 @@
       transition: transform 180ms ease;
     }
 
+    .site-nav a:hover,
+    .site-nav a:focus-visible {
+      transform: translateY(-1px) rotate(-1.4deg);
+    }
+
+    .site-nav a:nth-of-type(2):hover,
+    .site-nav a:nth-of-type(2):focus-visible {
+      transform: translateY(-1px) rotate(1.2deg);
+    }
+
+    .site-nav a:nth-of-type(3):hover,
+    .site-nav a:nth-of-type(3):focus-visible {
+      transform: translateY(-1px) rotate(-.7deg) skewX(-4deg);
+    }
+
+    .site-nav a:hover::before,
+    .site-nav a:focus-visible::before {
+      opacity: 1;
+      transform: translate(0, 0) rotate(-2deg) scale(1.04, .96);
+    }
+
     .site-nav a:hover::after,
+    .site-nav a:focus-visible::after,
     .site-nav .is-active::after {
       transform: scaleX(1);
+    }
+
+    .site-nav a:focus-visible {
+      outline: none;
     }
 
     .cursor {
@@ -458,14 +617,14 @@
   </style>
 </head>
 <body>
-  <main id="stage" aria-label="Hi There! My name is Niklas, I'm an Interactive Designer based in Copenhagen with a passion for typography, visual identities, 3D and motion graphics.">
+  <main id="stage" aria-label="Hi there! I&rsquo;m Niklas, a Copenhagen-based designer working across identities, digital experiences, type, 3D and motion.">
     <div class="text-wrap" id="textWrap">
       <div class="sentence"><span id="visibleText"></span></div>
     </div>
   </main>
   <div class="site-meta left-meta" aria-label="Contact information">
-    <a href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a> /
-    <a href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
+    <a class="instagram-link" href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a> /
+    <a class="email-link" href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
   </div>
   <div class="site-meta right-meta" aria-label="Local information">
     <span class="location-full">Denmark, Copenhagen</span><span class="location-short">CPH</span> <span id="localClock">--:--</span>
@@ -495,12 +654,10 @@
     const postImageMode = postMode && postImage;
 
     const defaultLines = [
-      "Hi There! My name is Niklas,",
-      "I'm an Interactive Designer",
-      "based in Copenhagen",
-      "with a passion for typography,",
-      "visual identities, 3D",
-      "and motion graphics."
+      "Hi there! I\u2019m Niklas",
+      "a Copenhagen-based designer ",
+      "working across identities, digital",
+      "experiences, type, 3D and motion graphics."
     ];
     const lines = postMode ? [postText] : defaultLines;
     const solidBleeds = [
@@ -543,9 +700,12 @@
 
     const duration = 6200;
     const pause = 260;
-    const introStopText = "Hi There!";
+    const introStopText = "Hi there!";
     const introHold = 620;
     const introDuration = 520;
+    const secondStopText = "Hi there! I\u2019m Niklas";
+    const secondHold = 480;
+    const secondDuration = introDuration;
     const debugNoAnimation = false;
     const ABOUT_INTRO_FINISHED_KEY = "aboutIntroFinished";
     let startFinished = false;
@@ -598,8 +758,7 @@
         timeZone: "Europe/Copenhagen",
         hour: "2-digit",
         minute: "2-digit",
-        hour12: false,
-        timeZoneName: "short"
+        hour12: false
       }).format(now);
 
       localClock.textContent = time;
@@ -766,7 +925,8 @@
 
       const elapsed = Math.max(0, now - start - pause);
       const introCount = introStopText.length;
-      const remainingDuration = Math.max(1, duration - introDuration);
+      const secondCount = secondStopText.length;
+      const remainingDuration = Math.max(1, duration - introDuration - secondDuration);
       let count = 1;
       let progress = 0;
 
@@ -776,11 +936,17 @@
         count = Math.max(1, Math.ceil(introCount * introEased));
       } else if (elapsed < introDuration + introHold) {
         count = introCount;
+      } else if (elapsed < introDuration + introHold + secondDuration) {
+        const secondProgress = (elapsed - introDuration - introHold) / secondDuration;
+        const secondEased = secondProgress * secondProgress * (3 - 2 * secondProgress);
+        count = introCount + Math.ceil((secondCount - introCount) * secondEased);
+      } else if (elapsed < introDuration + introHold + secondDuration + secondHold) {
+        count = secondCount;
       } else {
-        const resumeElapsed = elapsed - introDuration - introHold;
+        const resumeElapsed = elapsed - introDuration - introHold - secondDuration - secondHold;
         progress = Math.min(1, resumeElapsed / remainingDuration);
         const eased = 1 - Math.pow(1 - progress, 1.45);
-        count = introCount + Math.ceil((sentence.length - introCount) * eased);
+        count = secondCount + Math.ceil((sentence.length - secondCount) * eased);
       }
 
       const visibleLines = formatText(count);
@@ -804,7 +970,8 @@
     function countAtElapsed(milliseconds) {
       const elapsed = Math.max(0, milliseconds - pause);
       const introCount = introStopText.length;
-      const remainingDuration = Math.max(1, duration - introDuration);
+      const secondCount = secondStopText.length;
+      const remainingDuration = Math.max(1, duration - introDuration - secondDuration);
 
       if (elapsed < introDuration) {
         const introProgress = elapsed / introDuration;
@@ -816,10 +983,20 @@
         return introCount;
       }
 
-      const resumeElapsed = elapsed - introDuration - introHold;
+      if (elapsed < introDuration + introHold + secondDuration) {
+        const secondProgress = (elapsed - introDuration - introHold) / secondDuration;
+        const secondEased = secondProgress * secondProgress * (3 - 2 * secondProgress);
+        return introCount + Math.ceil((secondCount - introCount) * secondEased);
+      }
+
+      if (elapsed < introDuration + introHold + secondDuration + secondHold) {
+        return secondCount;
+      }
+
+      const resumeElapsed = elapsed - introDuration - introHold - secondDuration - secondHold;
       const progress = Math.min(1, resumeElapsed / remainingDuration);
       const eased = 1 - Math.pow(1 - progress, 1.45);
-      return introCount + Math.ceil((sentence.length - introCount) * eased);
+      return secondCount + Math.ceil((sentence.length - secondCount) * eased);
     }
 
     function applyPaletteData(palette) {
@@ -1155,7 +1332,7 @@
       frame = requestAnimationFrame(render);
     }
 
-    function scheduleProjectPeek(delay = 10000) {
+    function scheduleProjectPeek(delay = 14000) {
       clearTimeout(peekTimer);
       peekTimer = window.setTimeout(() => {
         if (navLocked || exportMode) {
