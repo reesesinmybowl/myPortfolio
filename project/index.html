@@ -482,7 +482,8 @@
       .left-top p:last-child{text-align:right;white-space:nowrap;}
       .left-top p:last-child br{display:none;}
       .left-top p:last-child a + a::before{content:" / ";}
-      .grid{align-items:stretch;padding:56px 6px 16px;}
+      .grid{grid-template-columns:1fr;align-items:stretch;padding:56px 6px 16px;}
+      .project-row{grid-column:auto !important;}
       .project-row{position:static;flex-direction:column;}
       .meta{display:none;}
       .card{width:100%;align-items:center;}
@@ -712,6 +713,28 @@
         return '--';
       }
 
+      function readCachedWeather() {
+        try {
+          const cached = JSON.parse(localStorage.getItem('niklasSiteWeather') || 'null');
+          if (!cached || Date.now() - cached.timestamp > 30 * 60 * 1000) return false;
+          setAll(temps, cached.temp || '--\u00b0C');
+          setAll(conditions, cached.condition || '--');
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function writeCachedWeather(temp, condition) {
+        try {
+          localStorage.setItem('niklasSiteWeather', JSON.stringify({
+            temp,
+            condition,
+            timestamp: Date.now()
+          }));
+        } catch (_) {}
+      }
+
       async function updateWeather() {
         try {
           const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=55.6761&longitude=12.5683&current=temperature_2m,weather_code&timezone=Europe%2FCopenhagen', { cache: 'no-store' });
@@ -719,38 +742,33 @@
           const data = await response.json();
           const temperature = data.current?.temperature_2m;
           const unit = data.current_units?.temperature_2m || '\u00b0C';
-          setAll(temps, typeof temperature === 'number' ? `${Math.round(temperature)}${unit}` : '--\u00b0C');
-          setAll(conditions, weatherCodeLabel(data.current?.weather_code));
+          const tempText = typeof temperature === 'number' ? `${Math.round(temperature)}${unit}` : '--\u00b0C';
+          const conditionText = weatherCodeLabel(data.current?.weather_code);
+          setAll(temps, tempText);
+          setAll(conditions, conditionText);
+          writeCachedWeather(tempText, conditionText);
         } catch (_) {
-          setAll(temps, '--\u00b0C');
-          setAll(conditions, '--');
+          if (!readCachedWeather()) {
+            setAll(temps, '--\u00b0C');
+            setAll(conditions, '--');
+          }
         }
       }
 
       updateClock();
       setInterval(updateClock, 1000);
+      readCachedWeather();
       updateWeather();
       setInterval(updateWeather, 10 * 60 * 1000);
-      let navHiddenUntilUp = false;
-      try {
-        navHiddenUntilUp = sessionStorage.getItem('projectNavHiddenUntilUp') === '1';
-        sessionStorage.removeItem('projectNavHiddenUntilUp');
-      } catch (_) {}
-      if (navHiddenUntilUp) {
-        document.body.classList.add('nav-hidden');
-      }
 
       let lastScrollY = window.scrollY;
       window.addEventListener('scroll', () => {
         const currentY = window.scrollY;
         const delta = currentY - lastScrollY;
 
-        if (navHiddenUntilUp && delta >= -4) {
-          document.body.classList.add('nav-hidden');
-        } else if (currentY <= 16 || delta < -4) {
-          navHiddenUntilUp = false;
+        if (currentY <= 16 || delta < -4) {
           document.body.classList.remove('nav-hidden');
-        } else if (currentY > 96 && delta > 4) {
+        } else if (currentY > 36 && delta > 3) {
           document.body.classList.add('nav-hidden');
         }
 

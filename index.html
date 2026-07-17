@@ -588,6 +588,34 @@
     }
 
     @media (max-width: 940px) {
+      .site-meta,
+      .site-nav {
+        left: 6px;
+        right: auto;
+        width: calc(100vw - 12px);
+        max-width: calc(100vw - 12px);
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transform: none;
+      }
+
+      .site-meta.left-meta {
+        top: 6px;
+        left: 6px;
+      }
+
+      .site-nav {
+        top: 6px;
+        left: auto;
+        right: 6px;
+        width: auto;
+        max-width: calc(100vw - 12px);
+        text-align: right;
+        transform: none;
+      }
+
       .site-meta.right-meta {
         top: 21px;
         left: 6px;
@@ -596,6 +624,17 @@
         text-align: left;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+
+      body.nav-hidden .site-nav,
+      body.nav-hidden .site-meta {
+        transform: translateY(-8px);
+      }
+
+      .site-meta a::before,
+      .site-meta a::after,
+      .site-nav a::before {
+        display: none;
       }
     }
 
@@ -755,6 +794,28 @@
       localClock.textContent = time;
     }
 
+    function readCachedWeather() {
+      try {
+        const cached = JSON.parse(localStorage.getItem("niklasSiteWeather") || "null");
+        if (!cached || Date.now() - cached.timestamp > 30 * 60 * 1000) return false;
+        weatherTemp.textContent = cached.temp || "--\u00b0C";
+        weatherCondition.textContent = cached.condition || "--";
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function writeCachedWeather(temp, condition) {
+      try {
+        localStorage.setItem("niklasSiteWeather", JSON.stringify({
+          temp,
+          condition,
+          timestamp: Date.now()
+        }));
+      } catch (_) {}
+    }
+
     async function updateWeather() {
       try {
         const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=55.6761&longitude=12.5683&current=temperature_2m,weather_code&timezone=Europe%2FCopenhagen", { cache: "no-store" });
@@ -770,10 +831,16 @@
         if (typeof temperature === "number") {
           weatherTemp.textContent = `${Math.round(temperature)}${unit}`;
         }
-        weatherCondition.textContent = weatherCodeLabel(code);
+        const tempText = typeof temperature === "number" ? `${Math.round(temperature)}${unit}` : "--\u00b0C";
+        const conditionText = weatherCodeLabel(code);
+        weatherTemp.textContent = tempText;
+        weatherCondition.textContent = conditionText;
+        writeCachedWeather(tempText, conditionText);
       } catch (_) {
-        weatherTemp.textContent = "--\u00b0C";
-        weatherCondition.textContent = "--";
+        if (!readCachedWeather()) {
+          weatherTemp.textContent = "--\u00b0C";
+          weatherCondition.textContent = "--";
+        }
       }
     }
 
@@ -796,6 +863,7 @@
 
     updateLocalClock();
     window.setInterval(updateLocalClock, 1000);
+    readCachedWeather();
     updateWeather();
     window.setInterval(updateWeather, 10 * 60 * 1000);
 
@@ -1378,9 +1446,6 @@
       navLocked = true;
       document.body.classList.remove("is-peeking");
       clearTimeout(peekTimer);
-      try {
-        sessionStorage.setItem("projectNavHiddenUntilUp", "1");
-      } catch (_) {}
       window.location.href = PROJECTS_PATH;
     }
 
@@ -1421,7 +1486,7 @@
 
       if (currentY <= 16 || delta < -4) {
         document.body.classList.remove("nav-hidden");
-      } else if (currentY > 96 && delta > 4) {
+      } else if (currentY > 36 && delta > 3) {
         document.body.classList.add("nav-hidden");
       }
 
