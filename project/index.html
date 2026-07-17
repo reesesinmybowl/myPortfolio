@@ -11,6 +11,13 @@
     /* ===== Base ===== */
     * { box-sizing: border-box; }
     html { height: 100%; }
+    @font-face {
+      font-family: "ABC Monument Grotesk Trial";
+      src: url("../fonts/ABCMonumentGroteskTrial-Regular.otf") format("opentype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
 		    body {
 		      margin: 0;
 		      background: #fbfbfb;
@@ -82,7 +89,7 @@
       font-size: 12px;
       line-height: 1.1;
       letter-spacing: 0;
-      font-family: Helvetica, Arial, sans-serif;
+      font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
       transition: opacity 180ms ease, transform 180ms ease;
     }
     .site-meta.left-meta { left: 6px; }
@@ -97,9 +104,100 @@
       text-overflow: ellipsis;
     }
     .site-meta a,
-    .site-nav a { color: inherit; text-decoration: none; position: relative; }
-    .location-full { display: none; }
-    .location-short { display: inline; }
+    .site-nav a {
+      color: inherit;
+      text-decoration: none;
+      position: relative;
+      isolation: isolate;
+      transform: translateY(0) rotate(0deg);
+      transition: color 140ms linear, transform 180ms cubic-bezier(.2, 1.4, .34, 1);
+    }
+    .site-meta a::before,
+    .site-meta a::after,
+    .site-nav a::before {
+      content: "";
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        opacity 120ms ease,
+        transform 190ms cubic-bezier(.16, 1.6, .34, 1),
+        background 140ms linear,
+        box-shadow 140ms linear;
+    }
+    .site-meta a::before,
+    .site-nav a::before {
+      inset: -2px -4px -3px;
+      z-index: -1;
+      border: 1px solid currentColor;
+      border-radius: 5px;
+      background: #fbfbfb;
+      box-shadow: 3px 3px 0 currentColor;
+      transform: translate(-1px, 2px) rotate(-2deg) scale(.86, .72);
+    }
+    .site-meta a::after {
+      z-index: 1;
+    }
+    .site-meta a:hover,
+    .site-meta a:focus-visible,
+    .site-nav a:hover,
+    .site-nav a:focus-visible {
+      transform: translateY(0) rotate(0deg);
+      outline: none;
+    }
+    .site-meta a:hover::before,
+    .site-meta a:focus-visible::before,
+    .site-meta a:hover::after,
+    .site-meta a:focus-visible::after,
+    .site-nav a:hover::before,
+    .site-nav a:focus-visible::before {
+      opacity: 1;
+    }
+    .site-meta .instagram-link::after {
+      right: -10px;
+      bottom: -8px;
+      width: 12px;
+      height: 12px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      background:
+        radial-gradient(circle at 73% 27%, currentColor 0 1px, transparent 1.5px),
+        radial-gradient(circle at 50% 53%, transparent 0 2.5px, currentColor 2.8px 3.5px, transparent 3.8px),
+        #fbfbfb;
+      transform: translate(-3px, 4px) rotate(-12deg) scale(.55);
+    }
+    .site-meta .instagram-link:hover::before,
+    .site-meta .instagram-link:focus-visible::before {
+      transform: translate(0, 0) rotate(2deg) scale(1.04, .96);
+    }
+    .site-meta .instagram-link:hover::after,
+    .site-meta .instagram-link:focus-visible::after {
+      transform: translate(0, 0) rotate(-12deg) scale(1);
+    }
+    .site-meta .email-link::after {
+      right: -12px;
+      bottom: -7px;
+      width: 15px;
+      height: 10px;
+      border: 1px solid currentColor;
+      border-radius: 2px;
+      background:
+        linear-gradient(30deg, transparent 45%, currentColor 47% 53%, transparent 55%) 0 0 / 50% 100% no-repeat,
+        linear-gradient(150deg, transparent 45%, currentColor 47% 53%, transparent 55%) 100% 0 / 50% 100% no-repeat,
+        #fbfbfb;
+      box-shadow: 2px 2px 0 currentColor;
+      transform: translate(-4px, 4px) rotate(10deg) scale(.55);
+    }
+    .site-meta .email-link:hover::before,
+    .site-meta .email-link:focus-visible::before {
+      transform: translate(0, 0) rotate(-2deg) scale(1.04, .96);
+    }
+    .site-meta .email-link:hover::after,
+    .site-meta .email-link:focus-visible::after {
+      transform: translate(0, 0) rotate(10deg) scale(1);
+    }
+    .location-full { display: inline; }
+    .location-short { display: none; }
     .site-nav {
       left: 50%;
       text-align: center;
@@ -130,8 +228,13 @@
       transition: transform 180ms ease;
     }
     .site-nav a:hover::after,
+    .site-nav a:focus-visible::after,
     .site-nav .is-active::after {
       transform: scaleX(1);
+    }
+    .site-nav a:hover::before,
+    .site-nav a:focus-visible::before {
+      transform: translate(0, 0) rotate(-2deg) scale(1.04, .96);
     }
     .left,
     .bottom { display: none; }
@@ -161,7 +264,7 @@
 
     /* PROJECTS */
     .grid {
-      padding-top: 42px;
+      padding-top: 28px;
       display: flex;
       flex-direction: column;
       gap: 7px;
@@ -179,29 +282,40 @@
 
 	    .meta {
       position: absolute;
-      left: -400px;
+      left: calc(626px - 100vw);
       top: 0;
-	      width: 320px;
+	      width: 640px;
 	      font-size: 12px;
-      line-height: 1.25;
-      color: #444;
+      font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
+      line-height: 1.15;
+      color: #000;
+      text-align: left;
+      font-weight: 400;
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      column-gap: 24px;
+      align-items: start;
     }
 		    .meta h3 {
+	      display: block;
 	      margin: 0;
-		      font-size: 12px;
-	      font-weight: 600;
+		      font-size: 28px;
+      font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
+	      font-weight: 400;
+      line-height: .9;
 	      color: #000;
-	      display: flex;
-	      justify-content: space-between;
-	      align-items: baseline;
+      white-space: nowrap;
 	    }
 	    .meta h3 span.year {
+      display: block;
       font-weight: 400;
-	      color: #666;
-	      font-size: 12px;
+	      color: #000;
+	      font-size: 28px;
+      font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
+      line-height: .9;
+      margin-top: 5px;
     }
-    .meta p { margin: 0; line-height: 1.15; }
-
+    .meta p { margin: 0; line-height: 1.15; font-weight: 400; }
 	    .card {
 	      width: 600px;
       overflow: hidden;
@@ -325,8 +439,8 @@
 </head>
 <body>
   <div class="site-meta left-meta" aria-label="Contact information">
-    <a href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a> /
-    <a href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
+    <a class="instagram-link" href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a> /
+    <a class="email-link" href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
   </div>
   <div class="site-meta right-meta" aria-label="Local information">
     <span class="location-full">Denmark, Copenhagen</span><span class="location-short">CPH</span> <span class="local-clock">--:--</span>
@@ -362,7 +476,7 @@
       <section id="proj13" class="project-row">
         <div class="meta">
           <h3>Font Runner <span class="year">2026</span></h3>
-          <p>Font Runner is a project about how a run can become something more than just movement.</p>
+          <p>Font Runner is a project about how a physical activity can become something more than just movement.</p>
         </div>
         <a href="../font-runner/" class="card website">
           <img src="../assets/img/i-014.png" alt="Font Runner Poster Project">
@@ -371,7 +485,7 @@
 
       <section id="proj10" class="project-row">
         <div class="meta">
-          <h3>Research Studio Lookbook <span class="year">2026</span></h3>
+          <h3>Research Studio <span class="year">2026</span></h3>
           <p>A lookbook spread exploring structured typography, image systems, and editorial pacing to define a clear visual identity for Research Studio.</p>
         </div>
         <a class="card website" style="pointer-events: none;">
@@ -392,7 +506,7 @@
       <section id="proj12" class="project-row">
         <div class="meta">
           <h3>Much<span class="year">2026</span></h3>
-          <p>Motion design system, defining timing, transitions, and movement rules to create a consistent visual rhythm across the entire identity.</p>
+          <p>Much motion design system, defining timing, transitions, and movement rules to create a consistent visual rhythm across the entire identity.</p>
         </div>
         <a href="../much-project/" class="card website">
           <video src="../assets/video/v-033.mp4" muted loop playsinline autoplay></video>
@@ -402,7 +516,7 @@
       <section id="proj0" class="project-row">
         <div class="meta">
           <h3>Memory of a Flower<span class="year">2025</span></h3>
-          <p>Webpage served as a digital postcard to send to your loved ones, for Alzheimer’s and Parkinson’s disease awareness. The flowers are drawn from memory of a woman living with Alzheimer’s.</p>
+          <p>Memory of a Flower served as a digital postcard to send to your loved ones, for Alzheimer’s and Parkinson’s disease awareness. The flowers are drawn from memory of a woman living with Alzheimer’s.</p>
         </div>
         <a href="../memoryofaflower/" class="card website">
           <img src="../assets/img/i-017.png" alt="Berries and Dairies Project">
@@ -412,7 +526,7 @@
       <section id="proj0" class="project-row">
         <div class="meta">
           <h3>Berries & Dairies<span class="year">2025</span></h3>
-          <p>Berries & Dairies is an editorial style web experiment combining typography and motion, exploring how identity shifts dynamically across geographies.</p>
+          <p>Berries &amp; Dairies is an editorial style web experiment combining typography and motion, exploring how identity shifts dynamically across geographies.</p>
         </div>
         <a href="../berries-n-dairies/" class="card website">
           <img src="../assets/img/i-001.png" alt="Berries and Dairies Project">
@@ -452,7 +566,7 @@
       <section id="proj9" class="project-row">
         <div class="meta">
           <h3>Champagne Towers <span class="year">2025</span></h3>
-          <p>Champagne Towers a surreal visual study combining reflective surfaces, stacked geometry, and light play to explore form, luxury, and celebration as graphic narrative.</p>
+          <p>Champagne Towers is a surreal visual study combining reflective surfaces, stacked geometry, and light play to explore form, luxury, and celebration as graphic narrative.</p>
         </div>
         <a class="card website" style="pointer-events: none;">
           <img src="../assets/img/i-005.png" alt="Champagne Tower Project">
@@ -483,7 +597,7 @@
       <section id="proj8" class="project-row">
         <div class="meta">
           <h3>DJFEST <span class="year">2024</span></h3>
-          <p>An energetic microsite for DJ booking platform as well as casual music exploration, with animated textures, looping visuals, and bold type to mirror the intensity of a live music event.</p>
+          <p>DJFEST is an energetic microsite for DJ booking platform as well as casual music exploration, with animated textures, looping visuals, and bold type to mirror the intensity of a live music event.</p>
         </div>
         <a class="card website" style="pointer-events: none;">
           <video src="../assets/video/v-003.mp4" muted loop playsinline autoplay></video>

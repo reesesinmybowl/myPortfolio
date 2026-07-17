@@ -212,16 +212,11 @@
 
     .site-meta a {
       color: inherit;
-      display: inline-flex;
-      align-items: center;
-      min-height: 18px;
-      padding: 2px 5px 3px;
       text-decoration: none;
       position: relative;
       isolation: isolate;
       transform: translateY(0) rotate(0deg);
       transition: color 140ms linear, transform 180ms cubic-bezier(.2, 1.4, .34, 1);
-      vertical-align: middle;
     }
 
     .site-meta a::before,
@@ -253,7 +248,7 @@
 
     .site-meta a:hover,
     .site-meta a:focus-visible {
-      transform: translateY(-1px) rotate(1.2deg);
+      transform: translateY(0) rotate(0deg);
       outline: none;
     }
 
@@ -294,7 +289,7 @@
 
     .site-meta .email-link:hover,
     .site-meta .email-link:focus-visible {
-      transform: translateY(-1px) rotate(-1.4deg);
+      transform: translateY(0) rotate(0deg);
     }
 
     .site-meta .email-link::after {
@@ -363,16 +358,11 @@
 
     .site-nav a {
       color: inherit;
-      display: inline-flex;
-      align-items: center;
-      min-height: 18px;
-      padding: 2px 5px 3px;
       text-decoration: none;
       position: relative;
       isolation: isolate;
       transform: translateY(0) rotate(0deg);
       transition: color 140ms linear, transform 180ms cubic-bezier(.2, 1.4, .34, 1);
-      vertical-align: middle;
     }
 
     .site-nav a::before {
@@ -396,9 +386,9 @@
     .site-nav a::after {
       content: "";
       position: absolute;
-      left: 5px;
-      right: 5px;
-      bottom: 1px;
+      left: 0;
+      right: 0;
+      bottom: -1px;
       height: 1px;
       background: currentColor;
       transform: scaleX(0);
@@ -758,7 +748,8 @@
         timeZone: "Europe/Copenhagen",
         hour: "2-digit",
         minute: "2-digit",
-        hour12: false
+        hour12: false,
+        timeZoneName: "short"
       }).format(now);
 
       localClock.textContent = time;

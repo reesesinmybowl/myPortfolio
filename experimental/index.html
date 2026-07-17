@@ -122,9 +122,100 @@ body {
   text-overflow: ellipsis;
 }
 .site-meta a,
-.site-nav a { color: inherit; text-decoration: none; position: relative; }
-.location-full { display: none; }
-.location-short { display: inline; }
+.site-nav a {
+  color: inherit;
+  text-decoration: none;
+  position: relative;
+  isolation: isolate;
+  transform: translateY(0) rotate(0deg);
+  transition: color 140ms linear, transform 180ms cubic-bezier(.2, 1.4, .34, 1);
+}
+.site-meta a::before,
+.site-meta a::after,
+.site-nav a::before {
+  content: "";
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 120ms ease,
+    transform 190ms cubic-bezier(.16, 1.6, .34, 1),
+    background 140ms linear,
+    box-shadow 140ms linear;
+}
+.site-meta a::before,
+.site-nav a::before {
+  inset: -2px -4px -3px;
+  z-index: -1;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  background: #fbfbfb;
+  box-shadow: 3px 3px 0 currentColor;
+  transform: translate(-1px, 2px) rotate(-2deg) scale(.86, .72);
+}
+.site-meta a::after {
+  z-index: 1;
+}
+.site-meta a:hover,
+.site-meta a:focus-visible,
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  transform: translateY(0) rotate(0deg);
+  outline: none;
+}
+.site-meta a:hover::before,
+.site-meta a:focus-visible::before,
+.site-meta a:hover::after,
+.site-meta a:focus-visible::after,
+.site-nav a:hover::before,
+.site-nav a:focus-visible::before {
+  opacity: 1;
+}
+.site-meta .instagram-link::after {
+  right: -10px;
+  bottom: -8px;
+  width: 12px;
+  height: 12px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 73% 27%, currentColor 0 1px, transparent 1.5px),
+    radial-gradient(circle at 50% 53%, transparent 0 2.5px, currentColor 2.8px 3.5px, transparent 3.8px),
+    #fbfbfb;
+  transform: translate(-3px, 4px) rotate(-12deg) scale(.55);
+}
+.site-meta .instagram-link:hover::before,
+.site-meta .instagram-link:focus-visible::before {
+  transform: translate(0, 0) rotate(2deg) scale(1.04, .96);
+}
+.site-meta .instagram-link:hover::after,
+.site-meta .instagram-link:focus-visible::after {
+  transform: translate(0, 0) rotate(-12deg) scale(1);
+}
+.site-meta .email-link::after {
+  right: -12px;
+  bottom: -7px;
+  width: 15px;
+  height: 10px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background:
+    linear-gradient(30deg, transparent 45%, currentColor 47% 53%, transparent 55%) 0 0 / 50% 100% no-repeat,
+    linear-gradient(150deg, transparent 45%, currentColor 47% 53%, transparent 55%) 100% 0 / 50% 100% no-repeat,
+    #fbfbfb;
+  box-shadow: 2px 2px 0 currentColor;
+  transform: translate(-4px, 4px) rotate(10deg) scale(.55);
+}
+.site-meta .email-link:hover::before,
+.site-meta .email-link:focus-visible::before {
+  transform: translate(0, 0) rotate(-2deg) scale(1.04, .96);
+}
+.site-meta .email-link:hover::after,
+.site-meta .email-link:focus-visible::after {
+  transform: translate(0, 0) rotate(10deg) scale(1);
+}
+.location-full { display: inline; }
+.location-short { display: none; }
 .site-nav {
   left: 50%;
   text-align: center;
@@ -155,8 +246,13 @@ body.nav-hidden .site-meta {
   transition: transform 180ms ease;
 }
 .site-nav a:hover::after,
+.site-nav a:focus-visible::after,
 .site-nav .is-active::after {
   transform: scaleX(1);
+}
+.site-nav a:hover::before,
+.site-nav a:focus-visible::before {
+  transform: translate(0, 0) rotate(-2deg) scale(1.04, .96);
 }
 .left,
 .bottom { display: none; }
@@ -453,8 +549,8 @@ body.nav-hidden .site-meta {
 <body>
 
   <div class="site-meta left-meta" aria-label="Contact information">
-    <a href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a> /
-    <a href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
+    <a class="instagram-link" href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a> /
+    <a class="email-link" href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
   </div>
   <div class="site-meta right-meta" aria-label="Local information">
     <span class="location-full">Denmark, Copenhagen</span><span class="location-short">CPH</span> <span class="local-clock">--:--</span>
