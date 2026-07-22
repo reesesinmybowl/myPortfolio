@@ -345,6 +345,7 @@
     .meta p { display: none; }
 	    .card {
 	      width: 100%;
+      aspect-ratio: 4 / 5;
       overflow: hidden;
       display: flex;
       justify-content: center;
@@ -353,7 +354,10 @@
       order: 1;
     }
     .card video, .card img {
-      width: 100%; height: auto; display: block; object-fit: contain;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
     }
 
     #proj10 .meta h3 {
@@ -714,9 +718,9 @@
           <h3>Motel Industry <span class="year">2023</span></h3>
           <p>Motel Industry is a conceptual minisite for a rave festival in Berlin. Focusing on atmosphere and attitude over conventional structure with the grittiness of sketchy environments.</p>
         </div>
-        <a href="../motelindustry-website/" class="card website motel">
+        <div class="card website motel">
           <video src="../assets/video/v-020.mp4" muted loop playsinline autoplay></video>
-        </a>
+        </div>
       </section>
     </div>
 
