@@ -248,61 +248,27 @@
     }
 
     .project-edge-indicator {
-      position: fixed;
-      left: 50%;
-      bottom: 28px;
-      width: 100vw;
-      height: 3px;
-      background: #000;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateX(-50%) scaleX(var(--edge-progress, 0));
-      transform-origin: 50% 50%;
-      transition: opacity .28s ease, transform .34s cubic-bezier(.2,.8,.2,1);
-      z-index: 1600;
+      display: none;
     }
 
     body.project-edge-prev .project-edge-indicator {
-      top: 28px;
-      bottom: auto;
+      display: none;
     }
 
     .project-edge-label {
-      all: unset;
-      position: fixed;
-      left: 50%;
-      bottom: 0;
-      transform: translateX(-50%);
-      z-index: 1600;
-      color: #000;
-      font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 11px;
-      font-weight: 400;
-      line-height: 1.2;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      cursor: pointer;
-      width: 100vw;
-      height: 96px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-top: 0;
+      display: none;
     }
 
     body.project-edge-prev .project-edge-label {
-      top: 0;
-      bottom: auto;
+      display: none;
     }
 
     body.project-edge-primed .project-edge-label {
-      opacity: calc(.22 + (var(--edge-progress, 0) * .78));
-      pointer-events: auto;
+      display: none;
     }
 
     body.project-edge-primed .project-edge-indicator {
-      opacity: calc(.22 + (var(--edge-progress, 0) * .78));
+      display: none;
     }
 
     .logo-card {
@@ -367,6 +333,12 @@
     .project-row.logo-row { grid-column: 2 / span 10; }
     .project-row.type-row { grid-column: 1 / span 6; }
     .project-row.spin-row { grid-column: 7 / span 6; }
+    .project-row.new-media-1-row { grid-column: 1 / span 6; }
+    .project-row.new-media-2-row { grid-column: 7 / span 6; }
+    .project-row.new-media-3-row { grid-column: 2 / span 10; }
+    .project-row.new-media-4-row { grid-column: 1 / span 6; }
+    .project-row.new-media-5-row { grid-column: 7 / span 6; }
+    .project-row.new-media-7-row { grid-column: 7 / span 6; }
 
     .poster-row .card {
       width: 94%;
@@ -462,6 +434,8 @@
   </style>
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
+  <link rel="stylesheet" href="/global-nav.css">
+  <script defer src="/global-nav.js"></script>
 </head>
 <body>
   <div class="asset-loader" aria-label="Loading Font Runner"></div>
@@ -486,18 +460,12 @@
 
     <main>
       <section class="hero">
-        <video data-src="assets/m/fr-004.mp4" width="1080" height="1350" autoplay muted loop playsinline preload="auto"></video>
+        <video data-src="assets/m/Video cover Font Runner.mp4" width="1080" height="1350" autoplay muted loop playsinline preload="auto"></video>
       </section>
 
       <p class="intro-copy">Font Runner is my bachelor project, a digital platform that turns running routes into custom letters, patterns and gear. The project started as a way to rethink how activity is usually shown back to us. Instead of another dashboard built around pace, distance and performance, Font Runner uses the shape of the route itself as the main material.</p>
 
       <section class="grid">
-        <section class="project-row poster-row">
-          <div class="card website">
-            <img data-src="assets/m/fr-002.png" width="1684" height="2384" alt="Font Runner poster">
-          </div>
-        </section>
-
         <p class="media-copy">Users can turn the paths they run into letterforms, generate patterns from their movement and unlock clothing shaped by the places they have been. A run becomes less like a result, and more like a trace, something personal you can collect, wear and build on.</p>
 
         <section class="project-row spread-row">
@@ -556,14 +524,39 @@
           </div>
         </section>
 
-        <section class="project-row video-poster-small-row">
-          <div class="video-poster-small-pair">
-            <div class="card website">
-              <video data-src="assets/m/fr-015.mp4" width="1684" height="2384" autoplay muted loop playsinline preload="auto"></video>
-            </div>
-            <div class="card website">
-              <video data-src="assets/m/fr-001.mp4" width="1684" height="2384" autoplay muted loop playsinline preload="auto"></video>
-            </div>
+        <section class="project-row new-media-1-row">
+          <div class="card website">
+            <img data-src="../FontRunnerMediaNew.png" width="1122" height="1402" alt="Font Runner media">
+          </div>
+        </section>
+
+        <section class="project-row new-media-2-row">
+          <div class="card website">
+            <img data-src="../FontRunnerMediaNew2.png" width="1122" height="1402" alt="Font Runner media">
+          </div>
+        </section>
+
+        <section class="project-row new-media-3-row">
+          <div class="card website">
+            <img data-src="../FontRunnerMediaNew3.png" width="1403" height="1121" alt="Font Runner media">
+          </div>
+        </section>
+
+        <section class="project-row new-media-4-row">
+          <div class="card website">
+            <video data-src="../FontRunnerMediaNew4.mp4" width="1080" height="1920" autoplay muted loop playsinline preload="auto"></video>
+          </div>
+        </section>
+
+        <section class="project-row new-media-5-row">
+          <div class="card website">
+            <img data-src="../FontRunnerMediaNew5.png" width="1080" height="1920" alt="Font Runner media">
+          </div>
+        </section>
+
+        <section class="project-row new-media-7-row">
+          <div class="card website">
+            <img data-src="../FontRunnerMediaNew7.png" width="1122" height="1402" alt="Font Runner media">
           </div>
         </section>
 

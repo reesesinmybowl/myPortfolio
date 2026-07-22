@@ -182,61 +182,27 @@
     }
 
     .project-edge-indicator {
-      position: fixed;
-      left: 50%;
-      bottom: 28px;
-      width: 100vw;
-      height: 3px;
-      background: #000;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateX(-50%) scaleX(var(--edge-progress, 0));
-      transform-origin: 50% 50%;
-      transition: opacity .28s ease, transform .34s cubic-bezier(.2,.8,.2,1);
-      z-index: 1600;
+      display: none;
     }
 
     body.project-edge-prev .project-edge-indicator {
-      top: 28px;
-      bottom: auto;
+      display: none;
     }
 
     .project-edge-label {
-      all: unset;
-      position: fixed;
-      left: 50%;
-      bottom: 0;
-      transform: translateX(-50%);
-      z-index: 1600;
-      color: #000;
-      font-family: "Univers LT 55", "Univers LT Std", "Univers LT 55 Regular", "Univers", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 11px;
-      font-weight: 400;
-      line-height: 1.2;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      cursor: pointer;
-      width: 100vw;
-      height: 96px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-top: 0;
+      display: none;
     }
 
     body.project-edge-prev .project-edge-label {
-      top: 0;
-      bottom: auto;
+      display: none;
     }
 
     body.project-edge-primed .project-edge-label {
-      opacity: calc(.22 + (var(--edge-progress, 0) * .78));
-      pointer-events: auto;
+      display: none;
     }
 
     body.project-edge-primed .project-edge-indicator {
-      opacity: calc(.22 + (var(--edge-progress, 0) * .78));
+      display: none;
     }
 
     .tile {
@@ -311,6 +277,8 @@
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
   <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="/global-nav.css">
+  <script defer src="/global-nav.js"></script>
 </head>
 <body>
   <div class="project-edge-indicator" aria-hidden="true"></div>

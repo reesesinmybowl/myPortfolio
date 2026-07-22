@@ -59,6 +59,11 @@
       background: var(--paper);
       transition: background 140ms linear;
       will-change: transform;
+      cursor: pointer;
+    }
+
+    body.post-mode main {
+      cursor: default;
     }
 
     .text-wrap {
@@ -87,7 +92,79 @@
       --x-band-top: 0;
       --x-band-height: 0.748em;
       --solid-y: 2px;
+      transform: translate(-50%, -50%);
       transition: color 140ms linear;
+    }
+
+    body.work-title-mode main {
+      place-items: start start;
+      padding: 240px 6px 0;
+    }
+
+    body.work-title-mode .text-wrap {
+      width: calc(100vw - 12px);
+      height: auto;
+      transform: none !important;
+    }
+
+    body.work-title-mode .sentence {
+      position: static;
+      width: 100%;
+      transform: none;
+      font-size: 12px;
+      line-height: 1;
+      letter-spacing: 0;
+      text-align: left;
+      white-space: normal;
+    }
+
+    body.work-title-mode .cursor {
+      display: none;
+    }
+
+    .work-study-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 7px;
+      row-gap: 8px;
+      align-items: start;
+      width: 100%;
+      font-family: Helvetica, Arial, sans-serif;
+      color: var(--type);
+    }
+
+    .work-study-column {
+      display: block;
+      padding: 1px 0 2px;
+    }
+
+    .work-study-heading,
+    .work-study-entry {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: workStudyReveal 360ms cubic-bezier(.18, .9, .24, 1) forwards;
+      animation-delay: calc(var(--i) * 58ms);
+    }
+
+    .work-study-heading {
+      margin-bottom: 8px;
+    }
+
+    @keyframes workStudyReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     body.post-mode .sentence {
@@ -114,6 +191,26 @@
       display: block;
       outline: 0;
       caret-color: transparent;
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+      transition:
+        opacity 220ms ease,
+        filter 220ms ease,
+        transform 260ms cubic-bezier(.18, .9, .24, 1);
+      will-change: opacity, filter, transform;
+    }
+
+    body.title-transition-out #visibleText {
+      opacity: 0;
+      filter: blur(5px);
+      transform: translateY(-10px);
+    }
+
+    body.title-transition-in #visibleText {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
     }
 
 #visibleText ::selection,
@@ -187,23 +284,29 @@
       position: fixed;
       top: 6px;
       z-index: 8;
+      --header-column: calc((100vw - 26px) / 3);
       color: var(--type);
       font-family: Helvetica, Arial, sans-serif;
       font-size: 12px;
       line-height: 1.1;
       letter-spacing: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       transition: color 140ms linear, opacity 180ms ease, transform 180ms ease;
     }
 
     .site-meta.left-meta {
       left: 6px;
+      width: var(--header-column);
     }
 
     .site-meta.right-meta {
-      right: 6px;
-      text-align: right;
-      width: auto;
-      max-width: calc(100vw - 12px);
+      left: calc(6px + (var(--header-column) + 7px) * 2);
+      right: auto;
+      text-align: left;
+      width: var(--header-column);
+      max-width: var(--header-column);
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
       overflow: hidden;
@@ -331,15 +434,18 @@
     .site-nav {
       position: fixed;
       top: 6px;
-      left: 50%;
+      left: calc(6px + var(--header-column) + 7px);
       z-index: 8;
+      --header-column: calc((100vw - 26px) / 3);
+      display: flex;
+      gap: 7px;
+      width: var(--header-column);
       color: var(--type);
       font-family: Helvetica, Arial, sans-serif;
       font-size: 12px;
       line-height: 1.1;
       letter-spacing: 0;
-      text-align: center;
-      transform: translateX(-50%);
+      text-align: left;
       transition: color 140ms linear, opacity 180ms ease, transform 180ms ease;
       white-space: nowrap;
     }
@@ -347,7 +453,7 @@
     body.nav-hidden .site-nav {
       opacity: 0;
       pointer-events: none;
-      transform: translate(-50%, -8px);
+      transform: translateY(-8px);
     }
 
     body.nav-hidden .site-meta {
@@ -430,7 +536,7 @@
     .cursor {
       position: absolute;
       left: var(--caret-x, calc(100% + 0.08em));
-      top: calc(var(--caret-y, 0px) + 0.16em);
+      top: calc(var(--caret-y, 0px) + 0.0em);
       display: block;
       width: 0.065em;
       height: 0.82em;
@@ -487,11 +593,11 @@
     }
 
     body.is-peeking main {
-      animation: pagePeek 1450ms cubic-bezier(.2, .8, .2, 1);
+      animation: none;
     }
 
     body.is-peeking .palette-bar {
-      animation: palettePeek 1450ms cubic-bezier(.2, .8, .2, 1);
+      animation: none;
     }
 
     body.exporting .cursor {
@@ -585,6 +691,14 @@
       .measure {
         font-size: 136px;
       }
+
+      body.work-title-mode main {
+        padding: 86px 6px 0;
+      }
+
+      .work-study-list {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 940px) {
@@ -592,8 +706,9 @@
       .site-nav {
         left: 6px;
         right: auto;
-        width: calc(100vw - 12px);
-        max-width: calc(100vw - 12px);
+        --header-column: calc((100vw - 26px) / 3);
+        width: var(--header-column);
+        max-width: var(--header-column);
         text-align: left;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -608,19 +723,19 @@
 
       .site-nav {
         top: 6px;
-        left: auto;
-        right: 6px;
-        width: auto;
-        max-width: calc(100vw - 12px);
-        text-align: right;
+        left: calc(6px + var(--header-column) + 7px);
+        right: auto;
+        width: var(--header-column);
+        max-width: var(--header-column);
+        text-align: left;
         transform: none;
       }
 
       .site-meta.right-meta {
-        top: 21px;
-        left: 6px;
+        top: 6px;
+        left: calc(6px + (var(--header-column) + 7px) * 2);
         right: auto;
-        width: calc(100vw - 12px);
+        width: var(--header-column);
         text-align: left;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -644,6 +759,8 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/global-nav.css">
+  <script defer src="/global-nav.js"></script>
 </head>
 <body>
   <main id="stage" aria-label="Hi there! I&rsquo;m Niklas, a Copenhagen-based designer working across identities, digital experiences, type, 3D and motion.">
@@ -660,8 +777,8 @@
     <span id="weatherTemp">--&deg;C</span> <span id="weatherCondition">--</span>
   </div>
   <nav class="site-nav" aria-label="Primary navigation">
-    <a href="/" class="is-active" aria-current="page">About</a> /
-    <a href="/project/">Projects</a> /
+    <a href="/" class="is-active" aria-current="page">About</a>
+    <a href="/project/">Projects</a>
     <a href="/experimental/">Experimental</a>
   </nav>
   <div class="palette-bar" aria-label="Color palettes">
@@ -689,6 +806,20 @@
       "experiences, type, 3D and motion graphics."
     ];
     const lines = postMode ? [postText] : defaultLines;
+    const workStudyGroups = [
+      {
+        heading: "Studios",
+        items: ["RICH&HANC&BOBB"]
+      },
+      {
+        heading: "Selected clients while at RICH&HANC&BOBB",
+        items: ["Research Studio", "Dully", "Much", "Nyx", "Monta", "NemArkitekter"]
+      },
+      {
+        heading: "Studies",
+        items: ["DMJX Visual Communication Interactive Design BA", "Krabbesholm Højskole"]
+      }
+    ];
     const solidBleeds = [
       { left: 0, right: 0 },
       { left: 0, right: 0 },
@@ -716,11 +847,12 @@
     const sentence = lines.join(" ");
     const stage = document.getElementById("stage");
     const textWrap = document.getElementById("textWrap");
+    const sentenceEl = document.querySelector(".sentence");
     const visibleText = document.getElementById("visibleText");
     const cursor = document.createElement("span");
     cursor.className = "cursor";
     cursor.setAttribute("aria-hidden", "true");
-    document.querySelector(".sentence").append(cursor);
+    sentenceEl.append(cursor);
     const measure = document.getElementById("measure");
     const palettes = document.querySelectorAll(".palette");
     const localClock = document.getElementById("localClock");
@@ -744,7 +876,10 @@
     let editable = false;
     let currentScale = 1;
     let peekTimer = 0;
-    let lastTouchAt = 0;
+    let workStudyTimer = 0;
+    let showingWorkStudy = false;
+    let isTitleTransitioning = false;
+    let titleTransitionTimer = 0;
 
     if (exportMode) {
       document.body.classList.add("exporting");
@@ -866,7 +1001,6 @@
     readCachedWeather();
     updateWeather();
     window.setInterval(updateWeather, 10 * 60 * 1000);
-
     if (!postMode) {
       try {
         startFinished = sessionStorage.getItem(ABOUT_INTRO_FINISHED_KEY) === "1";
@@ -891,6 +1025,18 @@
       );
 
       return Math.min(8.5, scale);
+    }
+
+    function headlineTransform(scale = currentScale) {
+      if (showingWorkStudy || postImageMode) {
+        return "none";
+      }
+
+      return `scale(${scale})`;
+    }
+
+    function applyHeadlineTransform() {
+      textWrap.style.transform = headlineTransform(currentScale);
     }
 
     function formatText(count) {
@@ -1014,12 +1160,12 @@
       const done = count >= sentence.length;
 
       renderTypedLines(visibleLines, done);
-      cursor.classList.toggle("done", done);
+      cursor.classList.remove("done");
       currentScale = scale;
-      textWrap.style.transform = `scale(${scale})`;
+      applyHeadlineTransform();
 
       if (done) {
-        enableEditing();
+        requestAnimationFrame(positionTitleCursor);
         return;
       }
 
@@ -1093,9 +1239,12 @@
       const done = count >= sentence.length;
 
       renderTypedLines(visibleLines, done);
-      cursor.classList.toggle("done", done);
+      cursor.classList.remove("done");
       currentScale = fitScale(text);
-      textWrap.style.transform = `scale(${currentScale})`;
+      applyHeadlineTransform();
+      if (done) {
+        requestAnimationFrame(positionTitleCursor);
+      }
     };
 
     function renderFullText() {
@@ -1107,10 +1256,10 @@
       const text = lines.join("\n");
 
       renderTypedLines(lines, true);
-      cursor.classList.add("done");
+      cursor.classList.remove("done");
       currentScale = fitScale(text);
-      textWrap.style.transform = `scale(${currentScale})`;
-      enableEditing();
+      applyHeadlineTransform();
+      requestAnimationFrame(positionTitleCursor);
     }
 
     function enableEditing() {
@@ -1261,7 +1410,7 @@
 
       renderTypedLines(editableLines.length ? editableLines : [""]);
       currentScale = fitScale(text || " ");
-      textWrap.style.transform = `scale(${currentScale})`;
+      applyHeadlineTransform();
 
       if (caretOffset !== null) {
         setCaretOffset(caretOffset);
@@ -1331,7 +1480,7 @@
 
     function updateEditableScale() {
       currentScale = fitScale(getEditableText() || " ");
-      textWrap.style.transform = `scale(${currentScale})`;
+      applyHeadlineTransform();
       requestAnimationFrame(updateCustomCaret);
     }
 
@@ -1368,7 +1517,140 @@
       cursor.classList.add("done");
     }
 
+    function positionTitleCursor() {
+      if (showingWorkStudy || postImageMode) {
+        cursor.classList.remove("done");
+        return;
+      }
+
+      const lastLine = visibleText.querySelector(".type-line:last-child .line-text");
+
+      if (!lastLine) {
+        cursor.classList.remove("done");
+        return;
+      }
+
+      const lineRect = lastLine.getBoundingClientRect();
+      const hostRect = document.querySelector(".sentence").getBoundingClientRect();
+      const scale = currentScale || 1;
+
+      cursor.style.setProperty("--caret-x", `${(lineRect.right - hostRect.left) / scale}px`);
+      cursor.style.setProperty("--caret-y", `${(lineRect.top - hostRect.top) / scale}px`);
+      cursor.classList.add("done");
+    }
+
+    function setWorkStudyMode(isShowing) {
+      showingWorkStudy = isShowing;
+      document.body.classList.toggle("work-title-mode", isShowing);
+      stage.setAttribute("aria-label", isShowing
+        ? "Places Niklas has worked and studied."
+        : "Hi there! I\u2019m Niklas, a Copenhagen-based designer working across identities, digital experiences, type, 3D and motion.");
+    }
+
+    function renderWorkStudyTitle(count) {
+      const visibleGroups = workStudyGroups.slice(0, count);
+      const list = document.createElement("span");
+      let lineIndex = 0;
+
+      list.className = "work-study-list";
+      visibleGroups.forEach((group, index) => {
+        const column = document.createElement("span");
+        const heading = document.createElement("span");
+
+        column.className = "work-study-column";
+        heading.className = "work-study-heading";
+        heading.style.setProperty("--i", lineIndex);
+        heading.textContent = group.heading;
+        column.append(heading);
+        lineIndex += 1;
+
+        group.items.forEach((entry) => {
+          const entryEl = document.createElement("span");
+
+          entryEl.className = "work-study-entry";
+          entryEl.style.setProperty("--i", lineIndex);
+          entryEl.textContent = entry;
+          column.append(entryEl);
+          lineIndex += 1;
+        });
+
+        list.append(column);
+      });
+
+      visibleText.replaceChildren(list);
+      cursor.classList.remove("done");
+      currentScale = 1;
+      textWrap.style.transform = "none";
+    }
+
+    function showWorkStudyTitle() {
+      cancelAnimationFrame(frame);
+      clearTimeout(peekTimer);
+      clearTimeout(workStudyTimer);
+      clearTimeout(titleTransitionTimer);
+      editable = false;
+      visibleText.contentEditable = "false";
+      visibleText.removeAttribute("spellcheck");
+      visibleText.removeAttribute("aria-label");
+      document.body.classList.remove("is-peeking");
+      setWorkStudyMode(true);
+      renderWorkStudyTitle(workStudyGroups.length);
+    }
+
+    function showAboutTitle() {
+      clearTimeout(workStudyTimer);
+      clearTimeout(titleTransitionTimer);
+      setWorkStudyMode(false);
+      renderFullText();
+      if (!skipProjectPeek) {
+        scheduleProjectPeek();
+      }
+    }
+
+    function transitionTitleTo(isShowingWorkStudy) {
+      if (isTitleTransitioning || showingWorkStudy === isShowingWorkStudy) {
+        return;
+      }
+
+      isTitleTransitioning = true;
+      clearTimeout(titleTransitionTimer);
+      document.body.classList.remove("title-transition-in");
+      document.body.classList.add("title-transition-out");
+
+      titleTransitionTimer = window.setTimeout(() => {
+        if (isShowingWorkStudy) {
+          showWorkStudyTitle();
+        } else {
+          showAboutTitle();
+        }
+
+        requestAnimationFrame(() => {
+          document.body.classList.remove("title-transition-out");
+          document.body.classList.add("title-transition-in");
+
+          titleTransitionTimer = window.setTimeout(() => {
+            document.body.classList.remove("title-transition-in");
+            isTitleTransitioning = false;
+          }, 320);
+        });
+      }, 220);
+    }
+
+    function toggleWorkStudyTitle() {
+      if (showingWorkStudy) {
+        transitionTitleTo(false);
+        return;
+      }
+
+      transitionTitleTo(true);
+    }
+
     function restart() {
+      clearTimeout(workStudyTimer);
+      clearTimeout(titleTransitionTimer);
+      isTitleTransitioning = false;
+      document.body.classList.remove("title-transition-out", "title-transition-in");
+      setWorkStudyMode(false);
       start = performance.now();
       editable = false;
       visibleText.contentEditable = "false";
@@ -1406,24 +1688,26 @@
       }, delay);
     }
 
-    function canRestartFromClick() {
-      const desktopPointer = matchMedia("(hover: hover) and (pointer: fine)").matches;
-      const hasTouch = navigator.maxTouchPoints > 0 || "ontouchstart" in window;
-      const recentTouch = Date.now() - lastTouchAt < 900;
-      return desktopPointer && !hasTouch && !recentTouch;
-    }
-
-    stage.addEventListener("click", () => {
-      if (!editable && canRestartFromClick()) {
-        restart();
+    stage.addEventListener("click", (event) => {
+      if (postMode || isTitleTransitioning) {
+        return;
       }
+
+      toggleWorkStudyTitle();
     });
     visibleText.addEventListener("beforeinput", handleEditableBeforeInput);
     visibleText.addEventListener("input", handleEditableInput);
     visibleText.addEventListener("keyup", updateCustomCaret);
     visibleText.addEventListener("mouseup", updateCustomCaret);
     document.addEventListener("selectionchange", updateCustomCaret);
-    window.addEventListener("resize", restart);
+    window.addEventListener("resize", () => {
+      if (showingWorkStudy) {
+        renderWorkStudyTitle(workStudyGroups.length);
+        return;
+      }
+
+      restart();
+    });
     palettes.forEach((palette) => {
       const applyPalette = () => {
         applyPaletteData(palette.dataset);
@@ -1432,6 +1716,12 @@
       palette.addEventListener("pointerenter", applyPalette);
       palette.addEventListener("focus", applyPalette);
       palette.addEventListener("click", applyPalette);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && showingWorkStudy) {
+        transitionTitleTo(false);
+      }
     });
 
     let navLocked = false;
@@ -1461,7 +1751,6 @@
     }, { passive: false });
 
     window.addEventListener("touchstart", (event) => {
-      lastTouchAt = Date.now();
       touchStartY = event.touches[0]?.clientY ?? null;
     }, { passive: true });
 

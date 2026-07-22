@@ -85,19 +85,27 @@
       position: fixed;
       top: 6px;
       z-index: 1200;
+      --header-column: calc((100vw - 26px) / 3);
       color: #000;
       font-size: 12px;
       line-height: 1.1;
       letter-spacing: 0;
       font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       transition: opacity 180ms ease, transform 180ms ease;
     }
-    .site-meta.left-meta { left: 6px; }
+    .site-meta.left-meta {
+      left: 6px;
+      width: var(--header-column);
+    }
     .site-meta.right-meta {
-      right: 6px;
-      text-align: right;
-      width: auto;
-      max-width: calc(100vw - 12px);
+      left: calc(6px + (var(--header-column) + 7px) * 2);
+      right: auto;
+      text-align: left;
+      width: var(--header-column);
+      max-width: var(--header-column);
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
       overflow: hidden;
@@ -199,16 +207,18 @@
     .location-full { display: inline; }
     .location-short { display: none; }
     .site-nav {
-      left: 50%;
-      text-align: center;
-      transform: translateX(-50%);
+      left: calc(6px + var(--header-column) + 7px);
+      display: flex;
+      gap: 7px;
+      width: var(--header-column);
+      text-align: left;
       transition: opacity 180ms ease, transform 180ms ease;
       white-space: nowrap;
     }
     body.nav-hidden .site-nav {
       opacity: 0;
       pointer-events: none;
-      transform: translate(-50%, -8px);
+      transform: translateY(-8px);
     }
     body.nav-hidden .site-meta {
       opacity: 0;
@@ -283,22 +293,11 @@
     }
 
     .project-year-indicator {
-      position: fixed;
-      right: 6px;
-      bottom: 6px;
-      z-index: 1200;
-      color: #000;
-      font-family: "ABC Monument Grotesk Trial", Helvetica, Arial, sans-serif;
-      font-size: 12px;
-      line-height: 1.1;
-      letter-spacing: 0;
-      pointer-events: none;
-      font-variant-numeric: tabular-nums;
-      transform-origin: 100% 100%;
+      display: none;
     }
 
     .project-year-indicator.is-changing {
-      animation: yearPop 320ms cubic-bezier(.16, 1.6, .34, 1);
+      animation: none;
     }
 
     @keyframes yearPop {
@@ -357,6 +356,69 @@
       width: 100%; height: auto; display: block; object-fit: contain;
     }
 
+    #proj10 .meta h3 {
+      padding-right: 0;
+    }
+    #proj10 .meta h3 span.year {
+      right: auto;
+      margin-left: 8px;
+    }
+    .research-title-hover {
+      display: none;
+    }
+    #proj10:hover .research-title-default,
+    #proj10:hover .meta h3 span.year {
+      display: none;
+    }
+    #proj10:hover .research-title-hover {
+      display: inline;
+    }
+    .research-card {
+      position: relative;
+      background: #000;
+    }
+    .research-card img {
+      transition: opacity 220ms ease, filter 220ms ease;
+    }
+    .research-card video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 220ms ease, filter 220ms ease;
+    }
+    .research-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, .08) 48%, rgba(0, 0, 0, .1));
+      border: 1px solid rgba(255, 255, 255, .34);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .42),
+        inset 0 -1px 0 rgba(255, 255, 255, .08),
+        0 16px 48px rgba(0, 0, 0, .16);
+      transition: opacity 220ms ease;
+    }
+    #proj10:hover .research-card img {
+      opacity: 0;
+      filter: blur(8px);
+    }
+    #proj10:hover .research-card video,
+    #proj10:focus-within .research-card video {
+      opacity: 1;
+    }
+    #proj10:hover .research-card::after,
+    #proj10:focus-within .research-card::after {
+      opacity: 1;
+    }
+
     .spacer { height: 0; }
 
     .blob-cursor {
@@ -400,22 +462,11 @@
     }
 
     .project-edge-indicator {
-      position: fixed;
-      left: 50%;
-      bottom: 24px;
-      width: 120px;
-      height: 1px;
-      background: #000;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateX(-50%) scaleX(var(--edge-progress, 0));
-      transform-origin: 50% 50%;
-      transition: opacity .18s ease, transform .18s ease;
-      z-index: 1600;
+      display: none;
     }
 
     body.project-edge-primed .project-edge-indicator {
-      opacity: calc(.12 + (var(--edge-progress, 0) * .62));
+      opacity: 0;
     }
     @media (prefers-reduced-motion: reduce) {
       .js .grid .project-row { opacity: 1; transform: none; }
@@ -428,8 +479,9 @@
       .site-nav {
         left: 6px;
         right: auto;
-        width: calc(100vw - 12px);
-        max-width: calc(100vw - 12px);
+        --header-column: calc((100vw - 26px) / 3);
+        width: var(--header-column);
+        max-width: var(--header-column);
         text-align: left;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -442,18 +494,18 @@
       }
       .site-nav {
         top: 6px;
-        left: auto;
-        right: 6px;
-        width: auto;
-        max-width: calc(100vw - 12px);
-        text-align: right;
+        left: calc(6px + var(--header-column) + 7px);
+        right: auto;
+        width: var(--header-column);
+        max-width: var(--header-column);
+        text-align: left;
         transform: none;
       }
       .site-meta.right-meta {
-        top: 21px;
-        left: 6px;
+        top: 6px;
+        left: calc(6px + (var(--header-column) + 7px) * 2);
         right: auto;
-        width: calc(100vw - 12px);
+        width: var(--header-column);
         text-align: left;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -500,6 +552,8 @@
   </style>
   <script defer src="/ga-init.js"></script>
   <script defer src="/analytics.js"></script>
+  <link rel="stylesheet" href="/global-nav.css">
+  <script defer src="/global-nav.js"></script>
 </head>
 <body>
   <div class="site-meta left-meta" aria-label="Contact information">
@@ -511,8 +565,8 @@
     <span class="weather-temp">--&deg;C</span> <span class="weather-condition">--</span>
   </div>
   <nav class="site-nav" aria-label="Primary navigation">
-    <a href="/">About</a> /
-    <a href="/project/" class="is-active" aria-current="page">Projects</a> /
+    <a href="/">About</a>
+    <a href="/project/" class="is-active" aria-current="page">Projects</a>
     <a href="/experimental/">Experimental</a>
   </nav>
   <div class="project-edge-indicator" aria-hidden="true"></div>
@@ -550,11 +604,16 @@
 
       <section id="proj10" class="project-row">
         <div class="meta">
-          <h3>Research Studio <span class="year">2026</span></h3>
+          <h3>
+            <span class="research-title-default">Research Studio</span>
+            <span class="research-title-hover">Research Studio - Coming soon</span>
+            <span class="year">2026</span>
+          </h3>
           <p>A lookbook spread exploring structured typography, image systems, and editorial pacing to define a clear visual identity for Research Studio.</p>
         </div>
-        <a class="card website" style="pointer-events: none;">
+        <a class="card website research-card" style="pointer-events: none;">
           <img src="../research-studio-media-cover.png" alt="Research Studio Brandbook Project">
+          <video src="../RunningManResearchStudio.mp4" muted loop playsinline autoplay aria-label="Running man Research Studio preview"></video>
         </a>
       </section>
 
