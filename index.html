@@ -152,8 +152,53 @@
       animation-delay: calc(var(--i) * 58ms);
     }
 
+    .work-study-entry[data-preview-src] {
+      cursor: crosshair;
+    }
+
+    .work-study-entry[data-preview-src]:hover,
+    .work-study-entry[data-preview-src]:focus-visible {
+      outline: none;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
     .work-study-heading {
       margin-bottom: 8px;
+    }
+
+    .client-media-preview {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 7;
+      width: var(--preview-width, min(380px, 34vw));
+      aspect-ratio: var(--preview-aspect, 4 / 3);
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      background: var(--solid);
+      transform: translate(var(--preview-x, 0px), var(--preview-y, 0px)) scale(.96);
+      transform-origin: left top;
+      transition:
+        opacity 140ms ease,
+        visibility 140ms ease,
+        transform 180ms cubic-bezier(.18, .9, .24, 1);
+    }
+
+    .client-media-preview.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(var(--preview-x, 0px), var(--preview-y, 0px)) scale(1);
+    }
+
+    .client-media-preview img,
+    .client-media-preview video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     @keyframes workStudyReveal {
@@ -807,13 +852,13 @@
 
     @keyframes letterSnap {
       0% {
-        transform: translateX(var(--text-offset, 0px)) translateY(0.14em) scaleY(0.82);
+        transform: translateX(calc(var(--text-offset, 0px) + var(--line-text-shift, 0px))) translateY(0.14em) scaleY(0.82);
         filter: blur(7px);
         opacity: 0.25;
       }
 
       100% {
-        transform: translateX(var(--text-offset, 0px)) translateY(0) scaleY(1);
+        transform: translateX(calc(var(--text-offset, 0px) + var(--line-text-shift, 0px))) translateY(0) scaleY(1);
         filter: blur(0);
         opacity: 1;
       }
@@ -849,12 +894,22 @@
         font-size: 136px;
       }
 
+      .title-toggle {
+        position: fixed;
+        top: 4px;
+        right: 6px;
+      }
+
       body.work-title-mode main {
         padding: 86px 6px 0;
       }
 
       .work-study-list {
         grid-template-columns: 1fr;
+      }
+
+      .client-media-preview {
+        display: none;
       }
     }
 
@@ -977,13 +1032,19 @@
       },
       {
         heading: "Selected clients while at RICH&HANC&BOBB",
-        items: ["Research Studio", "Dully", "Much", "Nyx", "Monta", "NemArkitekter"]
+        items: ["Research Studio", "Dully", "Much", "NemArkitekter", "Nyx", "Monta"]
       },
       {
         heading: "Studies",
         items: ["DMJX Visual Communication Interactive Design BA", "Krabbesholm Højskole"]
       }
     ];
+    const clientPreviewMedia = {
+      "Research Studio": { type: "video", src: "/RunningManResearchStudio.mp4", poster: "/research-studio-media-cover.png", width: 1080, height: 1350 },
+      Dully: { type: "video", src: "/assets/img/i-008.mp4", width: 1080, height: 1350 },
+      Much: { type: "video", src: "/much cover media.mp4", width: 1080, height: 1350 },
+      NemArkitekter: { type: "video", src: "/NemArk Cover Media.mp4", width: 1080, height: 1350 }
+    };
     const solidBleeds = [
       { left: 0, right: 0 },
       { left: 0, right: 0 },
@@ -1030,6 +1091,11 @@
     cursor.className = "cursor";
     cursor.setAttribute("aria-hidden", "true");
     sentenceEl.append(cursor);
+    const clientPreview = document.createElement("span");
+    clientPreview.className = "client-media-preview";
+    clientPreview.setAttribute("aria-hidden", "true");
+    document.body.append(clientPreview);
+    let clientPreviewPoint = null;
     const measure = document.getElementById("measure");
     const palettes = document.querySelectorAll(".palette");
     const localClock = document.getElementById("localClock");
@@ -1736,6 +1802,9 @@
     function setWorkStudyMode(isShowing) {
       showingWorkStudy = isShowing;
       document.body.classList.toggle("work-title-mode", isShowing);
+      if (!isShowing) {
+        hideClientPreview();
+      }
       stage.setAttribute("aria-label", isShowing
         ? "Places Niklas has worked and studied."
         : "Hi there! I\u2019m Niklas, a Copenhagen-based designer working across identities, digital experiences, type, 3D and motion.");
@@ -1743,6 +1812,102 @@
         button.setAttribute("aria-pressed", String(isShowing));
         button.setAttribute("aria-label", isShowing ? "Show intro text" : "Show work and study text");
       });
+    }
+
+    function setClientPreviewRatio(width, height) {
+      if (!width || !height) {
+        return;
+      }
+
+      const aspect = width / height;
+      const maxWidth = Math.min(380, window.innerWidth * 0.34);
+      const maxHeight = window.innerHeight * 0.52;
+      const previewWidth = Math.max(120, Math.min(maxWidth, maxHeight * aspect));
+
+      clientPreview.style.setProperty("--preview-width", `${previewWidth}px`);
+      clientPreview.style.setProperty("--preview-aspect", `${width} / ${height}`);
+
+      if (clientPreviewPoint) {
+        positionClientPreview(clientPreviewPoint.x, clientPreviewPoint.y);
+      }
+    }
+
+    function renderClientPreview(trigger) {
+      const type = trigger.dataset.previewType;
+      const src = trigger.dataset.previewSrc;
+      const width = Number.parseFloat(trigger.dataset.previewWidth);
+      const height = Number.parseFloat(trigger.dataset.previewHeight);
+
+      if (!src) {
+        return;
+      }
+
+      const media = type === "video" ? document.createElement("video") : document.createElement("img");
+
+      setClientPreviewRatio(width, height);
+      media.src = src;
+      if (type === "video") {
+        media.muted = true;
+        media.loop = true;
+        media.playsInline = true;
+        media.autoplay = true;
+        media.addEventListener("loadedmetadata", () => {
+          setClientPreviewRatio(media.videoWidth, media.videoHeight);
+        }, { once: true });
+        if (trigger.dataset.previewPoster) {
+          media.poster = trigger.dataset.previewPoster;
+        }
+      } else {
+        media.alt = "";
+        media.addEventListener("load", () => {
+          setClientPreviewRatio(media.naturalWidth, media.naturalHeight);
+        }, { once: true });
+      }
+
+      clientPreview.replaceChildren(media);
+      if (type === "video") {
+        media.play().catch(() => {});
+      }
+    }
+
+    function positionClientPreview(clientX, clientY) {
+      clientPreviewPoint = { x: clientX, y: clientY };
+      const margin = 12;
+      const rect = clientPreview.getBoundingClientRect();
+      const width = rect.width || Math.min(380, window.innerWidth * 0.34);
+      const height = rect.height || width * 0.75;
+      let x = clientX + 16;
+      let y = clientY + 16;
+
+      if (x + width + margin > window.innerWidth) {
+        x = clientX - width - 16;
+      }
+
+      if (y + height + margin > window.innerHeight) {
+        y = window.innerHeight - height - margin;
+      }
+
+      clientPreview.style.setProperty("--preview-x", `${Math.max(margin, x)}px`);
+      clientPreview.style.setProperty("--preview-y", `${Math.max(margin, y)}px`);
+    }
+
+    function showClientPreview(trigger, event = null) {
+      renderClientPreview(trigger);
+      clientPreview.classList.add("is-visible");
+
+      if (event) {
+        positionClientPreview(event.clientX, event.clientY);
+        return;
+      }
+
+      const rect = trigger.getBoundingClientRect();
+      positionClientPreview(rect.right, rect.top);
+    }
+
+    function hideClientPreview() {
+      clientPreviewPoint = null;
+      clientPreview.classList.remove("is-visible");
+      clientPreview.replaceChildren();
     }
 
     function renderWorkStudyTitle(count) {
@@ -1764,10 +1929,23 @@
 
         group.items.forEach((entry) => {
           const entryEl = document.createElement("span");
+          const preview = group.heading.startsWith("Selected clients") ? clientPreviewMedia[entry] : null;
 
           entryEl.className = "work-study-entry";
           entryEl.style.setProperty("--i", lineIndex);
           entryEl.textContent = entry;
+          if (preview) {
+            entryEl.tabIndex = 0;
+            entryEl.dataset.previewType = preview.type;
+            entryEl.dataset.previewSrc = preview.src;
+            if (preview.poster) {
+              entryEl.dataset.previewPoster = preview.poster;
+            }
+            if (preview.width && preview.height) {
+              entryEl.dataset.previewWidth = preview.width;
+              entryEl.dataset.previewHeight = preview.height;
+            }
+          }
           column.append(entryEl);
           lineIndex += 1;
         });
@@ -1912,6 +2090,47 @@
     visibleText.addEventListener("input", handleEditableInput);
     visibleText.addEventListener("keyup", updateCustomCaret);
     visibleText.addEventListener("mouseup", updateCustomCaret);
+    visibleText.addEventListener("pointerover", (event) => {
+      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+
+      if (!trigger || !visibleText.contains(trigger)) {
+        return;
+      }
+
+      showClientPreview(trigger, event);
+    });
+    visibleText.addEventListener("pointermove", (event) => {
+      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+
+      if (!trigger || !clientPreview.classList.contains("is-visible")) {
+        return;
+      }
+
+      positionClientPreview(event.clientX, event.clientY);
+    });
+    visibleText.addEventListener("pointerout", (event) => {
+      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+
+      if (!trigger || trigger.contains(event.relatedTarget)) {
+        return;
+      }
+
+      hideClientPreview();
+    });
+    visibleText.addEventListener("focusin", (event) => {
+      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+
+      if (trigger) {
+        showClientPreview(trigger);
+      }
+    });
+    visibleText.addEventListener("focusout", (event) => {
+      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+
+      if (trigger) {
+        hideClientPreview();
+      }
+    });
     document.addEventListener("selectionchange", updateCustomCaret);
     window.addEventListener("resize", () => {
       if (showingWorkStudy) {

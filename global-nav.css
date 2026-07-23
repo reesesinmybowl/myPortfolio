@@ -269,6 +269,7 @@ body.nav-hidden .global-site-header {
     grid-row: 1;
     overflow: visible;
     text-overflow: clip;
+    padding-right: 48px;
   }
 
   .global-site-header__nav {
@@ -288,6 +289,12 @@ body.nav-hidden .global-site-header {
     overflow: hidden;
     text-align: left;
     padding-right: 0;
+  }
+
+  .global-title-toggle {
+    position: fixed;
+    top: 4px;
+    right: 6px;
   }
 
   .global-location-full,
