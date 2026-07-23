@@ -47,7 +47,7 @@
 
 .global-title-toggle {
   --info-arrow-x: 0px;
-  --info-arrow-y: 200px;
+  --info-arrow-y: 2px;
   flex: 0 0 auto;
   display: none;
   align-items: baseline;

@@ -20,6 +20,7 @@
       --solid: #ff6aa7;
       --cursor: #81cf49;
       --selection: #81cf49;
+      --caret-offset-y: -0.08em;
       --tracking: -0.08em;
       --post-solid-height: 0.748em;
       --post-solid-y: 2px;
@@ -62,8 +63,8 @@
       cursor: default;
     }
 
-    body.work-title-mode main {
-      cursor: pointer;
+    body.post-mode main {
+      cursor: default;
     }
 
     .text-wrap {
@@ -221,6 +222,11 @@
       will-change: opacity, filter, transform;
     }
 
+    #visibleText[contenteditable="true"],
+    #visibleText[contenteditable="true"] * {
+      caret-color: transparent !important;
+    }
+
     body.title-transition-out #visibleText {
       opacity: 0;
       filter: blur(5px);
@@ -256,7 +262,7 @@
 
     .line-text {
       display: inline-block;
-      transform: translateX(var(--text-offset, 0px));
+      transform: translateX(calc(var(--text-offset, 0px) + var(--line-text-shift, 0px)));
     }
 
     .main-title-revealing .type-line {
@@ -268,7 +274,7 @@
     }
 
     .main-title-revealing .line-text {
-      transform: translateX(var(--text-offset, 0px)) translateY(8px);
+      transform: translateX(calc(var(--text-offset, 0px) + var(--line-text-shift, 0px))) translateY(8px);
       animation: mainTitleTextReveal 420ms cubic-bezier(.18, .9, .24, 1) forwards;
       animation-delay: calc(var(--i) * 74ms);
     }
@@ -287,11 +293,11 @@
 
     @keyframes mainTitleTextReveal {
       0% {
-        transform: translateX(var(--text-offset, 0px)) translateY(8px);
+        transform: translateX(calc(var(--text-offset, 0px) + var(--line-text-shift, 0px))) translateY(8px);
       }
 
       100% {
-        transform: translateX(var(--text-offset, 0px)) translateY(0);
+        transform: translateX(calc(var(--text-offset, 0px) + var(--line-text-shift, 0px))) translateY(0);
       }
     }
 
@@ -453,7 +459,7 @@
 
     .title-toggle {
       --info-arrow-x: 0px;
-      --info-arrow-y: 200px;
+      --info-arrow-y: 4px;
       flex: 0 0 auto;
       display: inline-flex;
       align-items: baseline;
@@ -687,7 +693,7 @@
     .cursor {
       position: absolute;
       left: var(--caret-x, calc(100% + 0.08em));
-      top: calc(var(--caret-y, 0px) + 0.0em);
+      top: calc(var(--caret-y, 0px) + var(--caret-offset-y));
       display: block;
       width: 0.065em;
       height: 0.82em;
@@ -959,7 +965,7 @@
 
     const defaultLines = [
       "Hi there! I\u2019m Niklas",
-      "a Copenhagen-based designer ",
+      "Copenhagen-based designer ",
       "working across identities, digital",
       "experiences, type, 3D and motion graphics."
     ];
@@ -1002,6 +1008,19 @@
       "-0.006em",
       "-0.038em"
     ];
+
+    // Manual per-line tuning for the main headline.
+    // Line 1 = "Hi there! I’m Niklas"; line 2 = "Copenhagen-based designer"; etc.
+    // textShift moves the text. boxLeft/boxRight expand the pink box around it.
+    const lineAdjustments = [
+      { textShift: "0px", boxLeft: "0px", boxRight: "-3px" },
+      { textShift: "7.5px", boxLeft: "0px", boxRight: "-10px" },
+      { textShift: "7.5px", boxLeft: "0px", boxRight: "2px" },
+      { textShift: "-4px", boxLeft: "0px", boxRight: "0px" },
+      { textShift: "0px", boxLeft: "0px", boxRight: "0px" },
+      { textShift: "0px", boxLeft: "0px", boxRight: "0px" }
+    ];
+
     const sentence = lines.join(" ");
     const stage = document.getElementById("stage");
     const textWrap = document.getElementById("textWrap");
@@ -1227,11 +1246,12 @@
           const span = document.createElement("span");
           const text = document.createElement("span");
           const bleed = solidBleeds[index] || { left: 0, right: 0 };
-          const offset = textOffsets[index] || 0;
+          const offset = textOffsets[index] || "0px";
+          const adjustment = lineAdjustments[index] || {};
           const isLastLine = index === visibleLines.length - 1;
           span.className = "type-line";
-          text.className = "line-text";
           span.style.setProperty("--i", index);
+          text.className = "line-text";
           if (index === 0 && line.length > 3) {
             text.append(
               Object.assign(document.createElement("span"), {
@@ -1263,10 +1283,11 @@
             text.textContent = line;
           }
           text.style.setProperty("--text-offset", offset);
+          text.style.setProperty("--line-text-shift", adjustment.textShift || "0px");
 
           span.append(text);
-          span.style.setProperty("--solid-left", `${bleed.left}px`);
-          span.style.setProperty("--solid-right", `${bleed.right}px`);
+          span.style.setProperty("--solid-left", `calc(${bleed.left}px + ${adjustment.boxLeft || "0px"})`);
+          span.style.setProperty("--solid-right", `calc(${bleed.right}px + ${adjustment.boxRight || "0px"})`);
           return span;
         })
       );
@@ -1646,6 +1667,15 @@
       requestAnimationFrame(updateCustomCaret);
     }
 
+    function getLineTextFromNode(node) {
+      if (!node) {
+        return null;
+      }
+
+      const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+      return element?.closest?.(".line-text") || null;
+    }
+
     function updateCustomCaret() {
       if (!editable) {
         return;
@@ -1661,21 +1691,23 @@
       const range = selection.getRangeAt(0).cloneRange();
       range.collapse(false);
 
+      let activeLine = getLineTextFromNode(range.startContainer) || getLineTextFromNode(selection.focusNode);
       let rect = range.getBoundingClientRect();
 
       if (!rect || (rect.width === 0 && rect.height === 0)) {
         const marker = document.createElement("span");
         marker.textContent = "\u200b";
-        range.insertNode(marker);
+        const markerRange = range.cloneRange();
+        markerRange.insertNode(marker);
         rect = marker.getBoundingClientRect();
+        activeLine = activeLine || getLineTextFromNode(marker);
         marker.remove();
-        selection.removeAllRanges();
-        selection.addRange(range);
       }
 
+      const lineRect = activeLine?.getBoundingClientRect() || rect;
       const hostRect = document.querySelector(".sentence").getBoundingClientRect();
       cursor.style.setProperty("--caret-x", `${(rect.left - hostRect.left) / currentScale}px`);
-      cursor.style.setProperty("--caret-y", `${(rect.top - hostRect.top) / currentScale}px`);
+      cursor.style.setProperty("--caret-y", `${(lineRect.top - hostRect.top) / currentScale}px`);
       cursor.classList.add("done");
     }
 
@@ -1865,13 +1897,6 @@
       }, delay);
     }
 
-    stage.addEventListener("click", (event) => {
-      if (postMode || isTitleTransitioning || !showingWorkStudy) {
-        return;
-      }
-
-      toggleWorkStudyTitle();
-    });
     document.addEventListener("click", (event) => {
       const toggle = event.target.closest(".title-toggle, .global-title-toggle");
 
