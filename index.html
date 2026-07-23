@@ -59,11 +59,11 @@
       background: var(--paper);
       transition: background 140ms linear;
       will-change: transform;
-      cursor: pointer;
+      cursor: default;
     }
 
-    body.post-mode main {
-      cursor: default;
+    body.work-title-mode main {
+      cursor: pointer;
     }
 
     .text-wrap {
@@ -167,6 +167,26 @@
       }
     }
 
+    .work-study-list.is-exiting .work-study-heading,
+    .work-study-list.is-exiting .work-study-entry {
+      opacity: 1;
+      transform: translateY(0);
+      animation: workStudyConceal 260ms cubic-bezier(.55, 0, .5, 1) forwards;
+      animation-delay: calc(var(--i) * 46ms);
+    }
+
+    @keyframes workStudyConceal {
+      0% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+
     body.post-mode .sentence {
       font-size: var(--post-font-size);
       --x-band-height: var(--post-solid-height);
@@ -207,6 +227,12 @@
       transform: translateY(-10px);
     }
 
+    body.work-title-mode.title-transition-out #visibleText {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+
     body.title-transition-in #visibleText {
       opacity: 1;
       filter: blur(0);
@@ -231,6 +257,42 @@
     .line-text {
       display: inline-block;
       transform: translateX(var(--text-offset, 0px));
+    }
+
+    .main-title-revealing .type-line {
+      opacity: 0;
+      transform: translateY(14px);
+      z-index: calc(10 - var(--i));
+      animation: mainTitleReveal 420ms cubic-bezier(.18, .9, .24, 1) forwards;
+      animation-delay: calc(var(--i) * 74ms);
+    }
+
+    .main-title-revealing .line-text {
+      transform: translateX(var(--text-offset, 0px)) translateY(8px);
+      animation: mainTitleTextReveal 420ms cubic-bezier(.18, .9, .24, 1) forwards;
+      animation-delay: calc(var(--i) * 74ms);
+    }
+
+    @keyframes mainTitleReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes mainTitleTextReveal {
+      0% {
+        transform: translateX(var(--text-offset, 0px)) translateY(8px);
+      }
+
+      100% {
+        transform: translateX(var(--text-offset, 0px)) translateY(0);
+      }
     }
 
     .hi-h,
@@ -307,6 +369,7 @@
       text-align: left;
       width: var(--header-column);
       max-width: var(--header-column);
+      padding-right: 24px;
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
       overflow: hidden;
@@ -346,7 +409,9 @@
     }
 
     .site-meta a::after {
+      inset: auto;
       z-index: 1;
+      transform-origin: center center;
     }
 
     .site-meta a:hover,
@@ -362,28 +427,9 @@
       opacity: 1;
     }
 
-    .site-meta .instagram-link::after {
-      right: -10px;
-      bottom: -8px;
-      width: 12px;
-      height: 12px;
-      border: 1px solid currentColor;
-      border-radius: 4px;
-      background:
-        radial-gradient(circle at 73% 27%, currentColor 0 1px, transparent 1.5px),
-        radial-gradient(circle at 50% 53%, transparent 0 2.5px, currentColor 2.8px 3.5px, transparent 3.8px),
-        var(--paper);
-      transform: translate(-3px, 4px) rotate(-12deg) scale(.55);
-    }
-
     .site-meta .instagram-link:hover::before,
     .site-meta .instagram-link:focus-visible::before {
       transform: translate(0, 0) rotate(2deg) scale(1.04, .96);
-    }
-
-    .site-meta .instagram-link:hover::after,
-    .site-meta .instagram-link:focus-visible::after {
-      transform: translate(0, 0) rotate(-12deg) scale(1);
     }
 
     .site-meta .email-link {
@@ -395,28 +441,133 @@
       transform: translateY(0) rotate(0deg);
     }
 
-    .site-meta .email-link::after {
-      right: -12px;
-      bottom: -7px;
-      width: 15px;
-      height: 10px;
-      border: 1px solid currentColor;
-      border-radius: 2px;
-      background:
-        linear-gradient(30deg, transparent 45%, currentColor 47% 53%, transparent 55%) 0 0 / 50% 100% no-repeat,
-        linear-gradient(150deg, transparent 45%, currentColor 47% 53%, transparent 55%) 100% 0 / 50% 100% no-repeat,
-        var(--paper);
-      box-shadow: 2px 2px 0 currentColor;
-      transform: translate(-4px, 4px) rotate(10deg) scale(.55);
-    }
-
     .site-meta .email-link:hover::before,
     .site-meta .email-link:focus-visible::before {
       transform: translate(0, 0) rotate(-2deg) scale(1.04, .96);
     }
 
-    .site-meta .email-link:hover::after,
-    .site-meta .email-link:focus-visible::after {
+    .site-meta .instagram-link::after,
+    .site-meta .email-link::after {
+      content: none;
+    }
+
+    .title-toggle {
+      --info-arrow-x: 0px;
+      --info-arrow-y: 200px;
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 3px;
+      width: auto;
+      height: 16px;
+      padding: 0;
+      position: absolute;
+      top: -2px;
+      right: 0;
+      color: inherit;
+      font: inherit;
+      line-height: 1.1;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .title-toggle svg {
+      position: relative;
+      left: var(--info-arrow-x);
+      top: var(--info-arrow-y);
+      display: block;
+      width: 10px;
+      height: 10px;
+      overflow: visible;
+    }
+
+    .title-toggle .toggle-arrow {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform 180ms cubic-bezier(.16, 1.6, .34, 1);
+    }
+
+    .title-toggle:hover .toggle-arrow,
+    .title-toggle:focus-visible .toggle-arrow {
+      transform: translate(1px, 1px);
+    }
+
+    .title-toggle[aria-pressed="true"] .toggle-arrow {
+      transform: rotate(180deg);
+    }
+
+    .title-toggle[aria-pressed="true"]:hover .toggle-arrow,
+    .title-toggle[aria-pressed="true"]:focus-visible .toggle-arrow {
+      transform: rotate(180deg) translate(1px, 1px);
+    }
+
+    .title-toggle:focus-visible {
+      outline: 1px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    .contact-hover-icon {
+      --contact-icon-fill: var(--paper);
+      position: absolute;
+      right: -14px;
+      bottom: -8px;
+      width: 16px;
+      height: 16px;
+      opacity: 0;
+      pointer-events: none;
+      stroke: currentColor;
+      transform-origin: center center;
+      transition:
+        opacity 120ms ease,
+        transform 190ms cubic-bezier(.16, 1.6, .34, 1);
+    }
+
+    .contact-hover-icon svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .contact-hover-icon .icon-fill {
+      fill: var(--contact-icon-fill);
+    }
+
+    .contact-hover-icon .icon-line {
+      fill: none;
+    }
+
+    .contact-hover-icon .icon-dot {
+      fill: currentColor;
+      stroke: none;
+    }
+
+    .instagram-link .contact-hover-icon {
+      transform: translate(-3px, 4px) rotate(-10deg) scale(.55);
+    }
+
+    .email-link .contact-hover-icon {
+      right: -15px;
+      transform: translate(-4px, 4px) rotate(10deg) scale(.55);
+    }
+
+    .instagram-link:hover .contact-hover-icon,
+    .instagram-link:focus-visible .contact-hover-icon {
+      opacity: 1;
+      transform: translate(0, 0) rotate(-10deg) scale(1);
+    }
+
+    .email-link:hover .contact-hover-icon,
+    .email-link:focus-visible .contact-hover-icon {
+      opacity: 1;
       transform: translate(0, 0) rotate(10deg) scale(1);
     }
 
@@ -736,6 +887,7 @@
         left: calc(6px + (var(--header-column) + 7px) * 2);
         right: auto;
         width: var(--header-column);
+        padding-right: 0;
         text-align: left;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -769,12 +921,18 @@
     </div>
   </main>
   <div class="site-meta left-meta" aria-label="Contact information">
-    <a class="instagram-link" href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a> /
-    <a class="email-link" href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
+    <a class="instagram-link" href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos<span class="contact-hover-icon" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect class="icon-fill" x="3" y="3" width="18" height="18" rx="5"></rect><circle class="icon-line" cx="12" cy="12" r="4"></circle><circle class="icon-dot" cx="17.5" cy="6.5" r="1"></circle></svg></span></a> /
+    <a class="email-link" href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com<span class="contact-hover-icon" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect class="icon-fill" x="3" y="5" width="18" height="14" rx="2"></rect><path class="icon-line" d="m3 7 9 6 9-6"></path></svg></span></a>
   </div>
   <div class="site-meta right-meta" aria-label="Local information">
     <span class="location-full">Denmark, Copenhagen</span><span class="location-short">CPH</span> <span id="localClock">--:--</span>
     <span id="weatherTemp">--&deg;C</span> <span id="weatherCondition">--</span>
+    <button class="title-toggle" type="button" aria-label="Toggle profile text" aria-pressed="false">
+      <span>Info</span>
+      <svg viewBox="0 0 12 12" aria-hidden="true">
+        <path class="toggle-arrow" d="M3.5 3.5 8.5 8.5M8.5 4.5v4h-4"></path>
+      </svg>
+    </button>
   </div>
   <nav class="site-nav" aria-label="Primary navigation">
     <a href="/" class="is-active" aria-current="page">About</a>
@@ -867,6 +1025,8 @@
     const secondStopText = "Hi there! I\u2019m Niklas";
     const secondHold = 480;
     const secondDuration = introDuration;
+    const workStudyExitDuration = 260;
+    const workStudyExitStagger = 46;
     const debugNoAnimation = false;
     const ABOUT_INTRO_FINISHED_KEY = "aboutIntroFinished";
     let startFinished = false;
@@ -1055,12 +1215,13 @@
       return visibleLines;
     }
 
-    function renderTypedLines(visibleLines, showCursor = false) {
+    function renderTypedLines(visibleLines, showCursor = false, options = {}) {
       if (postImageMode) {
         renderPostImage();
         return;
       }
 
+      visibleText.classList.toggle("main-title-revealing", Boolean(options.reveal));
       visibleText.replaceChildren(
         ...visibleLines.map((line, index) => {
           const span = document.createElement("span");
@@ -1070,6 +1231,7 @@
           const isLastLine = index === visibleLines.length - 1;
           span.className = "type-line";
           text.className = "line-text";
+          span.style.setProperty("--i", index);
           if (index === 0 && line.length > 3) {
             text.append(
               Object.assign(document.createElement("span"), {
@@ -1247,7 +1409,7 @@
       }
     };
 
-    function renderFullText() {
+    function renderFullText(options = {}) {
       if (postImageMode) {
         renderPostImage();
         return;
@@ -1255,7 +1417,7 @@
 
       const text = lines.join("\n");
 
-      renderTypedLines(lines, true);
+      renderTypedLines(lines, true, options);
       cursor.classList.remove("done");
       currentScale = fitScale(text);
       applyHeadlineTransform();
@@ -1545,6 +1707,10 @@
       stage.setAttribute("aria-label", isShowing
         ? "Places Niklas has worked and studied."
         : "Hi there! I\u2019m Niklas, a Copenhagen-based designer working across identities, digital experiences, type, 3D and motion.");
+      document.querySelectorAll(".title-toggle, .global-title-toggle").forEach((button) => {
+        button.setAttribute("aria-pressed", String(isShowing));
+        button.setAttribute("aria-label", isShowing ? "Show intro text" : "Show work and study text");
+      });
     }
 
     function renderWorkStudyTitle(count) {
@@ -1577,6 +1743,8 @@
         list.append(column);
       });
 
+      list.style.setProperty("--total", lineIndex);
+
       visibleText.replaceChildren(list);
       cursor.classList.remove("done");
       currentScale = 1;
@@ -1597,11 +1765,11 @@
       renderWorkStudyTitle(workStudyGroups.length);
     }
 
-    function showAboutTitle() {
+    function showAboutTitle(options = {}) {
       clearTimeout(workStudyTimer);
       clearTimeout(titleTransitionTimer);
       setWorkStudyMode(false);
-      renderFullText();
+      renderFullText(options);
       if (!skipProjectPeek) {
         scheduleProjectPeek();
       }
@@ -1616,12 +1784,21 @@
       clearTimeout(titleTransitionTimer);
       document.body.classList.remove("title-transition-in");
       document.body.classList.add("title-transition-out");
+      const workStudyItems = visibleText.querySelectorAll(".work-study-heading, .work-study-entry").length;
+      const isExitingWorkStudy = showingWorkStudy && !isShowingWorkStudy && workStudyItems > 0;
+      const transitionOutDuration = isExitingWorkStudy
+        ? workStudyExitDuration + Math.max(0, workStudyItems - 1) * workStudyExitStagger
+        : 220;
+
+      if (isExitingWorkStudy) {
+        visibleText.querySelector(".work-study-list")?.classList.add("is-exiting");
+      }
 
       titleTransitionTimer = window.setTimeout(() => {
         if (isShowingWorkStudy) {
           showWorkStudyTitle();
         } else {
-          showAboutTitle();
+          showAboutTitle({ reveal: isExitingWorkStudy });
         }
 
         requestAnimationFrame(() => {
@@ -1633,7 +1810,7 @@
             isTitleTransitioning = false;
           }, 320);
         });
-      }, 220);
+      }, transitionOutDuration);
     }
 
     function toggleWorkStudyTitle() {
@@ -1689,10 +1866,21 @@
     }
 
     stage.addEventListener("click", (event) => {
-      if (postMode || isTitleTransitioning) {
+      if (postMode || isTitleTransitioning || !showingWorkStudy) {
         return;
       }
 
+      toggleWorkStudyTitle();
+    });
+    document.addEventListener("click", (event) => {
+      const toggle = event.target.closest(".title-toggle, .global-title-toggle");
+
+      if (!toggle || postMode || isTitleTransitioning) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
       toggleWorkStudyTitle();
     });
     visibleText.addEventListener("beforeinput", handleEditableBeforeInput);

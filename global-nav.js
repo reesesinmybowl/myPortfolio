@@ -2,6 +2,7 @@
   if (document.querySelector(".global-site-header")) return;
 
   const path = window.location.pathname.replace(/\/index\.html$/, "").replace(/\/+$/, "") || "/";
+  const isHomePath = path === "/";
   const projectPaths = [
     "/project",
     "/font-runner",
@@ -28,9 +29,9 @@
   header.setAttribute("aria-label", "Site header");
   header.innerHTML = `
     <div class="global-site-header__cell global-site-header__contact">
-      <a class="global-instagram-link" href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos</a>
+      <a class="global-instagram-link" href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos<span class="contact-hover-icon" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect class="icon-fill" x="3" y="3" width="18" height="18" rx="5"></rect><circle class="icon-line" cx="12" cy="12" r="4"></circle><circle class="icon-dot" cx="17.5" cy="6.5" r="1"></circle></svg></span></a>
       <span aria-hidden="true"> / </span>
-      <a class="global-email-link" href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com</a>
+      <a class="global-email-link" href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com<span class="contact-hover-icon" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect class="icon-fill" x="3" y="5" width="18" height="14" rx="2"></rect><path class="icon-line" d="m3 7 9 6 9-6"></path></svg></span></a>
     </div>
     <nav class="global-site-header__cell global-site-header__nav" aria-label="Primary navigation">
       <a href="/" ${isActive("/") ? 'class="is-active" aria-current="page"' : ""}>About</a>
@@ -42,11 +43,15 @@
       <span class="global-clock">--:--</span>
       <span class="global-weather-temp">--&deg;C</span>
       <span class="global-weather-condition">--</span>
+      ${isHomePath ? '<button class="global-title-toggle" type="button" aria-label="Toggle profile text" aria-pressed="false"><span>Info</span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="toggle-arrow" d="M3.5 3.5 8.5 8.5M8.5 4.5v4h-4"></path></svg></button>' : ''}
     </div>
   `;
 
   document.body.prepend(header);
   document.body.classList.add("global-nav-ready");
+  if (isHomePath) {
+    document.body.classList.add("home-page");
+  }
 
   const clock = header.querySelector(".global-clock");
   const weatherTemp = header.querySelector(".global-weather-temp");

@@ -40,7 +40,76 @@
 }
 
 .global-site-header__data {
+  position: relative;
   font-variant-numeric: tabular-nums;
+  padding-right: 24px;
+}
+
+.global-title-toggle {
+  --info-arrow-x: 0px;
+  --info-arrow-y: 200px;
+  flex: 0 0 auto;
+  display: none;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  width: auto;
+  height: 16px;
+  padding: 0;
+  position: absolute;
+  top: -2px;
+  right: 0;
+  color: inherit;
+  font: inherit;
+  line-height: 1.1;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.global-title-toggle svg {
+  position: relative;
+  left: var(--info-arrow-x);
+  top: var(--info-arrow-y);
+  display: block;
+  width: 10px;
+  height: 10px;
+  overflow: visible;
+}
+
+.global-title-toggle .toggle-arrow {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 180ms cubic-bezier(.16, 1.6, .34, 1);
+}
+
+.global-title-toggle:hover .toggle-arrow,
+.global-title-toggle:focus-visible .toggle-arrow {
+  transform: translate(1px, 1px);
+}
+
+.global-title-toggle[aria-pressed="true"] .toggle-arrow {
+  transform: rotate(180deg);
+}
+
+.global-title-toggle[aria-pressed="true"]:hover .toggle-arrow,
+.global-title-toggle[aria-pressed="true"]:focus-visible .toggle-arrow {
+  transform: rotate(180deg) translate(1px, 1px);
+}
+
+.global-title-toggle:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+}
+
+body.home-page .global-title-toggle {
+  display: inline-flex;
 }
 
 .global-location-short {
@@ -89,44 +158,51 @@
 }
 
 .global-site-header__contact a::after {
+  content: none;
+}
+
+.contact-hover-icon {
+  --contact-icon-fill: var(--global-nav-hover-bg, var(--paper, #fbfbfb));
+  position: absolute;
+  right: -14px;
+  bottom: -8px;
+  width: 16px;
+  height: 16px;
   opacity: 0;
   pointer-events: none;
+  stroke: currentColor;
   transform-origin: center center;
   transition:
     opacity 120ms ease,
-    transform 190ms cubic-bezier(.16, 1.6, .34, 1),
-    background 140ms linear,
-    box-shadow 140ms linear;
+    transform 190ms cubic-bezier(.16, 1.6, .34, 1);
 }
 
-.global-instagram-link::after {
-  left: auto;
-  right: -10px;
-  bottom: -8px;
-  width: 12px;
-  height: 12px;
-  border: 1px solid currentColor;
-  border-radius: 4px;
-  background:
-    radial-gradient(circle at 73% 27%, currentColor 0 1px, transparent 1.5px),
-    radial-gradient(circle at 50% 53%, transparent 0 2.5px, currentColor 2.8px 3.5px, transparent 3.8px),
-    var(--global-nav-hover-bg, var(--paper, #fbfbfb));
-  transform: translate(-3px, 4px) rotate(-12deg) scale(.55);
+.contact-hover-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
-.global-email-link::after {
-  left: auto;
-  right: -12px;
-  bottom: -7px;
-  width: 15px;
-  height: 10px;
-  border: 1px solid currentColor;
-  border-radius: 2px;
-  background:
-    linear-gradient(30deg, transparent 45%, currentColor 47% 53%, transparent 55%) 0 0 / 50% 100% no-repeat,
-    linear-gradient(150deg, transparent 45%, currentColor 47% 53%, transparent 55%) 100% 0 / 50% 100% no-repeat,
-    var(--global-nav-hover-bg, var(--paper, #fbfbfb));
-  box-shadow: 2px 2px 0 currentColor;
+.contact-hover-icon .icon-fill {
+  fill: var(--contact-icon-fill);
+}
+
+.contact-hover-icon .icon-line {
+  fill: none;
+}
+
+.contact-hover-icon .icon-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+.global-instagram-link .contact-hover-icon {
+  transform: translate(-3px, 4px) rotate(-10deg) scale(.55);
+}
+
+.global-email-link .contact-hover-icon {
+  right: -15px;
   transform: translate(-4px, 4px) rotate(10deg) scale(.55);
 }
 
@@ -147,21 +223,21 @@
   transform: translate(0, 0) rotate(2deg) scale(1.04, .96);
 }
 
-.global-instagram-link:hover::after,
-.global-instagram-link:focus-visible::after {
+.global-instagram-link:hover .contact-hover-icon,
+.global-instagram-link:focus-visible .contact-hover-icon {
   opacity: 1;
-  transform: translate(0, 0) rotate(-12deg) scale(1);
+  transform: translate(0, 0) rotate(-10deg) scale(1);
 }
 
-.global-email-link:hover::after,
-.global-email-link:focus-visible::after {
+.global-email-link:hover .contact-hover-icon,
+.global-email-link:focus-visible .contact-hover-icon {
   opacity: 1;
   transform: translate(0, 0) rotate(10deg) scale(1);
 }
 
-.global-site-header a:hover::after,
-.global-site-header a:focus-visible::after,
-.global-site-header a.is-active::after {
+.global-site-header a:not(.global-instagram-link):not(.global-email-link):hover::after,
+.global-site-header a:not(.global-instagram-link):not(.global-email-link):focus-visible::after,
+.global-site-header a:not(.global-instagram-link):not(.global-email-link).is-active::after {
   transform: scaleX(1);
 }
 
@@ -211,6 +287,7 @@ body.nav-hidden .global-site-header {
     gap: 6px;
     overflow: hidden;
     text-align: left;
+    padding-right: 0;
   }
 
   .global-location-full,
