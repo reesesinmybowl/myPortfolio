@@ -7,11 +7,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <!-- Inter variable font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+  <script>
+    if (window.self !== window.top) {
+      document.documentElement.classList.add('is-embed');
+    }
+  </script>
   <style>
     html, body { margin:0; padding:0; background:#fff; height:100%; }
     /* Avoid iOS bounce showing white gaps around canvas */
     html, body { overscroll-behavior: none; touch-action: manipulation; }
     canvas { display:block; }
+
+    html.is-embed .global-site-header {
+      display: none !important;
+    }
 
     .center-year{
       position:fixed;
