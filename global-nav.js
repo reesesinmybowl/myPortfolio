@@ -10,7 +10,6 @@
     "/tourdefrance",
     "/motelindustry-website",
     "/memoryofaflower",
-    "/Doomsday",
     "/ekko-website",
     "/yocho",
     "/pasnormalstudios_FD",
