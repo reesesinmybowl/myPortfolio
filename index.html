@@ -21,6 +21,8 @@
       --cursor: #81cf49;
       --selection: #81cf49;
       --caret-offset-y: -0.08em;
+      --caret-text-adjust-y: 0.05em;
+      --caret-empty-adjust-y: 0.04em;
       --tracking: -0.08em;
       --post-solid-height: 0.748em;
       --post-solid-y: 2px;
@@ -324,6 +326,24 @@
       animation-delay: calc(var(--i) * 74ms);
     }
 
+    body.title-transition-out #visibleText.main-title-concealing {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+
+    .main-title-concealing .type-line {
+      opacity: 1;
+      transform: translateY(0);
+      animation: mainTitleConceal 420ms cubic-bezier(.55, 0, .5, 1) forwards;
+      animation-delay: calc(var(--i) * 74ms);
+    }
+
+    .main-title-concealing .line-text {
+      animation: mainTitleTextConceal 420ms cubic-bezier(.55, 0, .5, 1) forwards;
+      animation-delay: calc(var(--i) * 74ms);
+    }
+
     @keyframes mainTitleReveal {
       0% {
         opacity: 0;
@@ -343,6 +363,28 @@
 
       100% {
         transform: translateX(calc(var(--text-offset, 0px) + var(--line-text-shift, 0px))) translateY(0);
+      }
+    }
+
+    @keyframes mainTitleConceal {
+      0% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-14px);
+      }
+    }
+
+    @keyframes mainTitleTextConceal {
+      0% {
+        transform: translateX(calc(var(--text-offset, 0px) + var(--line-text-shift, 0px))) translateY(0);
+      }
+
+      100% {
+        transform: translateX(calc(var(--text-offset, 0px) + var(--line-text-shift, 0px))) translateY(-8px);
       }
     }
 
@@ -509,7 +551,7 @@
       display: inline-flex;
       align-items: baseline;
       justify-content: center;
-      gap: 3px;
+      gap: 1px;
       width: auto;
       height: 16px;
       padding: 0;
@@ -533,6 +575,10 @@
       width: 10px;
       height: 10px;
       overflow: visible;
+    }
+
+    .title-toggle:not([aria-pressed="true"]) svg {
+      top: calc(var(--info-arrow-y) - 0.5px);
     }
 
     .title-toggle .toggle-arrow {
@@ -738,7 +784,7 @@
     .cursor {
       position: absolute;
       left: var(--caret-x, calc(100% + 0.08em));
-      top: calc(var(--caret-y, 0px) + var(--caret-offset-y));
+      top: calc(var(--caret-y, 0px) + var(--caret-offset-y) + var(--caret-state-adjust-y, 0em));
       display: block;
       width: 0.065em;
       height: 0.82em;
@@ -1306,6 +1352,7 @@
         return;
       }
 
+      visibleText.classList.remove("main-title-concealing");
       visibleText.classList.toggle("main-title-revealing", Boolean(options.reveal));
       visibleText.replaceChildren(
         ...visibleLines.map((line, index) => {
@@ -1414,6 +1461,7 @@
       applyHeadlineTransform();
 
       if (done) {
+        enableEditing();
         requestAnimationFrame(positionTitleCursor);
         return;
       }
@@ -1508,11 +1556,27 @@
       cursor.classList.remove("done");
       currentScale = fitScale(text);
       applyHeadlineTransform();
+
+      if (options.reveal) {
+        const revealDuration = 420 + Math.max(0, lines.length - 1) * 74;
+        clearTimeout(workStudyTimer);
+        workStudyTimer = window.setTimeout(() => {
+          if (showingWorkStudy) {
+            return;
+          }
+
+          enableEditing();
+          requestAnimationFrame(updateCustomCaret);
+        }, revealDuration);
+        return;
+      }
+
+      enableEditing();
       requestAnimationFrame(positionTitleCursor);
     }
 
     function enableEditing() {
-      if (editable || matchMedia("(max-width: 900px)").matches) {
+      if (editable || exportMode || postMode || postImageMode || showingWorkStudy || matchMedia("(max-width: 900px)").matches) {
         return;
       }
 
@@ -1770,8 +1834,14 @@
         marker.remove();
       }
 
-      const lineRect = activeLine?.getBoundingClientRect() || rect;
+      const lineRect = activeLine?.textContent
+        ? activeLine.getBoundingClientRect()
+        : activeLine?.closest(".type-line")?.getBoundingClientRect() || rect;
       const hostRect = document.querySelector(".sentence").getBoundingClientRect();
+      cursor.style.setProperty(
+        "--caret-state-adjust-y",
+        activeLine?.textContent ? "var(--caret-text-adjust-y)" : "var(--caret-empty-adjust-y)"
+      );
       cursor.style.setProperty("--caret-x", `${(rect.left - hostRect.left) / currentScale}px`);
       cursor.style.setProperty("--caret-y", `${(lineRect.top - hostRect.top) / currentScale}px`);
       cursor.classList.add("done");
@@ -1970,6 +2040,7 @@
       visibleText.contentEditable = "false";
       visibleText.removeAttribute("spellcheck");
       visibleText.removeAttribute("aria-label");
+      visibleText.classList.remove("main-title-revealing", "main-title-concealing");
       document.body.classList.remove("is-peeking");
       setWorkStudyMode(true);
       renderWorkStudyTitle(workStudyGroups.length);
@@ -1996,12 +2067,22 @@
       document.body.classList.add("title-transition-out");
       const workStudyItems = visibleText.querySelectorAll(".work-study-heading, .work-study-entry").length;
       const isExitingWorkStudy = showingWorkStudy && !isShowingWorkStudy && workStudyItems > 0;
+      const aboutLines = visibleText.querySelectorAll(".type-line").length;
+      const isExitingAbout = !showingWorkStudy && isShowingWorkStudy && aboutLines > 0;
       const transitionOutDuration = isExitingWorkStudy
         ? workStudyExitDuration + Math.max(0, workStudyItems - 1) * workStudyExitStagger
-        : 220;
+        : isExitingAbout
+          ? 420 + Math.max(0, aboutLines - 1) * 74
+          : 220;
 
       if (isExitingWorkStudy) {
         visibleText.querySelector(".work-study-list")?.classList.add("is-exiting");
+      } else if (isExitingAbout) {
+        visibleText.contentEditable = "false";
+        visibleText.blur();
+        visibleText.classList.remove("main-title-revealing");
+        visibleText.classList.add("main-title-concealing");
+        cursor.classList.remove("done");
       }
 
       titleTransitionTimer = window.setTimeout(() => {
