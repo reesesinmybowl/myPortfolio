@@ -385,6 +385,33 @@
       width: 100%; height: auto; display: block; object-fit: contain;
     }
 
+    @media (prefers-reduced-motion: no-preference) {
+      .js .grid .project-row {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      .js .grid .project-row.reveal-in {
+        animation: dropIn .45s cubic-bezier(.2, .8, .2, 1) forwards;
+        animation-delay: var(--stagger, 0ms);
+      }
+      .js .project-row.reveal-in .card {
+        animation: projectTVOn 480ms cubic-bezier(.16, 1, .3, 1) both;
+        animation-delay: var(--stagger, 0ms);
+      }
+    }
+
+    @keyframes dropIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes projectTVOn {
+      0% { clip-path: inset(49.7% 46%); filter: brightness(2.4); }
+      20% { clip-path: inset(49.4% 0); filter: brightness(1.8); }
+      75% { clip-path: inset(0); filter: brightness(1.08); }
+      100% { clip-path: inset(0); filter: brightness(1); }
+    }
+
     #proj8 .card {
       aspect-ratio: 3600 / 2252;
     }
@@ -404,10 +431,13 @@
       display: none;
     }
     #proj10:hover .research-title-default,
-    #proj10:hover .meta h3 span.year {
+    #proj10:hover .meta h3 span.year,
+    #proj11:hover .research-title-default,
+    #proj11:hover .meta h3 span.year {
       display: none;
     }
-    #proj10:hover .research-title-hover {
+    #proj10:hover .research-title-hover,
+    #proj11:hover .research-title-hover {
       display: inline;
     }
     .research-card {
@@ -486,28 +516,12 @@
     .contact-swap:hover .default-text { display: none; }
     .contact-swap:hover .hover-text { display: inline; }
 
-    /* ===== Top-to-bottom load-in ===== */
-    @keyframes dropIn {
-      0%   { opacity: 0; transform: translateY(18px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    /* Start hidden only when JS is present */
-    .js .grid .project-row { opacity: 0; transform: translateY(18px); will-change: transform, opacity; }
-    .js .grid .project-row.reveal-in {
-      animation: dropIn .45s cubic-bezier(.2,.8,.2,1) forwards;
-      animation-delay: var(--stagger, 0ms);
-    }
-
     .project-edge-indicator {
       display: none;
     }
 
     body.project-edge-primed .project-edge-indicator {
       opacity: 0;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .js .grid .project-row { opacity: 1; transform: none; }
-      .js .grid .project-row.reveal-in { animation: none !important; }
     }
 
     /* MOBILE */
@@ -656,7 +670,7 @@
 
       <section id="proj11" class="project-row">
         <div class="meta">
-          <h3>Dully <span class="year">2026</span></h3>
+          <h3><span class="research-title-default">Dully</span><span class="research-title-hover">Dully - Coming soon</span> <span class="year">2026</span></h3>
           <p>A motion-led project for Dully, using pacing, rhythm, and contrast to build a sharper and more distinctive branded presence.</p>
         </div>
         <div class="card website">
@@ -1117,19 +1131,44 @@
           resetProgress();
         }, { passive: true });
       })();
-
-      /* ===== Top-to-bottom project reveal ===== */
-      const rows = Array.from(document.querySelectorAll('.grid .project-row'));
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      if (!rows.length) return;
-
-      requestAnimationFrame(() => {
+      const projectRows = Array.from(document.querySelectorAll('.grid .project-row'));
+      function revealProjectRows(rows) {
         rows.forEach((row, index) => {
-          row.style.setProperty('--stagger', prefersReduced ? '0ms' : `${Math.min(index * 60, 720)}ms`);
+          row.style.setProperty('--stagger', `${index * 200}ms`);
           row.classList.add('reveal-in');
         });
-      });
+      }
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        revealProjectRows(projectRows);
+      } else {
+        const firstRowTop = projectRows[0]?.offsetTop;
+        revealProjectRows(projectRows.filter((row) => Math.abs(row.offsetTop - firstRowTop) < 2));
+        const initialScrollY = window.scrollY;
+        let hasScrolled = false;
+        let revealFrame = 0;
+        function revealReachedRows() {
+          revealFrame = 0;
+          if (!hasScrolled) return;
+          const groups = new Map();
+          projectRows.filter((row) => !row.classList.contains('reveal-in')).forEach((row) => {
+            const top = row.offsetTop;
+            if (!groups.has(top)) groups.set(top, []);
+            groups.get(top).push(row);
+          });
+          groups.forEach((rows) => {
+            if (rows[0].getBoundingClientRect().top < window.innerHeight * .8) {
+              revealProjectRows(rows);
+            }
+          });
+        }
+        window.addEventListener('scroll', () => {
+          if (Math.abs(window.scrollY - initialScrollY) > 4) hasScrolled = true;
+          if (!revealFrame) revealFrame = requestAnimationFrame(revealReachedRows);
+        }, { passive: true });
+        window.addEventListener('resize', () => {
+          if (!revealFrame) revealFrame = requestAnimationFrame(revealReachedRows);
+        });
+      }
     });
   </script>
 </body>

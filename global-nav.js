@@ -49,11 +49,117 @@
         <span class="global-weather-clouds" aria-hidden="true"></span>
         <canvas class="global-weather-canvas" aria-hidden="true"></canvas>
       </span>
-      ${isHomePath ? '<button class="global-title-toggle" type="button" aria-label="Toggle profile text" aria-pressed="false"><span>Info</span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="toggle-arrow" d="M3.5 3.5 8.5 8.5M8.5 4.5v4h-4"></path></svg></button>' : ''}
+      ${'<button class="global-title-toggle" type="button" aria-label="Toggle profile text" aria-pressed="false"><span>Info</span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="toggle-arrow" d="M3.5 3.5 8.5 8.5M8.5 4.5v4h-4"></path></svg></button>'}
     </div>
   `;
 
   document.body.prepend(header);
+  const infoToggle = header.querySelector(".global-title-toggle");
+  if (!isHomePath) {
+    let infoPanel;
+    let hiddenContent = [];
+    let infoHideTimer;
+    let projectInfoAnimations = [];
+    let closingProjectCards = [];
+    const setInfoOpen = (open) => {
+      clearTimeout(infoHideTimer);
+      const projectCards = path === "/project"
+        ? (open ? Array.from(document.querySelectorAll(".project-row.reveal-in")).filter((row) => {
+          const rect = row.getBoundingClientRect();
+          return rect.bottom > 0 && rect.top < window.innerHeight;
+        }).flatMap((row) => Array.from(row.querySelectorAll(".card, .meta"))) : closingProjectCards) : [];
+      if (open) closingProjectCards = projectCards;
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const cardStates = projectCards.map((card) => {
+        const style = getComputedStyle(card);
+        return { clipPath: style.clipPath, opacity: style.opacity };
+      });
+      projectInfoAnimations.forEach((animation) => animation.cancel());
+      projectInfoAnimations = [];
+      const projectTransitionTime = projectCards.length && !reducedMotion
+        ? 360 + (Math.ceil(projectCards.length / 2) - 1) * 120 : 0;
+      document.body.style.setProperty("--info-project-duration", `${projectTransitionTime}ms`);
+      document.body.classList.toggle("global-info-project", projectCards.length > 0);
+      if (!reducedMotion) {
+        projectInfoAnimations = projectCards.map((card, index) => card.animate(
+          open ? [
+            cardStates[index],
+            { clipPath: "inset(49.5% 0)", opacity: 1, offset: .8 },
+            { clipPath: "inset(50% 46%)", opacity: 0 }
+          ] : [
+            cardStates[index],
+            { clipPath: "inset(49.5% 0)", opacity: 1, offset: .2 },
+            { clipPath: "inset(0)", opacity: 1 }
+          ],
+          { duration: 360, delay: (open ? 0 : 120) + Math.floor(index / 2) * 120, easing: "cubic-bezier(.2, .8, .2, 1)", fill: "both" }
+        ));
+        if (!open) {
+          const returningAnimations = projectInfoAnimations;
+          Promise.allSettled(returningAnimations.map((animation) => animation.finished)).then(() => {
+            if (projectInfoAnimations !== returningAnimations) return;
+            returningAnimations.forEach((animation) => animation.cancel());
+            projectInfoAnimations = [];
+          });
+        }
+      }
+      const surfaces = [document.querySelector("main"), document.body, document.documentElement].filter(Boolean);
+      const background = surfaces.map((node) => getComputedStyle(node).backgroundColor)
+        .find((color) => color !== "transparent" && color !== "rgba(0, 0, 0, 0)") || "#fff";
+      const foreground = getComputedStyle(header).color;
+      if (!infoPanel) {
+        infoPanel = document.createElement("iframe");
+        infoPanel.className = "global-info-panel";
+        infoPanel.title = "About Niklas — Info";
+        const infoParams = new URLSearchParams({ info: "", embeddedInfo: "", infoPaper: background, infoType: foreground });
+        infoPanel.src = `/?${infoParams}`;
+        infoPanel.hidden = true;
+        document.body.append(infoPanel);
+        infoPanel.addEventListener("load", () => {
+          infoPanel.contentDocument?.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") setInfoOpen(false);
+          });
+        });
+      }
+      if (open) {
+        infoPanel.style.background = background;
+        const infoRoot = infoPanel.contentDocument?.documentElement;
+        infoRoot?.style.setProperty("--paper", background);
+        infoRoot?.style.setProperty("--type", foreground);
+        infoRoot?.style.setProperty("--solid", background);
+        hiddenContent = Array.from(document.body.children)
+          .filter((node) => node !== header && node !== infoPanel && !["SCRIPT", "STYLE", "LINK"].includes(node.tagName))
+          .map((node) => ({ node, inert: node.inert }));
+        hiddenContent.forEach(({ node }) => {
+          node.classList.add("global-info-content");
+          node.inert = true;
+        });
+      } else {
+        hiddenContent.forEach(({ node, inert }) => { node.inert = inert; });
+        hiddenContent = [];
+      }
+      if (open) {
+        infoPanel.hidden = false;
+        void infoPanel.offsetWidth;
+      } else {
+        infoHideTimer = window.setTimeout(() => { infoPanel.hidden = true; }, 360);
+      }
+      document.body.classList.toggle("global-info-open", open);
+      document.body.classList.remove("nav-hidden");
+      infoToggle.setAttribute("aria-pressed", String(open));
+      infoToggle.setAttribute("aria-label", open ? "Close Info and return to page" : "Show Info");
+      if (!open) infoToggle.focus({ preventScroll: true });
+    };
+    infoToggle.setAttribute("aria-label", "Show Info");
+    infoToggle.addEventListener("click", () => {
+      setInfoOpen(infoToggle.getAttribute("aria-pressed") !== "true");
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && infoToggle.getAttribute("aria-pressed") === "true") setInfoOpen(false);
+    });
+  } else if (document.body.classList.contains("work-title-mode")) {
+    infoToggle.setAttribute("aria-pressed", "true");
+    infoToggle.setAttribute("aria-label", "Show intro text");
+  }
   document.body.classList.add("global-nav-ready");
   if (isHomePath) {
     document.body.classList.add("home-page");

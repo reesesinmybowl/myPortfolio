@@ -129,7 +129,7 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       column-gap: 7px;
-      row-gap: 8px;
+      row-gap: 72px;
       align-items: start;
       width: 100%;
       font-family: Helvetica, Arial, sans-serif;
@@ -169,6 +169,22 @@
       margin-bottom: 8px;
     }
 
+    a.work-study-heading {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    a.work-study-heading[href="https://www.laybythelake.com"] {
+      color: inherit;
+      text-decoration-thickness: 1px;
+      cursor: pointer;
+    }
+
+    a.work-study-heading[href="https://www.laybythelake.com"]:hover {
+      text-decoration-thickness: 2px;
+    }
+
     .client-media-preview {
       position: fixed;
       left: 0;
@@ -181,18 +197,32 @@
       visibility: hidden;
       pointer-events: none;
       background: var(--solid);
-      transform: translate(var(--preview-x, 0px), var(--preview-y, 0px)) scale(.96);
-      transform-origin: left top;
+      transform: translate(var(--preview-x, 0px), var(--preview-y, 0px));
+      transform-origin: center;
+      clip-path: inset(50% 0);
       transition:
         opacity 140ms ease,
-        visibility 140ms ease,
-        transform 180ms cubic-bezier(.18, .9, .24, 1);
+        visibility 140ms ease;
     }
 
     .client-media-preview.is-visible {
       opacity: 1;
       visibility: visible;
-      transform: translate(var(--preview-x, 0px), var(--preview-y, 0px)) scale(1);
+      clip-path: inset(0);
+      animation: previewTVOn 480ms cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    @keyframes previewTVOn {
+      0% { clip-path: inset(49.7% 46%); filter: brightness(2.4); }
+      20% { clip-path: inset(49.4% 0); filter: brightness(1.8); }
+      75% { clip-path: inset(0); filter: brightness(1.08); }
+      100% { clip-path: inset(0); filter: brightness(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .client-media-preview.is-visible {
+        animation: none;
+      }
     }
 
     .client-media-preview img,
@@ -1058,6 +1088,21 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
+    const embeddedInfo = params.has("embeddedInfo");
+    document.body.classList.toggle("embedded-info", embeddedInfo);
+    if (embeddedInfo) {
+      const infoPaper = params.get("infoPaper");
+      const infoType = params.get("infoType");
+      if (infoPaper && CSS.supports("color", infoPaper)) {
+        document.documentElement.style.setProperty("--paper", infoPaper);
+        document.documentElement.style.setProperty("--solid", infoPaper);
+        document.body.style.background = infoPaper;
+      }
+      if (infoType && CSS.supports("color", infoType)) {
+        document.documentElement.style.setProperty("--type", infoType);
+        document.documentElement.style.setProperty("--selection", infoType);
+      }
+    }
     const exportMode = params.has("export");
     const postMode = params.has("post");
     const postText = params.get("post") || "www.niklastsalkos.com";
@@ -1083,6 +1128,16 @@
       {
         heading: "Studies",
         items: ["DMJX Visual Communication Interactive Design BA", "Krabbesholm Højskole"]
+      },
+      {
+        heading: "tool i made",
+        items: []
+      },
+      {
+        heading: "www.laybythelake.com",
+        href: "https://www.laybythelake.com",
+        preview: { type: "video", src: "/laybythelakecover.mp4", width: 3024, height: 1646 },
+        items: []
       }
     ];
     const clientPreviewMedia = {
@@ -1962,7 +2017,13 @@
     }
 
     function showClientPreview(trigger, event = null) {
+      if (clientPreview.dataset.activeSrc === trigger.dataset.previewSrc
+        && clientPreview.classList.contains("is-visible")) return;
+      clientPreview.dataset.activeSrc = trigger.dataset.previewSrc;
       renderClientPreview(trigger);
+      clientPreview.classList.remove("is-visible");
+      // Restart the reveal even when moving straight from another preview.
+      void clientPreview.offsetWidth;
       clientPreview.classList.add("is-visible");
 
       if (event) {
@@ -1988,12 +2049,23 @@
       list.className = "work-study-list";
       visibleGroups.forEach((group, index) => {
         const column = document.createElement("span");
-        const heading = document.createElement("span");
+        const heading = document.createElement(group.href ? "a" : "span");
 
         column.className = "work-study-column";
         heading.className = "work-study-heading";
         heading.style.setProperty("--i", lineIndex);
         heading.textContent = group.heading;
+        if (group.href) {
+          heading.href = group.href;
+          heading.target = "_blank";
+          heading.rel = "noopener noreferrer";
+        }
+        if (group.preview) {
+          heading.dataset.previewType = group.preview.type || "image";
+          heading.dataset.previewSrc = group.preview.src;
+          heading.dataset.previewWidth = group.preview.width;
+          heading.dataset.previewHeight = group.preview.height;
+        }
         column.append(heading);
         lineIndex += 1;
 
@@ -2172,7 +2244,7 @@
     visibleText.addEventListener("keyup", updateCustomCaret);
     visibleText.addEventListener("mouseup", updateCustomCaret);
     visibleText.addEventListener("pointerover", (event) => {
-      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+      const trigger = event.target.closest("[data-preview-src]");
 
       if (!trigger || !visibleText.contains(trigger)) {
         return;
@@ -2181,7 +2253,7 @@
       showClientPreview(trigger, event);
     });
     visibleText.addEventListener("pointermove", (event) => {
-      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+      const trigger = event.target.closest("[data-preview-src]");
 
       if (!trigger || !clientPreview.classList.contains("is-visible")) {
         return;
@@ -2190,7 +2262,7 @@
       positionClientPreview(event.clientX, event.clientY);
     });
     visibleText.addEventListener("pointerout", (event) => {
-      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+      const trigger = event.target.closest("[data-preview-src]");
 
       if (!trigger || trigger.contains(event.relatedTarget)) {
         return;
@@ -2199,14 +2271,14 @@
       hideClientPreview();
     });
     visibleText.addEventListener("focusin", (event) => {
-      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+      const trigger = event.target.closest("[data-preview-src]");
 
       if (trigger) {
         showClientPreview(trigger);
       }
     });
     visibleText.addEventListener("focusout", (event) => {
-      const trigger = event.target.closest(".work-study-entry[data-preview-src]");
+      const trigger = event.target.closest("[data-preview-src]");
 
       if (trigger) {
         hideClientPreview();
@@ -2221,9 +2293,127 @@
 
       restart();
     });
-    palettes.forEach((palette) => {
+    let paletteAnimations = [];
+    let restorePaletteLetters = () => {};
+    let lastPaletteAnimation = -1;
+    let lastPaletteAnimationTime = 0;
+    const paletteMotions = [
+      ["none", "translateY(-9px) rotate(-1deg)", "translateY(4px) rotate(.5deg)", "none"],
+      ["none", "translateY(5px) scaleY(.9)", "translateY(-13px) scaleY(1.06)", "translateY(2px)", "none"],
+      ["none", "skewX(-7deg)", "skewX(5deg)", "skewX(-2deg)", "none"],
+      ["perspective(700px) rotateX(0deg)", "perspective(700px) rotateX(-24deg)", "perspective(700px) rotateX(12deg)", "perspective(700px) rotateX(0deg)"],
+      ["none", "scale(1.035, .9)", "scale(.985, 1.06)", "none"],
+      ["none", "translate(5px, -8px) rotate(1deg)", "translate(-2px, -3px) rotate(-.5deg)", "none"]
+    ];
+
+    function animatePaletteText(index) {
+      if (exportMode || postMode || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const now = performance.now();
+      // Focus and click can follow pointerenter on the same swatch.
+      if (index === lastPaletteAnimation && now - lastPaletteAnimationTime < 900) return;
+      lastPaletteAnimation = index;
+      lastPaletteAnimationTime = now;
+      paletteAnimations.forEach((animation) => animation.cancel());
+      restorePaletteLetters();
+      if (index === 0) {
+        const replacements = [];
+        const letters = [];
+        visibleText.querySelectorAll(".line-text, .work-study-entry").forEach((line) => {
+          const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+          const nodes = [];
+          while (walker.nextNode()) nodes.push(walker.currentNode);
+          nodes.forEach((node) => {
+            const wrapper = document.createElement("span");
+            const range = document.createRange();
+            range.selectNodeContents(node);
+            const textRect = range.getBoundingClientRect();
+            const scale = line.getBoundingClientRect().width / line.offsetWidth || 1;
+            const color = getComputedStyle(node.parentElement).color;
+            wrapper.style.position = "relative";
+            wrapper.style.color = "transparent";
+            // Keep the original text in flow so kerning and line widths never change.
+            wrapper.textContent = node.textContent;
+            let characterOffset = 0;
+            Array.from(node.textContent).forEach((character) => {
+              range.setStart(node, characterOffset);
+              characterOffset += character.length;
+              range.setEnd(node, characterOffset);
+              const characterRect = range.getBoundingClientRect();
+              if (/\s/.test(character)) return;
+              const letter = document.createElement("span");
+              letter.textContent = character;
+              letter.setAttribute("aria-hidden", "true");
+              letter.style.position = "absolute";
+              letter.style.left = `${(characterRect.left - textRect.left) / scale}px`;
+              letter.style.top = "auto";
+              letter.style.color = color;
+              letter.style.pointerEvents = "none";
+              wrapper.append(letter);
+              letters.push(letter);
+            });
+            node.replaceWith(wrapper);
+            replacements.push({ node, wrapper });
+          });
+        });
+        const restore = () => replacements.forEach(({ node, wrapper }) => wrapper.replaceWith(node));
+        restorePaletteLetters = restore;
+        // Scatter the popping order, with irregular gaps and occasional little clusters.
+        const popOrder = letters.map((_, letterIndex) => letterIndex);
+        for (let i = popOrder.length - 1; i > 0; i--) {
+          const swapIndex = Math.floor(Math.random() * (i + 1));
+          [popOrder[i], popOrder[swapIndex]] = [popOrder[swapIndex], popOrder[i]];
+        }
+        const popDelays = [];
+        let nextPop = 0;
+        popOrder.forEach((letterIndex) => {
+          popDelays[letterIndex] = nextPop;
+          nextPop += Math.random() < .25 ? 15 + Math.random() * 25 : 65 + Math.random() * 90;
+        });
+        paletteAnimations = letters.map((letter, letterIndex) => {
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 28 + Math.random() * 58;
+          const x = Math.cos(angle) * distance;
+          const y = -(28 + Math.random() * 58);
+          const rotation = (Math.random() - .5) * 100;
+          return letter.animate([
+            { transform: "translate(0, 0) rotate(0deg) scale(1)" },
+            { transform: "translate(0, 0) rotate(0deg) scale(1.12, .76)", offset: .08 },
+            { transform: `translate(${x}px, ${y}px) rotate(${rotation}deg) scale(.9, 1.18)`, offset: .27 },
+            { transform: `translate(${-x * .38}px, ${y * .08}px) rotate(${-rotation * .4}deg) scale(1.15, .86)`, offset: .51 },
+            { transform: `translate(${x * .17}px, ${y * .17}px) rotate(${rotation * .18}deg) scale(.95, 1.08)`, offset: .7 },
+            { transform: `translate(${-x * .06}px, ${y * .02}px) rotate(${-rotation * .06}deg) scale(1.03, .97)`, offset: .86 },
+            { transform: "translate(0, 0) rotate(0deg) scale(1)" }
+          ], {
+            duration: 1400 + Math.random() * 400,
+            delay: popDelays[letterIndex],
+            easing: "cubic-bezier(.2, .75, .25, 1)"
+          });
+        });
+        Promise.allSettled(paletteAnimations.map((animation) => animation.finished)).then(() => {
+          restore();
+          if (restorePaletteLetters === restore) restorePaletteLetters = () => {};
+        });
+        return;
+      }
+      paletteAnimations = Array.from(visibleText.querySelectorAll(".line-text, .work-study-entry"), (line, lineIndex) => {
+        const baseTransform = getComputedStyle(line).transform;
+        return line.animate(
+          paletteMotions[index].map((motion) => ({
+            transform: `${baseTransform === "none" ? "" : baseTransform} ${motion === "none" ? "translate(0, 0)" : motion}`.trim()
+          })),
+          {
+            duration: index === 5 ? 900 : 650,
+            delay: lineIndex * 65,
+            easing: "cubic-bezier(.22, .8, .3, 1)"
+          }
+        );
+      });
+    }
+
+    palettes.forEach((palette, index) => {
       const applyPalette = () => {
         applyPaletteData(palette.dataset);
+        animatePaletteText(index);
       };
 
       palette.addEventListener("pointerenter", applyPalette);
@@ -2232,7 +2422,7 @@
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && showingWorkStudy) {
+      if (event.key === "Escape" && showingWorkStudy && !embeddedInfo) {
         transitionTitleTo(false);
       }
     });
@@ -2242,6 +2432,7 @@
     const PROJECTS_PATH = "/project/";
 
     function goToProjects() {
+      if (embeddedInfo) return;
       if (navLocked) {
         return;
       }
@@ -2295,7 +2486,11 @@
       lastScrollY = currentY;
     }, { passive: true });
 
-    restart();
+    if (params.has("info") && !postMode && !exportMode) {
+      showWorkStudyTitle();
+    } else {
+      restart();
+    }
   </script>
 </body>
 </html>
