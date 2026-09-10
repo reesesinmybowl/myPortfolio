@@ -418,6 +418,10 @@
       }
     }
 
+    .headline-kern-r {
+      margin-right: .018em;
+    }
+
     .hi-h,
     .there-t,
     .designer-g {
@@ -1474,6 +1478,27 @@
           } else {
             text.textContent = line;
           }
+          const kerningWalker = document.createTreeWalker(text, NodeFilter.SHOW_TEXT);
+          const kerningNodes = [];
+          while (kerningWalker.nextNode()) kerningNodes.push(kerningWalker.currentNode);
+          kerningNodes.forEach((node) => {
+            const content = node.textContent;
+            const matches = Array.from(content.matchAll(/working|experiences/g));
+            if (!matches.length) return;
+            const fragment = document.createDocumentFragment();
+            let start = 0;
+            matches.forEach((match) => {
+              const rIndex = match.index + (match[0] === "working" ? 2 : 4);
+              fragment.append(document.createTextNode(content.slice(start, rIndex)));
+              const letter = document.createElement("span");
+              letter.className = "headline-kern-r";
+              letter.textContent = "r";
+              fragment.append(letter);
+              start = rIndex + 1;
+            });
+            fragment.append(document.createTextNode(content.slice(start)));
+            node.replaceWith(fragment);
+          });
           text.style.setProperty("--text-offset", offset);
           text.style.setProperty("--line-text-shift", adjustment.textShift || "0px");
 
