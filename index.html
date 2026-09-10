@@ -965,6 +965,16 @@
     }
 
     @media (max-width: 720px) {
+      body:not(.post-mode) .line-text {
+        --text-offset: 0px !important;
+        --line-text-shift: 0px !important;
+      }
+
+      body:not(.post-mode) .type-line {
+        --solid-left: 0px !important;
+        --solid-right: 0px !important;
+      }
+
       .sentence,
       .measure {
         font-size: 136px;
@@ -982,6 +992,10 @@
 
       .work-study-list {
         grid-template-columns: 1fr;
+      }
+
+      .work-study-column--tools-link {
+        margin-top: -64px;
       }
 
       .client-media-preview {
@@ -1115,7 +1129,17 @@
       "working across identities, digital",
       "experiences, type, 3D and motion graphics."
     ];
-    const lines = postMode ? [postText] : defaultLines;
+    const phoneLines = [
+      "Hi there! I’m Niklas",
+      "Copenhagen-based",
+      "designer working",
+      "across identities,",
+      "digital experiences,",
+      "type, 3D and",
+      "motion graphics."
+    ];
+    const phoneLayout = matchMedia("(max-width: 720px)");
+    let lines = postMode ? [postText] : (phoneLayout.matches ? phoneLines : defaultLines);
     const workStudyGroups = [
       {
         heading: "Studios",
@@ -2052,6 +2076,9 @@
         const heading = document.createElement(group.href ? "a" : "span");
 
         column.className = "work-study-column";
+        if (group.href === "https://www.laybythelake.com") {
+          column.classList.add("work-study-column--tools-link");
+        }
         heading.className = "work-study-heading";
         heading.style.setProperty("--i", lineIndex);
         heading.textContent = group.heading;
@@ -2286,6 +2313,7 @@
     });
     document.addEventListener("selectionchange", updateCustomCaret);
     window.addEventListener("resize", () => {
+      if (!postMode) lines = phoneLayout.matches ? phoneLines : defaultLines;
       if (showingWorkStudy) {
         renderWorkStudyTitle(workStudyGroups.length);
         return;

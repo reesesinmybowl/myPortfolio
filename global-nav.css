@@ -455,7 +455,7 @@ body.nav-hidden .global-site-header {
   .global-title-toggle {
     position: fixed;
     top: 4px;
-    right: 6px;
+    right: 0;
   }
 
   .global-location-full,
