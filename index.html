@@ -328,6 +328,22 @@
       color: var(--type);
     }
 
+    .motion-word {
+      transition: translate 340ms cubic-bezier(.2,.85,.25,1), scale 340ms cubic-bezier(.2,.85,.25,1);
+      display: inline-block;
+      white-space: pre;
+      transform-origin: center bottom;
+    }
+
+    .scatter-row::before { visibility: hidden; }
+    .scatter-row .motion-word {
+      background: var(--solid);
+      transform-origin: top left;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .motion-word { transition: none; }
+    }
+
     .type-line {
       display: block;
       width: fit-content;
@@ -335,6 +351,12 @@
       padding: 0;
       white-space: pre;
       --solid-scale: 1;
+      transform-origin: top left;
+      transition: translate 300ms cubic-bezier(.2, .85, .25, 1), scale 300ms cubic-bezier(.2, .85, .25, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .type-line { transition: none; }
     }
 
     .line-text {
@@ -451,6 +473,100 @@
       transform-origin: center;
       background: var(--solid);
       z-index: -1;
+    }
+
+    .motion-finale::before,
+    .motion-finale > .line-text {
+      animation: motionFinaleWipe 1000ms cubic-bezier(.16, 1, .3, 1) 600ms backwards;
+    }
+
+    @keyframes motionFinaleWipe {
+      from { clip-path: inset(200% -3% -100% -3%); }
+      to { clip-path: inset(-100% -3% -100% -3%); }
+    }
+
+    .wink-eye,
+    .wink-mouth {
+      display: inline-block;
+      transform-origin: center 45%;
+    }
+
+    .motion-finale .wink-eye {
+      animation: smileyWink 420ms ease-in-out 1150ms backwards;
+    }
+
+    .motion-finale .wink-mouth {
+      animation: smileyGrin 420ms ease-in-out 1150ms backwards;
+    }
+
+    .smiley-wiggle .wink-eye {
+      animation: smileyWink 420ms ease-in-out;
+    }
+    .smiley-wiggle .wink-mouth {
+      animation: smileyGrin 420ms ease-in-out;
+    }
+
+    .smiley-wiggle[data-expression="cat"] .wink-mouth {
+      animation: smileyCat 560ms ease-in-out;
+    }
+    .smiley-wiggle[data-expression="laugh"] .wink-mouth {
+      animation: smileyLaugh 560ms ease-in-out;
+    }
+    .smiley-wiggle[data-expression="tongue"] .wink-mouth {
+      animation: smileyTongue 560ms ease-in-out;
+    }
+    .smiley-wiggle[data-expression="surprise"] .wink-mouth {
+      animation: smileyGasp 560ms ease-in-out;
+    }
+    .smiley-wiggle[data-expression="pout"] .wink-mouth {
+      animation: smileyPout 560ms ease-in-out;
+    }
+    .smiley-wiggle[data-expression="love"] .wink-eye,
+    .smiley-wiggle[data-expression="love"] .wink-mouth {
+      animation: smileyHeartbeat 640ms ease-in-out;
+    }
+
+    @keyframes smileyCat {
+      0%, 100% { transform: rotate(0) scale(1); }
+      30% { transform: rotate(-12deg) scale(1.12); }
+      65% { transform: rotate(9deg) scale(1.06); }
+    }
+    @keyframes smileyLaugh {
+      0%, 50%, 100% { transform: translateY(0) scale(1); }
+      25%, 75% { transform: translateY(-.055em) scale(1.1); }
+    }
+    @keyframes smileyTongue {
+      0%, 100% { transform: translateX(0) rotate(0); }
+      35% { transform: translateX(.04em) rotate(12deg); }
+      65% { transform: translateX(.02em) rotate(-8deg); }
+    }
+    @keyframes smileyGasp {
+      0%, 100% { transform: scale(1); }
+      40% { transform: scale(1.25); }
+      70% { transform: scale(.95); }
+    }
+    @keyframes smileyPout {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      35% { transform: translateY(.04em) rotate(-8deg); }
+      70% { transform: translateY(.02em) rotate(5deg); }
+    }
+    @keyframes smileyHeartbeat {
+      0%, 45%, 100% { transform: scale(1); }
+      25% { transform: scale(1.16); }
+      65% { transform: scale(1.1); }
+    }
+
+    @keyframes smileyGrin {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      35% { transform: translateY(-.025em) rotate(6deg); }
+      65% { transform: translateY(.01em) rotate(-3deg); }
+    }
+
+    @keyframes smileyWink {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      25% { transform: translateX(-.015em) rotate(-7deg); }
+      42%, 52% { transform: translateX(.015em) rotate(5deg) scaleX(.25); }
+      72% { transform: translateX(-.008em) rotate(-3deg); }
     }
 
     .type-line.active::before {
@@ -822,11 +938,13 @@
       display: block;
       width: 0.065em;
       height: 0.82em;
+      scale: var(--caret-scale, 1);
+      transform-origin: top left;
       background: var(--cursor);
       opacity: 1;
       visibility: hidden;
       pointer-events: none;
-      z-index: 2;
+      z-index: 20;
     }
 
     .palette-bar {
@@ -1070,7 +1188,7 @@
   <script defer src="/global-nav.js"></script>
 </head>
 <body>
-  <main id="stage" aria-label="Hi there! I&rsquo;m Niklas, a Copenhagen-based designer working across identities, digital experiences, type, 3D and motion.">
+  <main id="stage" aria-label="Hi there! I&rsquo;m Niklas. Copenhagen-based designer working across identities, digital experiences, type and 3D and motion graphics.">
     <div class="text-wrap" id="textWrap">
       <div class="sentence"><span id="visibleText"></span></div>
     </div>
@@ -1128,19 +1246,20 @@
     const postImageMode = postMode && postImage;
 
     const defaultLines = [
-      "Hi there! I\u2019m Niklas",
+      "Hi there! I\u2019m Niklas.",
       "Copenhagen-based designer ",
       "working across identities, digital",
-      "experiences, type, 3D and motion graphics."
+      "experiences, type and 3D",
+      "and motion graphics ;)"
     ];
     const phoneLines = [
-      "Hi there! I’m Niklas",
+      "Hi there! I’m Niklas.",
       "Copenhagen-based",
       "designer working",
       "across identities,",
       "digital experiences,",
-      "type, 3D and",
-      "motion graphics."
+      "type and 3D",
+      "and motion graphics ;)"
     ];
     const phoneLayout = matchMedia("(max-width: 720px)");
     let lines = postMode ? [postText] : (phoneLayout.matches ? phoneLines : defaultLines);
@@ -1200,7 +1319,7 @@
     ];
 
     // Manual per-line tuning for the main headline.
-    // Line 1 = "Hi there! I’m Niklas"; line 2 = "Copenhagen-based designer"; etc.
+    // Line 1 = "Hi there! I’m Niklas."; line 2 = "Copenhagen-based designer"; etc.
     // textShift moves the text. boxLeft/boxRight expand the pink box around it.
     const lineAdjustments = [
       { textShift: "0px", boxLeft: "0px", boxRight: "-3px" },
@@ -1236,8 +1355,8 @@
     const introStopText = "Hi there!";
     const introHold = 620;
     const introDuration = 520;
-    const secondStopText = "Hi there! I\u2019m Niklas";
-    const secondHold = 480;
+    const secondStopText = "Hi there! I\u2019m Niklas.";
+    const secondHold = 780;
     const secondDuration = introDuration;
     const workStudyExitDuration = 260;
     const workStudyExitStagger = 46;
@@ -1248,6 +1367,7 @@
     let start = performance.now();
     let frame = 0;
     let editable = false;
+    let typingIntroActive = true;
     let currentScale = 1;
     let peekTimer = 0;
     let workStudyTimer = 0;
@@ -1389,7 +1509,7 @@
     }
 
     function fitScale(text) {
-      const bounds = measureText(text);
+      const bounds = measureText(text.trim() ? text : lines.join("\n"));
       const padding = 24;
       const fittedWidth = bounds.width + padding;
       const fittedHeight = bounds.height + padding;
@@ -1398,6 +1518,8 @@
         window.innerHeight * 0.94 / fittedHeight
       );
 
+      // Give the empty editor a clear caret without fitting a single blank to the viewport.
+      if (!text.trim()) return Math.min(8.5, scale * 1.8);
       return Math.min(8.5, scale);
     }
 
@@ -1411,6 +1533,7 @@
 
     function applyHeadlineTransform() {
       textWrap.style.transform = headlineTransform(currentScale);
+      applyTextComposition();
     }
 
     function formatText(count) {
@@ -1437,8 +1560,14 @@
 
       visibleText.classList.remove("main-title-concealing");
       visibleText.classList.toggle("main-title-revealing", Boolean(options.reveal));
-      visibleText.replaceChildren(
-        ...visibleLines.map((line, index) => {
+      const previousRows = typingIntroActive && !options.reveal
+        ? Array.from(visibleText.querySelectorAll(".type-line")) : [];
+      const nextRows = visibleLines.map((line, index) => {
+          const previous = previousRows[index];
+          if (previous?.textContent === line) {
+            previous.style.removeProperty("visibility");
+            return previous;
+          }
           const span = document.createElement("span");
           const text = document.createElement("span");
           const bleed = solidBleeds[index] || { left: 0, right: 0 };
@@ -1483,12 +1612,13 @@
           while (kerningWalker.nextNode()) kerningNodes.push(kerningWalker.currentNode);
           kerningNodes.forEach((node) => {
             const content = node.textContent;
-            const matches = Array.from(content.matchAll(/working|experiences/g));
+            // Apply the same spacing to unfinished words during the intro.
+            const matches = Array.from(content.matchAll(/working|experiences|workin?$|work?$|exper(?:i|ie|ien|ienc|ience)?$/g));
             if (!matches.length) return;
             const fragment = document.createDocumentFragment();
             let start = 0;
             matches.forEach((match) => {
-              const rIndex = match.index + (match[0] === "working" ? 2 : 4);
+              const rIndex = match.index + (match[0].startsWith("wor") ? 2 : 4);
               fragment.append(document.createTextNode(content.slice(start, rIndex)));
               const letter = document.createElement("span");
               letter.className = "headline-kern-r";
@@ -1499,15 +1629,74 @@
             fragment.append(document.createTextNode(content.slice(start)));
             node.replaceWith(fragment);
           });
+          const smileyWalker = document.createTreeWalker(text, NodeFilter.SHOW_TEXT);
+          const smileyNodes = [];
+          let smileyOffset = visibleLines.slice(0, index).reduce((sum, value) => sum + value.length + 1, 0);
+          while (smileyWalker.nextNode()) {
+            const node = smileyWalker.currentNode;
+            smileyNodes.push({ node, offset: smileyOffset });
+            smileyOffset += node.textContent.length;
+          }
+          smileyNodes.forEach(({ node, offset }) => {
+            const matches = Array.from(node.textContent.matchAll(/[:;=8xX][-^]?[)D3pPoO(|]|<3/g));
+            if (!matches.length) return;
+            const fragment = document.createDocumentFragment();
+            const content = node.textContent;
+            let start = 0;
+            matches.forEach((match) => {
+              fragment.append(document.createTextNode(content.slice(start, match.index)));
+              const smiley = document.createElement("span");
+              smiley.className = "typed-smiley";
+              smiley.dataset.offset = String(offset + match.index);
+              const face = match[0];
+              const expression = face === "<3" ? "love" : /3$/.test(face) ? "cat"
+                : /D$/.test(face) ? "laugh" : /[pP]$/.test(face) ? "tongue"
+                : /[oO]$/.test(face) ? "surprise" : /[ (|]$/.test(face) ? "pout" : "smile";
+              smiley.dataset.expression = expression;
+              const eye = document.createElement("span");
+              eye.className = "wink-eye";
+              eye.textContent = face[0];
+              const mouth = document.createElement("span");
+              mouth.className = "wink-mouth";
+              mouth.textContent = face.at(-1);
+              smiley.append(eye, document.createTextNode(face.slice(1, -1)), mouth);
+              fragment.append(smiley);
+              start = match.index + face.length;
+            });
+            fragment.append(document.createTextNode(content.slice(start)));
+            node.replaceWith(fragment);
+          });
           text.style.setProperty("--text-offset", offset);
           text.style.setProperty("--line-text-shift", adjustment.textShift || "0px");
 
           span.append(text);
           span.style.setProperty("--solid-left", `calc(${bleed.left}px + ${adjustment.boxLeft || "0px"})`);
           span.style.setProperty("--solid-right", `calc(${bleed.right}px + ${adjustment.boxRight || "0px"})`);
+          if (previous) {
+            // Keep the animated elements alive as the next letters arrive.
+            const previousText = previous.querySelector(".line-text");
+            const previousWords = Array.from(previousText.querySelectorAll(".motion-word"));
+            if (previousWords.length) {
+              prepareMotionWords(span);
+              Array.from(text.querySelectorAll(".motion-word")).forEach((word, wordIndex) => {
+                const existingWord = previousWords[wordIndex];
+                if (!existingWord) return;
+                existingWord.replaceChildren(...word.childNodes);
+                word.replaceWith(existingWord);
+              });
+            }
+            previousText.replaceChildren(...text.childNodes);
+            previous.style.removeProperty("visibility");
+            return previous;
+          }
           return span;
-        })
-      );
+        });
+      nextRows.forEach((row, index) => {
+        if (visibleText.children[index] !== row) {
+          visibleText.insertBefore(row, visibleText.children[index] || null);
+        }
+      });
+      while (visibleText.children.length > nextRows.length) visibleText.lastElementChild.remove();
     }
 
     function renderPostImage() {
@@ -1519,6 +1708,33 @@
       cursor.classList.remove("done");
       textWrap.style.transform = "none";
       currentScale = 1;
+    }
+
+    let finaleAnimations = [];
+
+    function revealMotionFinale() {
+      renderTypedLines(lines, true);
+      currentScale = fitScale(lines.join("\n"));
+      applyHeadlineTransform();
+      cursor.classList.remove("done");
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const finalLine = visibleText.querySelector(".type-line:last-child");
+      finaleAnimations.forEach((animation) => animation.cancel());
+      if (!reduced) finalLine.classList.add("motion-finale");
+      finaleAnimations = reduced ? [] : finalLine.getAnimations({ subtree: true });
+      const finishAt = performance.now() + (reduced ? 0 : 1600);
+      const finish = (now) => {
+        if (now < finishAt) {
+          frame = requestAnimationFrame(finish);
+          return;
+        }
+        finaleAnimations.forEach((animation) => animation.cancel());
+        finaleAnimations = [];
+        finalLine.classList.remove("motion-finale");
+        enableEditing();
+        requestAnimationFrame(positionTitleCursor);
+      };
+      frame = requestAnimationFrame(finish);
     }
 
     function render(now) {
@@ -1554,12 +1770,23 @@
         count = secondCount + Math.ceil((sentence.length - secondCount) * eased);
       }
 
+      const finaleStart = lines.join("\n").search(/and\s+motion graphics ;\)$/);
+      if (!postMode && finaleStart >= 0 && count >= finaleStart) {
+        revealMotionFinale();
+        return;
+      }
+
       const visibleLines = formatText(count);
+      const reserveFinalLine = !postMode && finaleStart >= 0 && visibleLines.length === lines.length - 1;
+      if (reserveFinalLine) visibleLines.push(lines[lines.length - 1]);
       const text = visibleLines.join("\n");
       const scale = fitScale(text);
       const done = count >= sentence.length;
 
       renderTypedLines(visibleLines, done);
+      if (reserveFinalLine) {
+        visibleText.lastElementChild.style.visibility = "hidden";
+      }
       cursor.classList.remove("done");
       currentScale = scale;
       applyHeadlineTransform();
@@ -1680,6 +1907,7 @@
     }
 
     function enableEditing() {
+      typingIntroActive = false;
       if (editable || exportMode || postMode || postImageMode || showingWorkStudy || matchMedia("(max-width: 900px)").matches) {
         return;
       }
@@ -1694,20 +1922,7 @@
     }
 
     function moveCaretToEnd() {
-      const range = document.createRange();
-      const selection = window.getSelection();
-      const lastText = visibleText.querySelector(".type-line:last-child .line-text")?.firstChild;
-
-      if (lastText) {
-        range.setStart(lastText, lastText.textContent.length);
-        range.collapse(true);
-      } else {
-        range.selectNodeContents(visibleText);
-        range.collapse(false);
-      }
-
-      selection.removeAllRanges();
-      selection.addRange(range);
+      setCaretOffset(getEditableText().length);
     }
 
     function getEditableLines() {
@@ -1732,25 +1947,12 @@
         const line = lineElements[index];
         const textLength = line.textContent.length;
 
-        if (node === line) {
-          return total + Math.min(offset, textLength);
-        }
-
-        if (line.contains(node)) {
-          const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
-          let lineOffset = 0;
-          let textNode = walker.nextNode();
-
-          while (textNode) {
-            if (node === textNode) {
-              return total + lineOffset + Math.min(offset, textNode.textContent.length);
-            }
-
-            lineOffset += textNode.textContent.length;
-            textNode = walker.nextNode();
-          }
-
-          return total + Math.min(offset, textLength);
+        if (node === line || line.contains(node)) {
+          // Element offsets count children; text offsets count characters.
+          const prefix = document.createRange();
+          prefix.selectNodeContents(line);
+          prefix.setEnd(node, offset);
+          return total + prefix.toString().length;
         }
 
         total += textLength + 1;
@@ -1843,6 +2045,15 @@
       const nextOffset = selectionOffsets.start + replacement.length;
 
       renderEditableText(nextText, nextOffset);
+      if (replacement && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        visibleText.querySelectorAll(".typed-smiley").forEach((smiley) => {
+          const offset = Number(smiley.dataset.offset);
+          if (offset < nextOffset && offset + smiley.textContent.length > selectionOffsets.start) {
+            smiley.classList.add("smiley-wiggle");
+          }
+        });
+      }
+
     }
 
     function handleEditableBeforeInput(event) {
@@ -1922,6 +2133,22 @@
         return;
       }
 
+      if (!getEditableText().trim()) {
+        const hostRect = sentenceEl.getBoundingClientRect();
+        const height = window.innerHeight * .815;
+        const width = height * .08;
+        cursor.style.width = `${width / currentScale}px`;
+        cursor.style.height = `${height / currentScale}px`;
+        cursor.style.top = `${(window.innerHeight * .064 - hostRect.top) / currentScale}px`;
+        cursor.style.setProperty("--caret-x", `${(window.innerWidth * .476 - width / 2 - hostRect.left) / currentScale}px`);
+        cursor.style.setProperty("--caret-scale", 1);
+        cursor.classList.add("done");
+        return;
+      }
+      cursor.style.removeProperty("width");
+      cursor.style.removeProperty("height");
+      cursor.style.removeProperty("top");
+
       const range = selection.getRangeAt(0).cloneRange();
       range.collapse(false);
 
@@ -1942,6 +2169,9 @@
         ? activeLine.getBoundingClientRect()
         : activeLine?.closest(".type-line")?.getBoundingClientRect() || rect;
       const hostRect = document.querySelector(".sentence").getBoundingClientRect();
+      const caretLine = activeLine?.textContent ? activeLine : activeLine?.closest(".type-line");
+      cursor.style.setProperty("--caret-scale", caretLine?.offsetHeight
+        ? lineRect.height / (caretLine.offsetHeight * currentScale) : 1);
       cursor.style.setProperty(
         "--caret-state-adjust-y",
         activeLine?.textContent ? "var(--caret-text-adjust-y)" : "var(--caret-empty-adjust-y)"
@@ -1952,6 +2182,9 @@
     }
 
     function positionTitleCursor() {
+      cursor.style.removeProperty("width");
+      cursor.style.removeProperty("height");
+      cursor.style.removeProperty("top");
       if (showingWorkStudy || postImageMode) {
         cursor.classList.remove("done");
         return;
@@ -1967,6 +2200,7 @@
       const lineRect = lastLine.getBoundingClientRect();
       const hostRect = document.querySelector(".sentence").getBoundingClientRect();
       const scale = currentScale || 1;
+      cursor.style.setProperty("--caret-scale", lineRect.height / (lastLine.offsetHeight * scale || 1));
 
       cursor.style.setProperty("--caret-x", `${(lineRect.right - hostRect.left) / scale}px`);
       cursor.style.setProperty("--caret-y", `${(lineRect.top - hostRect.top) / scale}px`);
@@ -1981,7 +2215,7 @@
       }
       stage.setAttribute("aria-label", isShowing
         ? "Places Niklas has worked and studied."
-        : "Hi there! I\u2019m Niklas, a Copenhagen-based designer working across identities, digital experiences, type, 3D and motion.");
+        : "Hi there! I\u2019m Niklas. Copenhagen-based designer working across identities, digital experiences, type and 3D and motion graphics.");
       document.querySelectorAll(".title-toggle, .global-title-toggle").forEach((button) => {
         button.setAttribute("aria-pressed", String(isShowing));
         button.setAttribute("aria-label", isShowing ? "Show intro text" : "Show work and study text");
@@ -2156,6 +2390,8 @@
     }
 
     function showWorkStudyTitle() {
+      finaleAnimations.forEach((animation) => animation.cancel());
+      finaleAnimations = [];
       cancelAnimationFrame(frame);
       clearTimeout(peekTimer);
       clearTimeout(workStudyTimer);
@@ -2238,6 +2474,8 @@
     }
 
     function restart() {
+      finaleAnimations.forEach((animation) => animation.cancel());
+      finaleAnimations = [];
       clearTimeout(workStudyTimer);
       clearTimeout(titleTransitionTimer);
       isTitleTransitioning = false;
@@ -2245,6 +2483,7 @@
       setWorkStudyMode(false);
       start = performance.now();
       editable = false;
+      typingIntroActive = true;
       visibleText.contentEditable = "false";
       visibleText.removeAttribute("spellcheck");
       visibleText.removeAttribute("aria-label");
@@ -2346,121 +2585,217 @@
 
       restart();
     });
-    let paletteAnimations = [];
-    let restorePaletteLetters = () => {};
-    let lastPaletteAnimation = -1;
-    let lastPaletteAnimationTime = 0;
-    const paletteMotions = [
-      ["none", "translateY(-9px) rotate(-1deg)", "translateY(4px) rotate(.5deg)", "none"],
-      ["none", "translateY(5px) scaleY(.9)", "translateY(-13px) scaleY(1.06)", "translateY(2px)", "none"],
-      ["none", "skewX(-7deg)", "skewX(5deg)", "skewX(-2deg)", "none"],
-      ["perspective(700px) rotateX(0deg)", "perspective(700px) rotateX(-24deg)", "perspective(700px) rotateX(12deg)", "perspective(700px) rotateX(0deg)"],
-      ["none", "scale(1.035, .9)", "scale(.985, 1.06)", "none"],
-      ["none", "translate(5px, -8px) rotate(1deg)", "translate(-2px, -3px) rotate(-.5deg)", "none"]
+    let scatterSlots = [];
+    let activeComposition = null;
+    let compositionCaretFrame = 0;
+    const paletteCompositions = [
+      { align: [0, 1, 0.5], sizes: [1.85, 0.48, 0.8], gaps: [0.06, 0.3] },
+      { align: [1, 0, 1], sizes: [0.55, 1.55, 0.65], gaps: [0.32, 0.04] },
+      { align: [0, 0.45, 1], sizes: [0.45, 0.8, 1.5], gaps: [0.18, 0.05] },
+      { align: [1, 0, 0.75], sizes: [1.5, 0.42, 1.1], gaps: [0.02, 0.4] },
+      { align: [0.5, 0.5, 0], sizes: [0.65, 1.4, 0.45], gaps: [0.35, 0.22] },
+      { align: [0, 1, 0.15], sizes: [1.7, 0.85, 0.4], gaps: [0.12, 0.42] }
     ];
 
-    function animatePaletteText(index) {
-      if (exportMode || postMode || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      const now = performance.now();
-      // Focus and click can follow pointerenter on the same swatch.
-      if (index === lastPaletteAnimation && now - lastPaletteAnimationTime < 900) return;
-      lastPaletteAnimation = index;
-      lastPaletteAnimationTime = now;
-      paletteAnimations.forEach((animation) => animation.cancel());
-      restorePaletteLetters();
-      if (index === 0) {
-        const replacements = [];
-        const letters = [];
-        visibleText.querySelectorAll(".line-text, .work-study-entry").forEach((line) => {
-          const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
-          const nodes = [];
-          while (walker.nextNode()) nodes.push(walker.currentNode);
-          nodes.forEach((node) => {
-            const wrapper = document.createElement("span");
-            const range = document.createRange();
-            range.selectNodeContents(node);
-            const textRect = range.getBoundingClientRect();
-            const scale = line.getBoundingClientRect().width / line.offsetWidth || 1;
-            const color = getComputedStyle(node.parentElement).color;
-            wrapper.style.position = "relative";
-            wrapper.style.color = "transparent";
-            // Keep the original text in flow so kerning and line widths never change.
-            wrapper.textContent = node.textContent;
-            let characterOffset = 0;
-            Array.from(node.textContent).forEach((character) => {
-              range.setStart(node, characterOffset);
-              characterOffset += character.length;
-              range.setEnd(node, characterOffset);
-              const characterRect = range.getBoundingClientRect();
-              if (/\s/.test(character)) return;
-              const letter = document.createElement("span");
-              letter.textContent = character;
-              letter.setAttribute("aria-hidden", "true");
-              letter.style.position = "absolute";
-              letter.style.left = `${(characterRect.left - textRect.left) / scale}px`;
-              letter.style.top = "auto";
-              letter.style.color = color;
-              letter.style.pointerEvents = "none";
-              wrapper.append(letter);
-              letters.push(letter);
-            });
-            node.replaceWith(wrapper);
-            replacements.push({ node, wrapper });
-          });
-        });
-        const restore = () => replacements.forEach(({ node, wrapper }) => wrapper.replaceWith(node));
-        restorePaletteLetters = restore;
-        // Scatter the popping order, with irregular gaps and occasional little clusters.
-        const popOrder = letters.map((_, letterIndex) => letterIndex);
-        for (let i = popOrder.length - 1; i > 0; i--) {
-          const swapIndex = Math.floor(Math.random() * (i + 1));
-          [popOrder[i], popOrder[swapIndex]] = [popOrder[swapIndex], popOrder[i]];
-        }
-        const popDelays = [];
-        let nextPop = 0;
-        popOrder.forEach((letterIndex) => {
-          popDelays[letterIndex] = nextPop;
-          nextPop += Math.random() < .25 ? 15 + Math.random() * 25 : 65 + Math.random() * 90;
-        });
-        paletteAnimations = letters.map((letter, letterIndex) => {
-          const angle = Math.random() * Math.PI * 2;
-          const distance = 28 + Math.random() * 58;
-          const x = Math.cos(angle) * distance;
-          const y = -(28 + Math.random() * 58);
-          const rotation = (Math.random() - .5) * 100;
-          return letter.animate([
-            { transform: "translate(0, 0) rotate(0deg) scale(1)" },
-            { transform: "translate(0, 0) rotate(0deg) scale(1.12, .76)", offset: .08 },
-            { transform: `translate(${x}px, ${y}px) rotate(${rotation}deg) scale(.9, 1.18)`, offset: .27 },
-            { transform: `translate(${-x * .38}px, ${y * .08}px) rotate(${-rotation * .4}deg) scale(1.15, .86)`, offset: .51 },
-            { transform: `translate(${x * .17}px, ${y * .17}px) rotate(${rotation * .18}deg) scale(.95, 1.08)`, offset: .7 },
-            { transform: `translate(${-x * .06}px, ${y * .02}px) rotate(${-rotation * .06}deg) scale(1.03, .97)`, offset: .86 },
-            { transform: "translate(0, 0) rotate(0deg) scale(1)" }
-          ], {
-            duration: 1400 + Math.random() * 400,
-            delay: popDelays[letterIndex],
-            easing: "cubic-bezier(.2, .75, .25, 1)"
-          });
-        });
-        Promise.allSettled(paletteAnimations.map((animation) => animation.finished)).then(() => {
-          restore();
-          if (restorePaletteLetters === restore) restorePaletteLetters = () => {};
+    function applyTextComposition() {
+      if (activeComposition === null || showingWorkStudy || postImageMode) return;
+      const rows = Array.from(visibleText.querySelectorAll(".type-line"));
+      if (!rows.length) return;
+      if (!getEditableText().trim()) {
+        rows.forEach((row) => {
+          row.style.removeProperty("translate");
+          row.style.removeProperty("scale");
+          row.classList.remove("scatter-row");
         });
         return;
       }
-      paletteAnimations = Array.from(visibleText.querySelectorAll(".line-text, .work-study-entry"), (line, lineIndex) => {
-        const baseTransform = getComputedStyle(line).transform;
-        return line.animate(
-          paletteMotions[index].map((motion) => ({
-            transform: `${baseTransform === "none" ? "" : baseTransform} ${motion === "none" ? "translate(0, 0)" : motion}`.trim()
-          })),
-          {
-            duration: index === 5 ? 900 : 650,
-            delay: lineIndex * 65,
-            easing: "cubic-bezier(.22, .8, .3, 1)"
-          }
-        );
+      const host = sentenceEl.getBoundingClientRect();
+      const zoom = currentScale || 1;
+      const margin = window.innerWidth <= 900 ? 12 : 24;
+      const headerBottom = document.querySelector(".global-site-header")?.getBoundingClientRect().bottom || 0;
+      const paletteTop = document.querySelector(".palette-bar")?.getBoundingClientRect().top ?? window.innerHeight;
+      const top = Math.max(margin, headerBottom + margin);
+      const bottom = Math.max(top + 1, Math.min(window.innerHeight, paletteTop) - margin);
+      const width = (window.innerWidth - margin * 2) / zoom;
+      const height = (bottom - top) / zoom;
+      const originX = (margin - host.left) / zoom;
+      const originY = (top - host.top) / zoom;
+      rows.forEach((row) => row.classList.remove("scatter-row"));
+      visibleText.querySelectorAll(".motion-word").forEach((word) => {
+        word.style.removeProperty("translate");
+        word.style.removeProperty("scale");
       });
+      if (activeComposition === 3) {
+        prepareMotionWords();
+        const split = rows.findIndex((row) => /across|identities/.test(row.textContent));
+        const intro = rows.slice(0, Math.max(1, split));
+        const interests = rows.slice(Math.max(1, split));
+        const introHeight = height * .3;
+        const introScale = Math.min(width / Math.max(...intro.map((row) => row.offsetWidth)), introHeight / intro.reduce((sum, row) => sum + row.offsetHeight, 0));
+        let introY = originY;
+        intro.forEach((row) => {
+          row.style.scale = String(introScale);
+          row.style.translate = `${originX}px ${introY - row.offsetTop}px`;
+          introY += row.offsetHeight * introScale;
+        });
+        const words = interests.flatMap((row) => {
+          row.classList.add("scatter-row");
+          row.style.scale = "1";
+          row.style.translate = "0px 0px";
+          return Array.from(row.querySelectorAll(".motion-word"));
+        });
+        const cols = window.innerWidth < 600 ? 2 : 3;
+        const bands = Math.ceil(words.length / cols);
+        const cellWidth = width / cols;
+        const cellHeight = height * .64 / Math.max(1, bands);
+        if (scatterSlots.length !== words.length) {
+          scatterSlots = words.map((_, i) => ({ order: i, random: Math.random(), x: Math.random(), y: Math.random() })).sort((a, b) => a.random - b.random);
+        }
+        words.forEach((word, i) => {
+          const slot = scatterSlots[i];
+          const size = Math.min(cellWidth * .88 / Math.max(1, word.offsetWidth), cellHeight * .72 / Math.max(1, word.offsetHeight));
+          const x = originX + (slot.order % cols) * cellWidth + (cellWidth - word.offsetWidth * size) * slot.x;
+          const y = originY + height * .36 + Math.floor(slot.order / cols) * cellHeight + (cellHeight - word.offsetHeight * size) * slot.y;
+          const row = word.closest(".type-line");
+          word.style.scale = String(size);
+          word.style.translate = `${x - word.offsetLeft}px ${y - row.offsetTop - word.offsetTop}px`;
+        });
+        return;
+      }
+      const composition = paletteCompositions[activeComposition];
+      const layout = rows.map((row, index) => {
+        const progress = index / Math.max(1, rows.length - 1);
+        const slot = Math.round(progress * 2);
+        const scale = Math.min(composition.sizes[slot], width / Math.max(1, row.offsetWidth));
+        const gap = index === rows.length - 1 ? 0 : row.offsetHeight * composition.gaps[slot % 2];
+        return { row, scale, gap, align: composition.align[slot] };
+      });
+      // Fill the viewport between the header and swatches, in headline coordinates.
+      const composedHeight = layout.reduce((sum, item) => sum + item.row.offsetHeight * item.scale + item.gap, 0);
+      const composedWidth = Math.max(1, ...layout.map(({ row, scale }) => row.offsetWidth * scale));
+      const fit = Math.min(width / composedWidth, height / Math.max(1, composedHeight));
+      const extraGap = rows.length > 1 ? Math.max(0, height - composedHeight * fit) / (rows.length - 1) : 0;
+      let y = originY;
+      layout.forEach(({ row, scale, gap, align }) => {
+        const size = scale * fit;
+        const x = originX + (width - row.offsetWidth * size) * align;
+        row.style.translate = `${x}px ${y - row.offsetTop}px`;
+        row.style.scale = String(size);
+        y += row.offsetHeight * size + gap * fit + extraGap;
+      });
+    }
+
+    let wordMotions = [];
+    let lastMotionIndex = -1;
+    let lastMotionAt = 0;
+
+    function prepareMotionWords(root = visibleText) {
+      const selection = window.getSelection();
+      const hasSelection = selection?.rangeCount && visibleText.contains(selection.anchorNode);
+      const saved = hasSelection ? getSelectionOffsets() : null;
+      root.querySelectorAll(".line-text").forEach((line) => {
+        if (line.querySelector(".motion-word")) return;
+        const words = Array.from(line.textContent.matchAll(/\S+/g)).reverse();
+        words.forEach((word) => {
+          const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+          const range = document.createRange();
+          let offset = 0;
+          let started = false;
+          while (walker.nextNode()) {
+            const node = walker.currentNode;
+            const end = offset + node.length;
+            if (!started && word.index < end) {
+              range.setStart(node, word.index - offset);
+              started = true;
+            }
+            if (started && word.index + word[0].length <= end) {
+              range.setEnd(node, word.index + word[0].length - offset);
+              break;
+            }
+            offset = end;
+          }
+          const wrapper = document.createElement("span");
+          wrapper.className = "motion-word";
+          wrapper.append(range.extractContents());
+          range.insertNode(wrapper);
+        });
+      });
+      if (saved) {
+        setCaretOffset(saved.end);
+        const endNode = selection.focusNode;
+        const endOffset = selection.focusOffset;
+        setCaretOffset(saved.start);
+        selection.extend(endNode, endOffset);
+      }
+    }
+
+    function animatePaletteText(index) {
+      if (exportMode || postMode || postImageMode || showingWorkStudy) return;
+      const now = performance.now();
+      if (index === lastMotionIndex && now - lastMotionAt < 700) return;
+      lastMotionIndex = index;
+      lastMotionAt = now;
+      wordMotions.forEach((animation) => animation.cancel());
+      wordMotions = [];
+      if (index === 4) {
+        activeComposition = null;
+        cancelAnimationFrame(compositionCaretFrame);
+        const targets = visibleText.querySelectorAll(".type-line, .motion-word");
+        targets.forEach((target) => {
+          target.style.removeProperty("translate");
+          target.style.removeProperty("scale");
+          target.classList.remove("scatter-row");
+        });
+        const finish = performance.now() + 350;
+        const trackReturnCaret = () => {
+          if (editable) updateCustomCaret();
+          else positionTitleCursor();
+          if (performance.now() < finish) compositionCaretFrame = requestAnimationFrame(trackReturnCaret);
+        };
+        compositionCaretFrame = requestAnimationFrame(trackReturnCaret);
+        return;
+      }
+      activeComposition = index;
+      if (index === 3) scatterSlots = [];
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduced && [0, 2, 3, 5].includes(index)) prepareMotionWords();
+      applyTextComposition();
+      if (!reduced) {
+        const words = [0, 2, 3, 5].includes(index);
+        const targets = Array.from(visibleText.querySelectorAll(words ? ".motion-word" : ".type-line"));
+        wordMotions = targets.map((target, i) => {
+          const sign = i % 2 ? 1 : -1;
+          const poses = [
+            ["none", "translateY(-0.24em) scale(1.08, .9)", "translateY(0.04em) scale(.98, 1.04)", "none"],
+            [`translateX(${sign * 0.35}em) skewX(${-sign * 9}deg)`, "translateX(0) skewX(0deg)"],
+            ["translateY(0.3em)", "none"],
+            [`translate(${sign * (0.12 + i % 3 * 0.07)}em, ${sign * 0.22}em) rotate(${sign * 14}deg) scale(.7)`, "scale(1.06)", "none"],
+            ["scale(1, .15)", "scale(1, 1.08)", "none"],
+            ["none", `rotate(${sign * 11}deg) translateY(-0.1em)`, `rotate(${-sign * 5}deg)`, "none"]
+          ][index];
+          const keyframes = index === 2
+            ? [
+                { transform: poses[0], opacity: 0 },
+                { transform: "translateY(0.06em)", opacity: 1, offset: 0.6 },
+                { transform: poses[1], opacity: 1 }
+              ]
+            : poses.map((transform) => ({ transform }));
+          return target.animate(keyframes, {
+            duration: index === 2 ? 480 : index === 5 ? 520 : 420,
+            delay: words ? (index === 3 ? (i * 7 % 11) * 18 : index === 2 ? i * Math.min(22, 260 / Math.max(1, targets.length - 1)) : Math.min(i * 22, 260)) : i * 45,
+            easing: "cubic-bezier(.2, .8, .25, 1)",
+            fill: "backwards"
+          });
+        });
+      }
+      cancelAnimationFrame(compositionCaretFrame);
+      const finish = performance.now() + 850;
+      const trackCaret = () => {
+        if (editable) updateCustomCaret();
+        else positionTitleCursor();
+        if (performance.now() < finish) compositionCaretFrame = requestAnimationFrame(trackCaret);
+      };
+      compositionCaretFrame = requestAnimationFrame(trackCaret);
     }
 
     palettes.forEach((palette, index) => {
