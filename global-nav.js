@@ -28,7 +28,7 @@
   header.className = "global-site-header";
   header.setAttribute("aria-label", "Site header");
   header.innerHTML = `
-    <div class="global-site-header__cell global-site-header__contact">
+    <div class="global-site-header__cell global-site-header__contact" data-nosnippet>
       <a class="global-instagram-link" href="https://instagram.com/niklastsalkos" target="_blank" rel="noopener">@niklastsalkos<span class="contact-hover-icon" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect class="icon-fill" x="3" y="3" width="18" height="18" rx="5"></rect><circle class="icon-line" cx="12" cy="12" r="4"></circle><circle class="icon-dot" cx="17.5" cy="6.5" r="1"></circle></svg></span></a>
       <span aria-hidden="true"> / </span>
       <a class="global-email-link" href="mailto:nikl2229us@gmail.com">nikl2229us@gmail.com<span class="contact-hover-icon" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect class="icon-fill" x="3" y="5" width="18" height="14" rx="2"></rect><path class="icon-line" d="m3 7 9 6 9-6"></path></svg></span></a>
@@ -38,7 +38,7 @@
       <a href="/project/" ${isActive("/project/") ? 'class="is-active" aria-current="page"' : ""}>Projects</a>
       <a href="/experimental/" ${isActive("/experimental/") ? 'class="is-active" aria-current="page"' : ""}>Experimental</a>
     </nav>
-    <div class="global-site-header__cell global-site-header__data" aria-label="Local information">
+    <div class="global-site-header__cell global-site-header__data" aria-label="Local information" data-nosnippet>
       <span class="global-weather-line" data-weather="unknown" aria-label="Local time and current weather">
         <span class="global-location-full">Denmark, Copenhagen</span><span class="global-location-short">CPH</span>
         <span class="global-clock">--:--</span>
